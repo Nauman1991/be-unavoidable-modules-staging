@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- AUTH GUARD -->
+  <script>
+    (async function() {
+      try {
+        const res = await fetch('/api/verify');
+        if (!res.ok) throw new Error('not authenticated');
+        const data = await res.json();
+        if (!data.authenticated) throw new Error('not authenticated');
+        window.BU_USER = { name: data.name, email: data.email };
+        document.dispatchEvent(new Event('bu:user-ready'));
+      } catch(e) {
+        window.location.href = '/login.html';
+      }
+    })();
+  </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 8: Gain Commitment and Close</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Mono:wght@400;700&family=Work+Sans:wght@300;400;500;600;700&display=swap');
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0a0e1a; --surface: #141824; --card: #1c2130; --card-hover: #242938; --border: #2d3448;
+  --text: #e4e6eb; --text-dim: #9195a3;
+  --accent-red: #ff4757; --accent-red-dim: rgba(255, 71, 87, 0.15);
+  --accent-green: #2ecc71; --accent-green-dim: rgba(46, 204, 113, 0.15);
+  --accent-blue: #3498db; --accent-yellow: #f39c12; --accent-purple: #9b59b6;
+  --accent-orange: #e67e22; --accent-cyan: #00bcd4;
+}
+body { font-family: 'Work Sans', sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; overflow-x: hidden; }
+
+/* ═══ HERO ═══ */
+.hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 60px 24px; position: relative; background: radial-gradient(ellipse 800px 500px at 50% 40%, rgba(46, 204, 113, 0.08), transparent 60%), radial-gradient(ellipse 600px 400px at 30% 60%, rgba(255, 71, 87, 0.06), transparent 60%); }
+.module-badge { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--accent-green); border: 2px solid var(--accent-green); padding: 8px 20px; border-radius: 30px; margin-bottom: 28px; display: inline-block; opacity: 0; animation: fadeUp 0.8s ease forwards 0.2s; }
+.hero h1 { font-family: 'Instrument Serif', serif; font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 400; line-height: 1.1; max-width: 900px; margin-bottom: 24px; opacity: 0; animation: fadeUp 0.8s ease forwards 0.4s; }
+.hero h1 .highlight { color: var(--accent-green); font-style: italic; }
+.hero-subtitle { font-size: 1.15rem; color: var(--text-dim); max-width: 680px; margin-bottom: 48px; opacity: 0; animation: fadeUp 0.8s ease forwards 0.6s; }
+.start-btn { font-family: 'Space Mono', monospace; font-size: 15px; font-weight: 700; background: var(--accent-green); color: white; border: none; padding: 18px 48px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; opacity: 0; animation: fadeUp 0.8s ease forwards 0.8s; box-shadow: 0 8px 24px rgba(46, 204, 113, 0.3); }
+.start-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(46, 204, 113, 0.4); }
+
+/* ═══ PROGRESS ═══ */
+.progress-wrapper { position: fixed; top: 0; left: 0; right: 0; height: 4px; background: var(--surface); z-index: 1000; opacity: 0; transition: opacity 0.3s; }
+.progress-wrapper.visible { opacity: 1; }
+.progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent-red), var(--accent-green)); width: 0%; transition: width 0.5s ease; }
+
+/* ═══ CONTENT ═══ */
+.content { max-width: 900px; margin: 0 auto; padding: 80px 24px 120px; opacity: 0; transition: opacity 0.5s; }
+.content.visible { opacity: 1; }
+
+/* ═══ SECTIONS ═══ */
+.section { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 48px; margin-bottom: 32px; opacity: 0; transform: translateY(40px); transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+.section.visible { opacity: 1; transform: translateY(0); }
+.section-number { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; color: var(--accent-red); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; }
+.section h2 { font-family: 'Instrument Serif', serif; font-size: 2.2rem; font-weight: 400; margin-bottom: 24px; line-height: 1.2; }
+.section p { color: var(--text-dim); margin-bottom: 20px; font-size: 1.05rem; }
+.section p:last-child { margin-bottom: 0; }
+.section strong { color: var(--text); font-weight: 600; }
+
+/* ═══ INFO BOXES ═══ */
+.info-box { background: var(--surface); border-left: 4px solid; padding: 20px; margin: 24px 0; border-radius: 0 8px 8px 0; }
+.info-box.warning { border-left-color: var(--accent-red); background: linear-gradient(135deg, rgba(255, 71, 87, 0.08) 0%, var(--surface) 100%); }
+.info-box.success { border-left-color: var(--accent-green); background: linear-gradient(135deg, rgba(46, 204, 113, 0.08) 0%, var(--surface) 100%); }
+.info-box.insight { border-left-color: var(--accent-orange); background: linear-gradient(135deg, rgba(230, 126, 34, 0.08) 0%, var(--surface) 100%); }
+.info-box.blue { border-left-color: var(--accent-blue); background: linear-gradient(135deg, rgba(52, 152, 219, 0.08) 0%, var(--surface) 100%); }
+.info-box.cyan { border-left-color: var(--accent-cyan); background: linear-gradient(135deg, rgba(0, 188, 212, 0.08) 0%, var(--surface) 100%); }
+.info-box h3 { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+.info-box.warning h3 { color: var(--accent-red); }
+.info-box.success h3 { color: var(--accent-green); }
+.info-box.insight h3 { color: var(--accent-orange); }
+.info-box.blue h3 { color: var(--accent-blue); }
+.info-box.cyan h3 { color: var(--accent-cyan); }
+
+/* ═══ BLOCKQUOTE ═══ */
+.blockquote { background: var(--surface); border-left: 4px solid var(--accent-green); padding: 24px; margin: 24px 0; border-radius: 0 8px 8px 0; font-style: italic; }
+.blockquote p { color: var(--text); font-size: 1.1rem; font-weight: 500; margin-bottom: 0; }
+
+/* ═══ COMPARISON CARDS ═══ */
+.comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 32px 0; }
+@media (max-width: 768px) { .comparison { grid-template-columns: 1fr; } }
+.comp-card { background: var(--surface); border: 2px solid var(--border); border-radius: 12px; padding: 32px; transition: all 0.3s ease; position: relative; overflow: hidden; }
+.comp-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; }
+.comp-card.wrong::before { background: var(--accent-red); }
+.comp-card.right::before { background: var(--accent-green); }
+.comp-card:hover { transform: translateY(-4px); }
+.comp-icon { font-size: 36px; margin-bottom: 16px; }
+.comp-card h3 { font-family: 'Instrument Serif', serif; font-size: 1.4rem; margin-bottom: 12px; }
+.comp-card.wrong h3 { color: var(--accent-red); }
+.comp-card.right h3 { color: var(--accent-green); }
+.comp-card p { color: var(--text-dim); font-size: 0.95rem; line-height: 1.6; }
+
+/* ═══ STEP CARDS ═══ */
+.step-grid { display: flex; flex-direction: column; gap: 16px; margin: 32px 0; }
+.step-card { background: var(--surface); border: 2px solid var(--border); border-radius: 12px; padding: 28px; transition: all 0.3s ease; position: relative; overflow: hidden; }
+.step-card::before { content: ''; position: absolute; top: 0; left: 0; width: 5px; height: 100%; border-radius: 12px 0 0 12px; }
+.step-card:nth-child(1)::before { background: var(--accent-red); }
+.step-card:nth-child(2)::before { background: var(--accent-orange); }
+.step-card:nth-child(3)::before { background: var(--accent-yellow); }
+.step-card:nth-child(4)::before { background: var(--accent-green); }
+.step-card:hover { border-color: rgba(46, 204, 113, 0.5); transform: translateX(8px); }
+.step-num { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; color: var(--accent-green); }
+.step-card h3 { font-family: 'Instrument Serif', serif; font-size: 1.3rem; margin-bottom: 8px; }
+.step-card > p { color: var(--text-dim); font-size: 0.95rem; line-height: 1.6; margin-bottom: 0; }
+
+/* ═══ PHRASE CARDS ═══ */
+.phrase-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin: 16px 0; transition: all 0.3s ease; }
+.phrase-card:hover { border-color: var(--accent-green); transform: translateX(6px); }
+.phrase-text { font-family: 'Instrument Serif', serif; font-size: 1.2rem; font-style: italic; color: var(--text); margin-bottom: 10px; }
+.phrase-when { font-size: 0.92rem; color: var(--text-dim); line-height: 1.6; }
+
+/* ═══ MEANING CARDS (for "let me think about it") ═══ */
+.meaning-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 32px 0; }
+@media (max-width: 768px) { .meaning-grid { grid-template-columns: 1fr; } }
+.meaning-card { background: var(--surface); border: 2px solid var(--border); border-radius: 12px; padding: 24px; transition: all 0.3s ease; position: relative; overflow: hidden; }
+.meaning-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--accent-red); }
+.meaning-card:hover { transform: translateY(-4px); border-color: rgba(255, 71, 87, 0.4); }
+.meaning-num { font-family: 'Space Mono', monospace; font-size: 24px; font-weight: 700; color: var(--accent-red); opacity: 0.4; margin-bottom: 8px; }
+.meaning-card h3 { font-family: 'Instrument Serif', serif; font-size: 1.2rem; margin-bottom: 8px; color: var(--text); }
+.meaning-card p { color: var(--text-dim); font-size: 0.92rem; line-height: 1.6; }
+
+/* ═══ TAKEAWAYS ═══ */
+.takeaway-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; margin: 32px 0; }
+.takeaway-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 28px; transition: all 0.3s ease; position: relative; }
+.takeaway-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--accent-green); border-radius: 12px 0 0 12px; opacity: 0; transition: opacity 0.3s; }
+.takeaway-card:hover::before { opacity: 1; }
+.takeaway-card:hover { border-color: var(--accent-green); transform: translateY(-4px); }
+.takeaway-number { font-family: 'Space Mono', monospace; font-size: 32px; font-weight: 700; color: var(--accent-green); opacity: 0.3; margin-bottom: 12px; }
+.takeaway-card p { font-size: 0.95rem; line-height: 1.6; }
+
+/* ═══ RATIONALIZATION CARDS ═══ */
+.ration-grid { display: flex; flex-direction: column; gap: 12px; margin: 24px 0; }
+.ration-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+
+/* ═══ PRACTICE ═══ */
+.practice { background: linear-gradient(135deg, #1a2332 0%, #1f2937 100%); border: 2px solid var(--accent-yellow); border-radius: 16px; padding: 36px; margin: 32px 0; }
+.practice-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.practice-icon { font-size: 28px; }
+.practice-header h3 { font-family: 'Instrument Serif', serif; font-size: 1.6rem; }
+.practice-label { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; color: var(--accent-yellow); text-transform: uppercase; letter-spacing: 1.5px; background: rgba(243, 156, 18, 0.15); padding: 4px 12px; border-radius: 20px; margin-left: auto; }
+.practice-prompt { background: var(--card); border-left: 4px solid var(--accent-yellow); padding: 20px; margin-bottom: 24px; border-radius: 0 8px 8px 0; }
+.practice-prompt p { font-style: italic; color: var(--text); font-size: 1.05rem; margin-bottom: 0; }
+.practice-textarea { width: 100%; min-height: 140px; background: var(--surface); border: 2px solid var(--border); border-radius: 8px; padding: 16px; color: var(--text); font-family: 'Work Sans', sans-serif; font-size: 1rem; resize: vertical; margin-bottom: 16px; transition: border-color 0.3s; }
+.practice-textarea:focus { outline: none; border-color: var(--accent-yellow); }
+.practice-btn { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; background: var(--accent-yellow); color: var(--bg); border: none; padding: 14px 32px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; }
+.practice-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(243, 156, 18, 0.3); }
+.practice-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.practice-btn.loading { background: var(--text-dim); cursor: wait; }
+.practice-feedback { background: var(--surface); border: 2px solid var(--accent-green); border-radius: 8px; padding: 24px; margin-top: 24px; display: none; }
+.practice-feedback.visible { display: block; }
+.practice-feedback h4 { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; color: var(--accent-green); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+
+/* ═══ QUIZ ═══ */
+.quiz { background: linear-gradient(135deg, #1c2130 0%, #242938 100%); border: 1px solid var(--border); border-radius: 16px; padding: 40px; margin: 32px 0; }
+.quiz-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+.quiz-icon { font-size: 28px; }
+.quiz-header h3 { font-family: 'Instrument Serif', serif; font-size: 1.5rem; }
+.quiz-question { font-size: 1.1rem; margin-bottom: 24px; line-height: 1.6; }
+.quiz-label { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; color: var(--accent-red); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 16px; display: block; }
+.choice-group { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+.choice-btn { background: var(--card); border: 2px solid var(--border); color: var(--text); padding: 20px 24px; border-radius: 10px; cursor: pointer; text-align: left; font-size: 1rem; transition: all 0.3s ease; }
+.choice-btn:hover { border-color: var(--accent-red); background: var(--card-hover); transform: translateX(8px); }
+.choice-btn.correct { border-color: var(--accent-green); background: var(--accent-green-dim); }
+.choice-btn.incorrect { border-color: var(--accent-red); background: var(--accent-red-dim); }
+.feedback { background: var(--surface); border-left: 4px solid var(--accent-green); padding: 20px; margin-top: 24px; border-radius: 8px; display: none; }
+.feedback.visible { display: block; }
+.feedback.incorrect { border-left-color: var(--accent-red); }
+.feedback h4 { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+.feedback.correct h4 { color: var(--accent-green); }
+.feedback.incorrect h4 { color: var(--accent-red); }
+
+/* ═══ COMPLETION ═══ */
+.completion { text-align: center; background: linear-gradient(135deg, var(--card) 0%, var(--surface) 100%); border: 2px solid var(--accent-green); border-radius: 20px; padding: 60px 40px; margin: 48px 0; }
+.completion-icon { font-size: 64px; margin-bottom: 24px; animation: bounce 1s ease; }
+@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+.completion h2 { font-family: 'Instrument Serif', serif; font-size: 2.5rem; margin-bottom: 16px; }
+.completion p { font-size: 1.1rem; color: var(--text-dim); max-width: 600px; margin: 0 auto 32px; }
+.completion-stats { display: flex; justify-content: center; gap: 48px; margin-bottom: 32px; }
+.stat { text-align: center; }
+.stat-number { font-family: 'Space Mono', monospace; font-size: 2.5rem; font-weight: 700; color: var(--accent-green); display: block; }
+.stat-label { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); }
+.final-badge { display: inline-block; font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--accent-green); border: 2px solid var(--accent-green); padding: 10px 24px; border-radius: 30px; margin-top: 16px; }
+
+/* ═══ NAV ═══ */
+.nav-buttons { display: flex; justify-content: space-between; align-items: center; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border); }
+.nav-btn { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; background: var(--accent-red); color: white; border: none; padding: 14px 28px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px; }
+.nav-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(255, 71, 87, 0.3); }
+.nav-btn.back { background: var(--surface); border: 2px solid var(--border); color: var(--text); }
+.nav-btn.back:hover { background: var(--card); border-color: var(--accent-red); }
+.nav-btn.finish { background: var(--accent-green); }
+.nav-btn.finish:hover { box-shadow: 0 6px 16px rgba(46, 204, 113, 0.3); }
+
+/* ═══ ANIMATIONS & UTILS ═══ */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+.hidden { display: none !important; }
+@media (max-width: 768px) { .section { padding: 32px 24px; } .hero { min-height: 90vh; } .hero h1 { font-size: 2.5rem; } .completion-stats { flex-direction: column; gap: 24px; } .practice { padding: 24px; } .quiz { padding: 28px; } .meaning-grid { grid-template-columns: 1fr; } }
+</style>
+
+  <style>
+  .bu-dash-btn {
+    position: fixed; top: 14px; right: 20px; z-index: 9999;
+    font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700;
+    background: rgba(20,24,36,0.92); color: #9195a3;
+    border: 1px solid #2d3448; border-radius: 6px;
+    padding: 7px 14px; cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: color 0.2s, border-color 0.2s;
+    text-decoration: none; display: inline-block;
+  }
+  .bu-dash-btn:hover { color: #e4e6eb; border-color: #9195a3; }
+  </style>
+</head>
+<body>
+<a href="/dashboard.html" class="bu-dash-btn">Dashboard</a>
+
+
+<!-- Progress Bar -->
+<div class="progress-wrapper" id="progressWrapper">
+  <div class="progress-bar" id="progressBar"></div>
+</div>
+
+<!-- Hero Section -->
+<div class="hero" id="hero">
+  <div class="module-badge">Module 8 &bull; Be Unavoidable</div>
+  <h1>
+    Gain Commitment<br>and <span class="highlight">Close</span>
+  </h1>
+  <p class="hero-subtitle">If you&rsquo;ve done everything in Modules 1 through 7 correctly, this is the easiest part. The heavy lifting is done. Now it&rsquo;s time to ask.</p>
+  <button class="start-btn" onclick="startModule()">Begin Module &rarr;</button>
+</div>
+
+<!-- Main Content -->
+<div class="content" id="mainContent">
+
+  <!-- SECTION 1: The Easiest Part -->
+  <div class="section" data-section="1">
+    <div class="section-number">Section 1 of 14</div>
+    <h2>The Natural Conclusion</h2>
+    <p>Here&rsquo;s the secret that every great closer knows: if you&rsquo;ve done everything in Modules 1 through 7 correctly, <strong>closing is the easiest part of the entire process.</strong></p>
+    <p>The part that terrifies most people&mdash;asking for the job, asking for the business, asking someone to choose you&mdash;is actually the simplest step. Not because it&rsquo;s emotionally easy. It&rsquo;s not. But because the heavy lifting is already done. The thinking has already changed. The pain has been uncovered. The consequences have been quantified. The decision-maker is engaged. All seven attributes are present.</p>
+    <p>You&rsquo;re standing in front of someone who has told you, in their own words, what&rsquo;s broken, what it&rsquo;s costing them, and why they need to fix it.</p>
+
+    <div class="blockquote">
+      <p>At that point, asking for the commitment isn&rsquo;t an imposition. It&rsquo;s a service. You&rsquo;re helping them do what they&rsquo;ve already decided they need to do.</p>
+    </div>
+
+    <p>And yet. Most people choke right here. They do all the work&mdash;the diagnosis, the qualification, the relationship-building&mdash;and then they freeze at the finish line. They hint. They dance around it. They say &ldquo;well, let me know what you decide&rdquo; and walk away hoping the phone rings.</p>
+    <p>They do everything <em>except</em> the one thing that actually matters: <strong>they don&rsquo;t ask.</strong></p>
+
+    <div class="nav-buttons">
+      <div></div>
+      <button class="nav-btn" onclick="goToSection(2)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 2: Why People Freeze -->
+  <div class="section" data-section="2">
+    <div class="section-number">Section 2 of 14</div>
+    <h2>Why People Freeze at the Finish Line</h2>
+    <p>Before we get into the mechanics of closing, we need to address why most people never close at all: <strong>fear.</strong></p>
+    <p>Not fear of failure in the abstract. A very specific kind of fear. The fear of hearing &ldquo;no&rdquo; from someone you&rsquo;ve invested time building a relationship with. The fear that asking directly will feel pushy or <em>salesy</em>&mdash;exactly the thing you&rsquo;ve been trying to avoid since Module 1 told you this was about sales skills.</p>
+    <p>This fear is completely understandable. And it is <strong>completely wrong.</strong></p>
+
+    <div class="comparison">
+      <div class="comp-card wrong">
+        <div class="comp-icon">&#128566;</div>
+        <h3>What Fear Tells You</h3>
+        <p>&ldquo;If I ask directly, I&rsquo;ll seem aggressive. I&rsquo;ll damage the relationship. It&rsquo;ll feel transactional. Better to wait and let them bring it up.&rdquo;</p>
+      </div>
+      <div class="comp-card right">
+        <div class="comp-icon">&#129504;</div>
+        <h3>What&rsquo;s Actually True</h3>
+        <p>You&rsquo;ve spent real time understanding this person&rsquo;s situation. You asked questions that helped them see their problem more clearly. You&rsquo;ve <em>earned the right</em> to ask. Not asking is what&rsquo;s actually disrespectful of their time.</p>
+      </div>
+    </div>
+
+    <div class="info-box warning">
+      <h3>The Doctor Analogy</h3>
+      <p><em>Not</em> asking is the equivalent of a doctor who runs every test, identifies the disease, explains the prognosis, and then says, &ldquo;Well, let me know if you want to do something about it,&rdquo; and walks out of the room. The person who does all the diagnostic work and won&rsquo;t ask for a commitment isn&rsquo;t being respectful. <strong>They&rsquo;re protecting their own ego.</strong></p>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(1)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(3)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 3: The Confirmation Checkpoint -->
+  <div class="section" data-section="3">
+    <div class="section-number">Section 3 of 14</div>
+    <h2>Before You Close: The Confirmation Checkpoint</h2>
+    <p><strong>Great closers don&rsquo;t surprise people. They confirm.</strong></p>
+    <p>Before you ever ask for a commitment, you run a confirmation checkpoint. This is a brief, deliberate moment where you summarize what you&rsquo;ve uncovered and make sure you and the other person are looking at the same picture. Three parts:</p>
+
+    <div class="step-grid">
+      <div class="step-card">
+        <div class="step-num">Part 1</div>
+        <h3>Confirm the pain and the cost.</h3>
+        <p>Reflect back what they told you&mdash;in their words, not yours. This isn&rsquo;t a presentation. It&rsquo;s a mirror.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">Part 2</div>
+        <h3>Confirm the outcomes they need.</h3>
+        <p>Shift from problem to solution&mdash;still in their terms. Then ask: &ldquo;Is there anything else that would need to be true for this to be a success?&rdquo; This flushes out hidden criteria.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">Part 3</div>
+        <h3>Confirm the decision framework.</h3>
+        <p>Validate the process, timeline, and decision-maker&mdash;the attributes from Module 7. Things change. Budgets freeze. Decision-makers get reassigned. This is your last qualification check.</p>
+      </div>
+    </div>
+
+    <div class="phrase-card">
+      <div class="phrase-text">&ldquo;Based on what you&rsquo;ve shared with me, it sounds like the core issue is [their pain]. You mentioned it&rsquo;s costing you roughly [their number] in [their dimensions]. Is that an accurate picture, or am I missing something?&rdquo;</div>
+      <div class="phrase-when"><strong>Why it works:</strong> When they say &ldquo;yes, that&rsquo;s right,&rdquo; they&rsquo;re not agreeing with your pitch. They&rsquo;re reaffirming their own diagnosis. Every time someone re-owns their pain out loud, it strengthens their commitment to solving it.</div>
+    </div>
+
+    <div class="info-box success">
+      <h3>The Green Light</h3>
+      <p>If the other person confirms all three parts, you&rsquo;re aligned. Same problem. Same desired outcome. Same decision process. <strong>Now you present.</strong></p>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(2)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(4)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 4: Presenting Your Solution -->
+  <div class="section" data-section="4">
+    <div class="section-number">Section 4 of 14</div>
+    <h2>Presenting Your Solution: Tailored, Not Generic</h2>
+    <p>Notice that this moment arrives remarkably late in the process. You&rsquo;ve spent seven modules learning to understand the other person&rsquo;s world before you ever talk about yourself. <strong>That&rsquo;s not an accident. That&rsquo;s the design.</strong></p>
+    <p>Now, when you present, you&rsquo;re not guessing at what matters. You know. You heard it. They told you. And your presentation is built entirely around what they need:</p>
+
+    <div class="step-grid">
+      <div class="step-card">
+        <div class="step-num">Step 1</div>
+        <h3>Restate the problem in consequence terms.</h3>
+        <p>Start with their pain, not your qualifications. &ldquo;You told me that [problem] is costing you [cost], and if it&rsquo;s not addressed by [timeline], the consequences include [their words].&rdquo; This is Module 4&mdash;framing everything in terms of what happens if they don&rsquo;t act.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">Step 2</div>
+        <h3>Present your solution mapped to their stated needs.</h3>
+        <p>Every single thing you present should connect to something they told you matters. Not features. Not credentials. Not your resume. &ldquo;The first thing I would address is [pain point #1], and here&rsquo;s specifically how&hellip;&rdquo;</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">Step 3</div>
+        <h3>Show them life after the problem is solved.</h3>
+        <p>Paint the outcome in their specific terms. People decide to move because of pain. They decide <em>where</em> to move because of vision. &ldquo;Resolving this would mean [their stated outcomes]. And the [cost] you&rsquo;re absorbing goes away.&rdquo;</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">Step 4</div>
+        <h3>Lay out clear next steps.</h3>
+        <p>Spell out exactly what happens if they say yes. Start date. Transition plan. Implementation timeline. Ambiguity creates hesitation. <strong>Clarity creates confidence.</strong></p>
+      </div>
+    </div>
+
+    <div class="info-box insight">
+      <h3>Not a Pitch &mdash; A Prescription</h3>
+      <p>You&rsquo;re demonstrating, in real time, that you listened, you understood, and everything you bring to the table solves <em>their</em> problem. That&rsquo;s not selling. That&rsquo;s diagnosing and prescribing. It&rsquo;s the reason the doctor analogy has been running through this entire program.</p>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(3)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(5)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 5: The Ask -->
+  <div class="section" data-section="5">
+    <div class="section-number">Section 5 of 14</div>
+    <h2>The Ask</h2>
+    <p>You&rsquo;ve confirmed alignment. You&rsquo;ve presented your tailored solution. <strong>Now it&rsquo;s time to close.</strong></p>
+    <p>Here&rsquo;s what most people do at this point: they thank the other person for their time, ask when they&rsquo;ll hear back, and leave. They go home and wait. They refresh their email. They do everything except ask.</p>
+    <p>Here&rsquo;s what you do instead:</p>
+
+    <div class="phrase-card" style="border-color: var(--accent-green);">
+      <div class="phrase-text">&ldquo;Based on everything we&rsquo;ve discussed&mdash;the challenges you&rsquo;re facing with [their problem], the cost of leaving it unresolved, and the outcomes you need by [their timeline]&mdash;I&rsquo;m confident I can deliver those results. I want this role. What would need to happen for us to move forward?&rdquo;</div>
+      <div class="phrase-when"><strong>External opportunity:</strong> Summarizes pain and cost in their language. Connects your solution to their outcomes. States intent clearly: <em>I want this role.</em> Then asks a question that assumes forward motion. Collaborative, not aggressive. Confident, not desperate.</div>
+    </div>
+
+    <div class="phrase-card" style="border-color: var(--accent-cyan);">
+      <div class="phrase-text">&ldquo;We&rsquo;ve talked about the impact of [your work] and what it would cost if that stopped being a priority. I&rsquo;d like to formalize this with a promotion to [specific role]. What would need to happen to make that a reality in this cycle?&rdquo;</div>
+      <div class="phrase-when"><strong>Internal &mdash; Promotion:</strong> Reflects the consequence-level value you&rsquo;ve built, names what you want specifically, and asks for the mechanics of making it happen.</div>
+    </div>
+
+    <div class="phrase-card" style="border-color: var(--accent-orange);">
+      <div class="phrase-text">&ldquo;I know there are difficult decisions being made right now. I want to be direct: I want to be part of this team going forward. Based on what we&rsquo;ve discussed about [your value], what do I need to do to make sure my role is part of the plan?&rdquo;</div>
+      <div class="phrase-when"><strong>Internal &mdash; Surviving a reorg:</strong> Direct without being confrontational. Acknowledges the situation, states intent, and invites collaboration on the path forward.</div>
+    </div>
+
+    <div class="blockquote">
+      <p>In every case, the pattern is the same: Reflect the pain. Connect the solution. State your intent. Ask for the commitment. Don&rsquo;t leave the room without clarity on what happens next.</p>
+    </div>
+
+    <p>If this feels uncomfortable, <strong>good.</strong> It means you&rsquo;re doing something different from what you&rsquo;ve always done. And what you&rsquo;ve always done got you here, reading a program about how to be unavoidable because the old approach stopped working.</p>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(4)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(6)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 6: The Decision Rule -->
+  <div class="section" data-section="6">
+    <div class="section-number">Section 6 of 14</div>
+    <h2>The Decision Rule: Don&rsquo;t Leave Without One</h2>
+    <p>This is the discipline that separates professionals from amateurs, and it&rsquo;s non-negotiable: <strong>you do not leave a closing conversation without a decision.</strong></p>
+    <p>A decision doesn&rsquo;t have to be yes. It can be yes, no, or a clearly defined next step with a specific date. What it <em>cannot</em> be is &ldquo;we&rsquo;ll get back to you.&rdquo; What it cannot be is ambiguity.</p>
+
+    <div class="info-box warning">
+      <h3>Why Ambiguity Kills</h3>
+      <p>Every day you spend in limbo&mdash;waiting for an email, refreshing your inbox, wondering where you stand&mdash;is a day you&rsquo;re not pursuing a qualified opportunity that could produce a result. Ambiguity doesn&rsquo;t just waste time. It erodes confidence. It creates anxiety. And it gives the other person permission to deprioritize you indefinitely.</p>
+    </div>
+
+    <p>So when you ask and the person hesitates, you don&rsquo;t retreat. You clarify:</p>
+
+    <div class="phrase-card">
+      <div class="phrase-text">&ldquo;I completely understand that this is a significant decision. Help me understand: is there something specific giving you pause, or is this more about the timing of the process?&rdquo;</div>
+      <div class="phrase-when"><strong>Why this works:</strong> Respectful and non-aggressive, but incredibly useful. If there&rsquo;s a specific objection, you can address it. If it&rsquo;s timing, you can pin down a date. If they can&rsquo;t articulate what&rsquo;s holding them back, that&rsquo;s diagnostic information&mdash;the opportunity may not be as qualified as you thought.</div>
+    </div>
+
+    <p>The minimum acceptable outcome: <strong>a specific next step with a date.</strong> &ldquo;We&rsquo;ll present the final offer by Thursday at noon.&rdquo; &ldquo;I&rsquo;ll have the decision from the committee by end of day Friday.&rdquo; If you can&rsquo;t get a specific date, ask why. And if the answer is evasive, revisit your qualification.</p>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(5)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(7)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 7: Let Us Think About It -->
+  <div class="section" data-section="7">
+    <div class="section-number">Section 7 of 14</div>
+    <h2>The Five Words That Kill More Deals Than Anything Else</h2>
+    <p style="font-size: 1.4rem; font-family: 'Instrument Serif', serif; color: var(--text); text-align: center; padding: 16px 0; margin-bottom: 28px;">&ldquo;Let us think about it.&rdquo;</p>
+    <p>If you remember one section of this module, let it be this one. These five words are the single most common response you&rsquo;ll hear, and how you handle them determines whether you close or lose.</p>
+    <p>In most cases, <strong>it does not mean they need to think about it.</strong> It means one of four things:</p>
+
+    <div class="meaning-grid">
+      <div class="meaning-card">
+        <div class="meaning-num">1</div>
+        <h3>An unvoiced objection</h3>
+        <p>Something is bothering them&mdash;price, timing, risk&mdash;and they don&rsquo;t want to create conflict because the conversation has been going well.</p>
+      </div>
+      <div class="meaning-card">
+        <div class="meaning-num">2</div>
+        <h3>They&rsquo;re not the real decision-maker</h3>
+        <p>They need to check with someone else but don&rsquo;t want to admit they can&rsquo;t make the call. Back to Module 5.</p>
+      </div>
+      <div class="meaning-card">
+        <div class="meaning-num">3</div>
+        <h3>The status quo is winning</h3>
+        <p>The pain isn&rsquo;t acute enough. Doing nothing is always the easiest option. &ldquo;Thinking about it&rdquo; is the status quo wearing a polite mask. Module 3.</p>
+      </div>
+      <div class="meaning-card">
+        <div class="meaning-num">4</div>
+        <h3>They&rsquo;ve already decided no</h3>
+        <p>Some people can&rsquo;t say no to your face. So they say &ldquo;let me think about it&rdquo; and slowly disappear. The gradual ghost.</p>
+      </div>
+    </div>
+
+    <div class="info-box warning">
+      <h3>The Worst Response</h3>
+      <p>In all four cases, the worst thing you can do is what most people do: say &ldquo;sure, take your time&rdquo; and leave. You&rsquo;ve just handed them an open-ended invitation to never make a decision. You&rsquo;ve given up control. <strong>You&rsquo;ve guaranteed weeks of follow-up emails into the void.</strong></p>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(6)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(8)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 8: Handling "Let Me Think About It" -->
+  <div class="section" data-section="8">
+    <div class="section-number">Section 8 of 14</div>
+    <h2>The Four-Step Response</h2>
+    <p>Here&rsquo;s what you do instead. This is where the modules converge&mdash;Modules 2, 3, 6, and 7 all at once:</p>
+
+    <div class="step-grid">
+      <div class="step-card">
+        <div class="step-num">Step 1: Validate</div>
+        <h3>&ldquo;That makes complete sense. This is an important decision and I wouldn&rsquo;t expect you to rush it.&rdquo;</h3>
+        <p>You&rsquo;ve shown you respect their process. You&rsquo;re not panicking. You&rsquo;re not desperate. This builds trust in the exact moment where most people lose it.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">Step 2: Diagnose</div>
+        <h3>&ldquo;When you say you want to think about it, help me understand&mdash;is there a specific concern I haven&rsquo;t addressed?&rdquo;</h3>
+        <p>You&rsquo;re giving them permission to voice the objection they were too polite to raise. And most of the time, they will. Now you&rsquo;re back in a conversation you can actually work with.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">Step 3: Re-anchor to Cost</div>
+        <h3>&ldquo;You mentioned that every month this goes unresolved, it&rsquo;s costing you [their number]. If we push two or three weeks, that&rsquo;s another [calculated cost].&rdquo;</h3>
+        <p>Not a high-pressure tactic. A factual reminder of something they already told you. Their number, not yours. Their urgency, not yours. That&rsquo;s not manipulation. That&rsquo;s a trusted advisor.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">Step 4: Pin Down a Date</div>
+        <h3>&ldquo;Let&rsquo;s put a date on the calendar. Would [specific date] work for a final answer?&rdquo;</h3>
+        <p>A date transforms &ldquo;let us think about it&rdquo; from an indefinite stall into a defined checkpoint. It creates accountability and gives you permission to follow up without feeling like you&rsquo;re nagging.</p>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(7)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(9)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 9: After Yes, After No -->
+  <div class="section" data-section="9">
+    <div class="section-number">Section 9 of 14</div>
+    <h2>What Happens After the Decision</h2>
+
+    <div class="comparison">
+      <div class="comp-card right">
+        <div class="comp-icon">&#9989;</div>
+        <h3>After Yes: The Onboarding Close</h3>
+        <p>The moment after a decision is when <strong>buyer&rsquo;s remorse</strong> lives. Their brain starts second-guessing. The antidote is clarity. Immediately transition to next steps you prepared <em>before</em> the conversation:</p>
+        <p style="margin-top: 12px;"><em>&ldquo;Here&rsquo;s what I&rsquo;d suggest: [Step 1 with date]. Then [Step 2]. And we&rsquo;ll [checkpoint] by [date].&rdquo;</em></p>
+        <p style="margin-top: 12px;">This shows you&rsquo;re thinking about execution, gives them confidence they chose well, and creates momentum that makes second thoughts hard to sustain.</p>
+      </div>
+      <div class="comp-card wrong" style="border-color: var(--border);">
+        <div class="comp-icon">&#10060;</div>
+        <h3>After No: The Professional Exit</h3>
+        <p>How you handle a no tells people more about you than how you handle a yes. Three parts:</p>
+        <p style="margin-top: 12px;"><strong>1. Accept it cleanly.</strong> No arguing. No guilt trips. &ldquo;I appreciate you being direct. I respect the decision.&rdquo;</p>
+        <p style="margin-top: 8px;"><strong>2. Ask what you can learn.</strong> &ldquo;Would you share what ultimately drove the decision?&rdquo;</p>
+        <p style="margin-top: 8px;"><strong>3. Leave the door open.</strong> &ldquo;If your situation changes, I&rsquo;d welcome the chance to reconnect.&rdquo;</p>
+        <p style="margin-top: 12px;">A professional exit is a closing skill. It determines whether they refer you, come back later, or become a silent advocate.</p>
+      </div>
+    </div>
+
+    <div class="info-box insight">
+      <h3>The Professional World Is Smaller Than You Think</h3>
+      <p>How you handle rejection follows you. The hiring manager who said no today may be at a different company next year with a bigger budget and a harder problem. The leader who passed on your project may come back when conditions change. <strong>Make it follow you well.</strong></p>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(8)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(10)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 10: Knowledge Test -->
+  <div class="section" data-section="10">
+    <div class="section-number">Section 10 of 14 &bull; Knowledge Test</div>
+
+    <div class="quiz">
+      <div class="quiz-header">
+        <span class="quiz-icon">&#128218;</span>
+        <h3>Test Your Understanding</h3>
+      </div>
+
+      <span class="quiz-label">Question 1 of 5</span>
+      <div class="quiz-question">
+        According to this module, why is closing described as &ldquo;the easiest part&rdquo; of the process?
+      </div>
+      <div class="choice-group" id="quiz1-choices">
+        <button class="choice-btn" onclick="checkQuiz(1, this, false)">Because closing techniques are simple tricks anyone can learn quickly.</button>
+        <button class="choice-btn" onclick="checkQuiz(1, this, true)">Because if Modules 1&ndash;7 were done correctly, the other person has already articulated their pain, quantified the cost, and confirmed the decision process&mdash;the decision has essentially been made.</button>
+        <button class="choice-btn" onclick="checkQuiz(1, this, false)">Because by Module 8, the student has practiced enough that asking feels natural.</button>
+      </div>
+      <div class="feedback" id="quiz1Feedback"><h4>Feedback</h4><p id="quiz1Text"></p></div>
+
+      <span class="quiz-label" style="margin-top:32px;">Question 2 of 5</span>
+      <div class="quiz-question">
+        What are the three parts of the Confirmation Checkpoint that should happen <em>before</em> you present your solution?
+      </div>
+      <div class="choice-group" id="quiz2-choices">
+        <button class="choice-btn" onclick="checkQuiz(2, this, false)">Review your credentials, explain your pricing, and ask for a timeline.</button>
+        <button class="choice-btn" onclick="checkQuiz(2, this, false)">Send a follow-up email, schedule a second meeting, and prepare a presentation deck.</button>
+        <button class="choice-btn" onclick="checkQuiz(2, this, true)">Confirm the pain and cost (in their words), confirm the outcomes they need, and confirm the decision framework (process, timeline, decision-maker).</button>
+      </div>
+      <div class="feedback" id="quiz2Feedback"><h4>Feedback</h4><p id="quiz2Text"></p></div>
+
+      <span class="quiz-label" style="margin-top:32px;">Question 3 of 5</span>
+      <div class="quiz-question">
+        When someone says &ldquo;let us think about it,&rdquo; what does the module say is the <em>worst</em> thing you can do?
+      </div>
+      <div class="choice-group" id="quiz3-choices">
+        <button class="choice-btn" onclick="checkQuiz(3, this, false)">Argue with them and insist they decide right now.</button>
+        <button class="choice-btn" onclick="checkQuiz(3, this, true)">Say &ldquo;sure, take your time&rdquo; and leave&mdash;handing them an open-ended invitation to never decide.</button>
+        <button class="choice-btn" onclick="checkQuiz(3, this, false)">Ask them to explain exactly why they need more time.</button>
+      </div>
+      <div class="feedback" id="quiz3Feedback"><h4>Feedback</h4><p id="quiz3Text"></p></div>
+
+      <span class="quiz-label" style="margin-top:32px;">Question 4 of 5</span>
+      <div class="quiz-question">
+        In Step 3 of the &ldquo;Let Me Think About It&rdquo; response, you re-anchor to the cost of waiting. Why is this <em>not</em> a high-pressure tactic?
+      </div>
+      <div class="choice-group" id="quiz4-choices">
+        <button class="choice-btn" onclick="checkQuiz(4, this, true)">Because the cost is their number, not yours. The urgency is their urgency. You&rsquo;re reflecting their own reality back to them&mdash;something they already told you in the diagnostic process.</button>
+        <button class="choice-btn" onclick="checkQuiz(4, this, false)">Because you phrase it as a question rather than a statement.</button>
+        <button class="choice-btn" onclick="checkQuiz(4, this, false)">Because you only bring it up once and then drop the subject.</button>
+      </div>
+      <div class="feedback" id="quiz4Feedback"><h4>Feedback</h4><p id="quiz4Text"></p></div>
+
+      <span class="quiz-label" style="margin-top:32px;">Question 5 of 5</span>
+      <div class="quiz-question">
+        Why does the module describe a &ldquo;professional exit&rdquo; after a no as a closing skill?
+      </div>
+      <div class="choice-group" id="quiz5-choices">
+        <button class="choice-btn" onclick="checkQuiz(5, this, false)">Because it makes the other person feel guilty and more likely to reconsider.</button>
+        <button class="choice-btn" onclick="checkQuiz(5, this, false)">Because it gives you an opportunity to make one final pitch.</button>
+        <button class="choice-btn" onclick="checkQuiz(5, this, true)">Because how you handle rejection determines whether the person refers you, comes back later when conditions change, or becomes an advocate&mdash;the professional world is smaller than you think.</button>
+      </div>
+      <div class="feedback" id="quiz5Feedback"><h4>Feedback</h4><p id="quiz5Text"></p></div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(9)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(11)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 11: Practice Exercise 1 - Scenario -->
+  <div class="section" data-section="11">
+    <div class="section-number">Section 11 of 14 &bull; Practice Exercise</div>
+
+    <div class="practice">
+      <div class="practice-header">
+        <span class="practice-icon">&#127919;</span>
+        <h3>Close the Deal</h3>
+        <span class="practice-label">Scenario</span>
+      </div>
+      <div class="practice-prompt">
+        <p>You&rsquo;re interviewing for a Senior Customer Success Manager role. You&rsquo;ve had three conversations with the VP of Customer Success, Sarah. She told you the team has lost two enterprise accounts worth $480K in ARR over the past quarter because &ldquo;nobody is proactively managing the relationship.&rdquo; She said the team is burned out, churn is accelerating, and she&rsquo;s personally on the hook to the CEO to fix it by end of Q2. Budget is approved for the role. She makes the final hiring decision.</p>
+        <p style="margin-top: 12px;">Write out exactly what you would say to close. Include: your confirmation checkpoint, your tailored solution presentation (brief), and your actual ask. Be specific&mdash;use the numbers and language from the scenario.</p>
+      </div>
+      <textarea class="practice-textarea" id="practiceInput1" placeholder="Example opening:&#10;&#10;&quot;Sarah, based on everything we've discussed, I want to make sure I have the full picture before I share my thoughts. You mentioned that...&quot;&#10;&#10;Write your full close here. Be specific. Use their language." style="min-height: 260px;"></textarea>
+      <button class="practice-btn" id="practice1Btn" onclick="getAIFeedback('practice1')">Get AI Feedback</button>
+      <div class="practice-feedback" id="practice1-feedback">
+        <h4>AI Feedback</h4>
+        <p>Your personalized feedback will appear here...</p>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(10)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(12)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 12: Practice Exercise 2 - Personal Application -->
+  <div class="section" data-section="12">
+    <div class="section-number">Section 12 of 14 &bull; Practice Exercise</div>
+
+    <div class="practice">
+      <div class="practice-header">
+        <span class="practice-icon">&#129300;</span>
+        <h3>Your Real Situation</h3>
+        <span class="practice-label">Application</span>
+      </div>
+      <div class="practice-prompt">
+        <p>Think about a real opportunity in your life right now&mdash;a job you&rsquo;re pursuing, a promotion you want, a project you&rsquo;re pitching, or a position you&rsquo;re trying to secure. Write out the actual words you would use to ask for the commitment. Include: how you&rsquo;d run the confirmation checkpoint, how you&rsquo;d present your solution tailored to their pain, and the specific ask. Then: how would you handle it if they said &ldquo;let us think about it&rdquo;?</p>
+      </div>
+      <textarea class="practice-textarea" id="practiceInput2" placeholder="Example:&#10;&#10;My situation: I'm pursuing a promotion to Director of Operations.&#10;&#10;Confirmation: &quot;Over the past few months, you've mentioned that...&quot;&#10;&#10;My ask: &quot;I'd like to formalize...&quot;&#10;&#10;If they say 'let me think about it': &quot;I completely understand...&quot;&#10;&#10;Be as real and specific as possible." style="min-height: 280px;"></textarea>
+      <button class="practice-btn" id="practice2Btn" onclick="getAIFeedback('practice2')">Get AI Feedback</button>
+      <div class="practice-feedback" id="practice2-feedback">
+        <h4>AI Feedback</h4>
+        <p>Your personalized feedback will appear here...</p>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(11)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(13)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 13: The Conversation With Yourself -->
+  <div class="section" data-section="13">
+    <div class="section-number">Section 13 of 14</div>
+    <h2>The Conversation You Need to Have With Yourself</h2>
+    <p>These questions carry more weight than usual, because they&rsquo;re about the thing most people are afraid to do:</p>
+
+    <div class="ration-grid">
+      <div class="ration-card" style="border-left: 3px solid var(--accent-cyan);">
+        <div style="color: var(--accent-cyan); font-size: 1rem; font-style: italic;">Think about the last time you wanted something&mdash;a job, a raise, a project&mdash;and didn&rsquo;t ask for it directly. What stopped you? What story did you tell yourself about why it was better to wait?</div>
+      </div>
+      <div class="ration-card" style="border-left: 3px solid var(--accent-cyan);">
+        <div style="color: var(--accent-cyan); font-size: 1rem; font-style: italic;">Think about an opportunity that slipped away. Not one where you were rejected. One where you never got a decision. Where it just&hellip; faded. What would have changed if you had asked?</div>
+      </div>
+      <div class="ration-card" style="border-left: 3px solid var(--accent-cyan);">
+        <div style="color: var(--accent-cyan); font-size: 1rem; font-style: italic;">When you imagine saying the words &ldquo;I want this role, what would need to happen for us to move forward?&rdquo;&mdash;what emotion comes up? Fear? Discomfort? Excitement? Name it. That emotion is the only thing standing between you and the result you want.</div>
+      </div>
+      <div class="ration-card" style="border-left: 3px solid var(--accent-cyan);">
+        <div style="color: var(--accent-cyan); font-size: 1rem; font-style: italic;">Are you currently in a situation where you&rsquo;ve done the work but haven&rsquo;t asked for the commitment? What&rsquo;s the cost of waiting another week, another month?</div>
+      </div>
+    </div>
+
+    <div class="blockquote">
+      <p>The discomfort of asking is temporary. The cost of not asking is permanent.</p>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(12)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(14)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 14: The Full Picture -->
+  <div class="section" data-section="14">
+    <div class="section-number">Section 14 of 14</div>
+    <h2>The Full Picture</h2>
+    <p>You&rsquo;ve now completed the core curriculum of Be Unavoidable. Eight modules. A complete system:</p>
+
+    <div class="takeaway-grid">
+      <div class="takeaway-card"><div class="takeaway-number">M1</div><p>The landscape has changed. <strong>Nobody is coming to save you.</strong></p></div>
+      <div class="takeaway-card"><div class="takeaway-number">M2</div><p>Decisions run on thinking &rarr; feeling &rarr; behavior. <strong>Change the thinking.</strong></p></div>
+      <div class="takeaway-card"><div class="takeaway-number">M3</div><p>Pain and consequences create urgency. <strong>Benefits alone don&rsquo;t.</strong></p></div>
+      <div class="takeaway-card"><div class="takeaway-number">M4</div><p>Your value = the cost of not having you. <strong>Make that cost undeniable.</strong></p></div>
+      <div class="takeaway-card"><div class="takeaway-number">M5</div><p>Find the person who feels the pain. <strong>Only they can say yes.</strong></p></div>
+      <div class="takeaway-card"><div class="takeaway-number">M6</div><p>Diagnose before you prescribe. <strong>Questions are the method.</strong></p></div>
+      <div class="takeaway-card"><div class="takeaway-number">M7</div><p>Evaluate the evidence. <strong>Walk away from what isn&rsquo;t real.</strong></p></div>
+      <div class="takeaway-card" style="border-color: var(--accent-green);"><div class="takeaway-number" style="color: var(--accent-green);">M8</div><p>Confirm, present, ask, and <strong>close. Don&rsquo;t leave without a decision.</strong></p></div>
+    </div>
+
+    <p>This isn&rsquo;t a collection of tips. It&rsquo;s an operating system. The person who finishes this program and applies it is operating on a different level than everyone around them. Not because they&rsquo;re more talented. Because they understand something most people never learn: <strong>the ability to articulate your value, influence decisions, and close is not a talent. It&rsquo;s a skill. And skills can be mastered.</strong></p>
+
+    <div class="blockquote">
+      <p>No one is coming for you. But you don&rsquo;t need them to. You&rsquo;re Unavoidable.</p>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(13)">&larr; Back</button>
+      <button class="nav-btn finish" onclick="showCompletion()">Complete Module &rarr;</button>
+    </div>
+  </div>
+
+  <!-- COMPLETION -->
+  <div class="completion hidden" id="completion">
+    <div class="completion-icon">&#127942;</div>
+    <h2>Program Complete</h2>
+    <p>You&rsquo;ve completed all eight core modules of Be Unavoidable. You now have a complete operating system for articulating your value, influencing decisions, and closing. The next step is practice.</p>
+    <div class="completion-stats">
+      <div class="stat"><span class="stat-number" id="timeSpent">0</span><span class="stat-label">Minutes</span></div>
+      <div class="stat"><span class="stat-number">14</span><span class="stat-label">Sections</span></div>
+      <div class="stat"><span class="stat-number" id="quizScore">--</span><span class="stat-label">Quiz Score</span></div>
+    </div>
+    <div class="final-badge">&#10003; Core Curriculum Complete</div>
+  </div>
+
+</div>
+
+<script>
+let currentSection = 0;
+const totalSections = 14;
+let startTime = Date.now();
+const quizState = { 1: null, 2: null, 3: null, 4: null, 5: null };
+
+function startModule() {
+  document.getElementById('hero').style.display = 'none';
+  document.getElementById('mainContent').classList.add('visible');
+  document.getElementById('progressWrapper').classList.add('visible');
+  goToSection(1);
+}
+
+function goToSection(num) {
+  currentSection = num;
+  document.querySelectorAll('.section').forEach(s => {
+    const sNum = parseInt(s.dataset.section);
+    if (sNum === num) { s.classList.add('visible'); s.classList.remove('hidden'); }
+    else { s.classList.remove('visible'); s.classList.add('hidden'); }
+  });
+  document.getElementById('progressBar').style.width = ((num / totalSections) * 100) + '%';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ═══ QUIZ ═══
+function checkQuiz(qNum, btn, isCorrect) {
+  if (quizState[qNum] !== null) return;
+  quizState[qNum] = isCorrect;
+
+  const choices = document.getElementById('quiz' + qNum + '-choices');
+  choices.querySelectorAll('.choice-btn').forEach(b => { b.style.pointerEvents = 'none'; });
+  btn.classList.add(isCorrect ? 'correct' : 'incorrect');
+
+  if (!isCorrect) {
+    choices.querySelectorAll('.choice-btn').forEach(b => {
+      if (b !== btn) {
+        const onclick = b.getAttribute('onclick');
+        if (onclick && onclick.includes('true')) b.classList.add('correct');
+      }
+    });
+  }
+
+  const fb = document.getElementById('quiz' + qNum + 'Feedback');
+  fb.classList.add('visible', isCorrect ? 'correct' : 'incorrect');
+  fb.querySelector('h4').textContent = isCorrect ? '\u2713 Correct' : '\u2717 Not Quite';
+
+  const explanations = {
+    1: {
+      true: 'Exactly. Closing is the natural conclusion of a well-run process. If you\u2019ve uncovered owned pain, quantified the cost, confirmed the decision process, and qualified against all seven attributes, the other person has essentially talked themselves into the decision. Your job is simply to ask them to formalize what they\u2019ve already concluded.',
+      false: 'It\u2019s not about tricks or practice volume. Closing is "easy" because the diagnostic work in Modules 1\u20137 does the heavy lifting. When the other person has articulated their own pain, quantified their own cost, and confirmed the decision framework, the commitment is a natural conclusion\u2014not a separate skill you impose on them.'
+    },
+    2: {
+      true: 'Right. The confirmation checkpoint ensures you\u2019re aligned before you present anything. Confirming pain and cost (in their words) re-anchors their commitment. Confirming outcomes prevents hidden criteria from blindsiding you later. Confirming the decision framework catches any changes to process, timeline, or decision-maker authority since your last conversation.',
+      false: 'The confirmation checkpoint happens before your presentation and is built from what they\u2019ve already told you. The three parts are: (1) confirm the pain and cost in their words, (2) confirm the outcomes they need, and (3) confirm the decision framework\u2014process, timeline, and decision-maker. This ensures alignment before you present.'
+    },
+    3: {
+      true: 'Correct. \u201CSure, take your time\u201D surrenders control of the process and gives the other person an open-ended invitation to defer indefinitely. Instead, the module teaches you to validate, diagnose the hidden objection, re-anchor to the cost of waiting, and pin down a specific date\u2014converting a stall into a defined checkpoint.',
+      false: 'The worst response is passive acceptance\u2014saying \u201Csure, take your time\u201D and leaving. This surrenders control and guarantees weeks of unanswered follow-ups. The right approach is to validate their need for time, then diagnose what\u2019s underneath, re-anchor to cost, and pin down a specific date.'
+    },
+    4: {
+      true: 'Exactly. This is the key distinction. You\u2019re not manufacturing urgency or inventing consequences. You\u2019re reflecting back their own data from the diagnostic conversation. The cost is a number they gave you. The urgency is a timeline they set. You\u2019re being a trusted advisor\u2014helping them see what\u2019s true even when it\u2019s uncomfortable.',
+      false: 'The critical distinction is whose numbers you\u2019re using. In Step 3, every data point comes from the diagnostic conversation\u2014their articulated cost, their timeline, their consequences. You\u2019re not creating pressure. You\u2019re reflecting their own reality back to them. That\u2019s the definition of a trusted advisor.'
+    },
+    5: {
+      true: 'Right. A professional exit isn\u2019t about making the other person feel guilty or getting a second chance. It\u2019s about recognizing that the professional world is interconnected. The person who says no today may refer you tomorrow, hire you at their next company, or advocate for you in ways you\u2019ll never see. How you handle rejection follows you.',
+      false: 'A professional exit isn\u2019t about guilt or final pitches. It\u2019s a closing skill because the professional world is smaller than you think. How you handle rejection determines whether the person becomes a future referral source, comes back when conditions change, or silently advocates for you elsewhere. It\u2019s about the long game.'
+    }
+  };
+
+  fb.querySelector('p').textContent = explanations[qNum][isCorrect];
+}
+
+function updateQuizScore() {
+  const correct = Object.values(quizState).filter(v => v === true).length;
+  const total = Object.values(quizState).filter(v => v !== null).length;
+  if (total >= 1) {
+    document.getElementById('quizScore').textContent = Math.round((correct / total) * 100) + '%';
+  }
+}
+
+// ═══ AI FEEDBACK ═══
+async function getAIFeedback(practiceId) {
+  const inputId = practiceId === 'practice1' ? 'practiceInput1' : 'practiceInput2';
+  const btnId = practiceId === 'practice1' ? 'practice1Btn' : 'practice2Btn';
+  const feedbackId = practiceId + '-feedback';
+
+  const input = document.getElementById(inputId);
+  const button = document.getElementById(btnId);
+  const feedback = document.getElementById(feedbackId);
+  const userAnswer = input.value.trim();
+
+  if (!userAnswer) { alert('Please write your answer first before getting feedback!'); return; }
+
+  button.disabled = true;
+  button.classList.add('loading');
+  button.textContent = 'Getting AI Feedback...';
+
+  try {
+    let prompt;
+
+    if (practiceId === 'practice1') {
+      prompt = `You are a career coach and sales training expert for the "Be Unavoidable" program, which teaches non-sales professionals to use sales skills to navigate AI displacement.
+
+The student just completed a closing exercise. They were given this scenario:
+
+"You're interviewing for a Senior Customer Success Manager role. You've had three conversations with the VP of Customer Success, Sarah. She told you the team has lost two enterprise accounts worth $480K in ARR over the past quarter because 'nobody is proactively managing the relationship.' She said the team is burned out, churn is accelerating, and she's personally on the hook to the CEO to fix it by end of Q2. Budget is approved for the role. She makes the final hiring decision."
+
+The student was asked to write out their full close: confirmation checkpoint, tailored solution presentation, and actual ask.
+
+A strong answer should:
+1. Start with a confirmation checkpoint that reflects Sarah's pain and cost in HER words ($480K, two enterprise accounts, burned out team, Q2 deadline, personal accountability to CEO)
+2. Confirm desired outcomes and ask if anything is missing
+3. Present a solution mapped to her specific pain points (not a generic resume recitation)
+4. Include a clear, direct ask: "I want this role" or equivalent
+5. Ask a forward-motion question: "What would need to happen for us to move forward?"
+6. Include clear next steps (30-60-90 day plan, start date, etc.)
+
+Their answer: "${userAnswer}"
+
+Provide brief, personalized feedback (6-8 sentences max):
+- Did they use the confirmation checkpoint (pain, outcomes, decision framework)?
+- Did they present their solution tailored to Sarah's specific problems, or did they default to a generic pitch?
+- Did they actually ASK for the job directly and clearly?
+- Did they propose specific next steps?
+- Did they use Sarah's language and numbers?
+- Give one specific thing they did well and one thing to improve.
+
+Be encouraging but direct. Use the program's language naturally.`;
+    } else {
+      prompt = `You are a career coach and sales training expert for the "Be Unavoidable" program.
+
+The student was asked to apply Module 8's closing framework to a REAL situation in their life. They were asked to write:
+1. How they'd run the confirmation checkpoint (confirm pain/cost, outcomes, decision framework)
+2. How they'd present their solution tailored to the other person's pain
+3. Their specific ask (the actual words)
+4. How they'd handle "let me think about it"
+
+A strong answer should:
+- Be specific to their real situation (not generic)
+- Use the confirmation checkpoint structure (pain in their words, outcomes, decision framework)
+- Include a direct, clear ask that states intent
+- Have a "let me think about it" response that validates, diagnoses, re-anchors to cost, and pins down a date
+- Show they understand this is about the OTHER person's pain, not their own qualifications
+
+Their response: "${userAnswer}"
+
+Provide brief feedback (6-8 sentences max):
+1. Is their confirmation checkpoint specific enough? Are they using the other person's language or defaulting to their own?
+2. Is their ask direct and clear, or are they hedging and hinting?
+3. Does their "let me think about it" response follow the four-step framework (validate, diagnose, re-anchor, pin date)?
+4. Are they presenting their value in terms of the other person's pain, or listing their own credentials?
+5. Give one specific, actionable improvement.
+
+Be encouraging but challenge them where they're hedging or being too generic. These are non-sales professionals learning to close for the first time.`;
+    }
+
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 600,
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+
+    if (!response.ok) throw new Error('API request failed');
+    const data = await response.json();
+    const feedbackText = data.content[0].text;
+
+    feedback.querySelector('h4').textContent = 'AI Feedback';
+    feedback.querySelector('p').innerHTML = feedbackText;
+    feedback.classList.add('visible');
+    feedback.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    button.textContent = 'Get New Feedback';
+
+  } catch (error) {
+    console.error('Error getting AI feedback:', error);
+    alert('Unable to get AI feedback right now. Please try again.');
+    button.textContent = 'Get AI Feedback';
+  } finally {
+    button.disabled = false;
+    button.classList.remove('loading');
+  }
+}
+
+// ═══ DOWNLOAD ═══
+function downloadPDF() {
+  window.print();
+}
+
+// ═══ NEXT MODULE ═══
+function nextModule() {
+  window.location.href = '/dashboard.html';
+}
+</script>
+
+
+<script>
+  async function logOut() {
+    await fetch('/api/logout');
+    window.location.href = '/login.html';
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- AUTH GUARD -->
+  <script>
+    (async function() {
+      try {
+        const res = await fetch('/api/verify');
+        if (!res.ok) throw new Error('not authenticated');
+        const data = await res.json();
+        if (!data.authenticated) throw new Error('not authenticated');
+        window.BU_USER = { name: data.name, email: data.email };
+        document.dispatchEvent(new Event('bu:user-ready'));
+      } catch(e) {
+        window.location.href = '/login.html';
+      }
+    })();
+  </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 7: Know When You're in the Right Place</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Mono:wght@400;700&family=Work+Sans:wght@300;400;500;600;700&display=swap');
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0a0e1a; --surface: #141824; --card: #1c2130; --card-hover: #242938; --border: #2d3448;
+  --text: #e4e6eb; --text-dim: #9195a3;
+  --accent-red: #ff4757; --accent-red-dim: rgba(255, 71, 87, 0.15);
+  --accent-green: #2ecc71; --accent-green-dim: rgba(46, 204, 113, 0.15);
+  --accent-blue: #3498db; --accent-yellow: #f39c12; --accent-purple: #9b59b6;
+  --accent-orange: #e67e22; --accent-cyan: #00bcd4;
+}
+body { font-family: 'Work Sans', sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; overflow-x: hidden; }
+
+/* ═══ HERO ═══ */
+.hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 60px 24px; position: relative; background: radial-gradient(ellipse 800px 500px at 50% 40%, rgba(255, 71, 87, 0.08), transparent 60%), radial-gradient(ellipse 600px 400px at 70% 60%, rgba(243, 156, 18, 0.06), transparent 60%); }
+.module-badge { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--accent-red); border: 2px solid var(--accent-red); padding: 8px 20px; border-radius: 30px; margin-bottom: 28px; display: inline-block; opacity: 0; animation: fadeUp 0.8s ease forwards 0.2s; }
+.hero h1 { font-family: 'Instrument Serif', serif; font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 400; line-height: 1.1; max-width: 900px; margin-bottom: 24px; opacity: 0; animation: fadeUp 0.8s ease forwards 0.4s; }
+.hero h1 .highlight { color: var(--accent-red); font-style: italic; }
+.hero-subtitle { font-size: 1.15rem; color: var(--text-dim); max-width: 680px; margin-bottom: 48px; opacity: 0; animation: fadeUp 0.8s ease forwards 0.6s; }
+.start-btn { font-family: 'Space Mono', monospace; font-size: 15px; font-weight: 700; background: var(--accent-red); color: white; border: none; padding: 18px 48px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; opacity: 0; animation: fadeUp 0.8s ease forwards 0.8s; box-shadow: 0 8px 24px rgba(255, 71, 87, 0.3); }
+.start-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(255, 71, 87, 0.4); }
+
+/* ═══ PROGRESS ═══ */
+.progress-wrapper { position: fixed; top: 0; left: 0; right: 0; height: 4px; background: var(--surface); z-index: 1000; opacity: 0; transition: opacity 0.3s; }
+.progress-wrapper.visible { opacity: 1; }
+.progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent-red), var(--accent-orange)); width: 0%; transition: width 0.5s ease; }
+
+/* ═══ CONTENT ═══ */
+.content { max-width: 900px; margin: 0 auto; padding: 80px 24px 120px; opacity: 0; transition: opacity 0.5s; }
+.content.visible { opacity: 1; }
+
+/* ═══ SECTIONS ═══ */
+.section { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 48px; margin-bottom: 32px; opacity: 0; transform: translateY(40px); transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+.section.visible { opacity: 1; transform: translateY(0); }
+.section-number { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; color: var(--accent-red); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; }
+.section h2 { font-family: 'Instrument Serif', serif; font-size: 2.2rem; font-weight: 400; margin-bottom: 24px; line-height: 1.2; }
+.section p { color: var(--text-dim); margin-bottom: 20px; font-size: 1.05rem; }
+.section p:last-child { margin-bottom: 0; }
+.section strong { color: var(--text); font-weight: 600; }
+
+/* ═══ INFO BOXES ═══ */
+.info-box { background: var(--surface); border-left: 4px solid; padding: 20px; margin: 24px 0; border-radius: 0 8px 8px 0; }
+.info-box.warning { border-left-color: var(--accent-red); background: linear-gradient(135deg, rgba(255, 71, 87, 0.08) 0%, var(--surface) 100%); }
+.info-box.success { border-left-color: var(--accent-green); background: linear-gradient(135deg, rgba(46, 204, 113, 0.08) 0%, var(--surface) 100%); }
+.info-box.insight { border-left-color: var(--accent-orange); background: linear-gradient(135deg, rgba(230, 126, 34, 0.08) 0%, var(--surface) 100%); }
+.info-box.blue { border-left-color: var(--accent-blue); background: linear-gradient(135deg, rgba(52, 152, 219, 0.08) 0%, var(--surface) 100%); }
+.info-box.cyan { border-left-color: var(--accent-cyan); background: linear-gradient(135deg, rgba(0, 188, 212, 0.08) 0%, var(--surface) 100%); }
+.info-box h3 { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+.info-box.warning h3 { color: var(--accent-red); }
+.info-box.success h3 { color: var(--accent-green); }
+.info-box.insight h3 { color: var(--accent-orange); }
+.info-box.blue h3 { color: var(--accent-blue); }
+.info-box.cyan h3 { color: var(--accent-cyan); }
+
+/* ═══ BLOCKQUOTE ═══ */
+.blockquote { background: var(--surface); border-left: 4px solid var(--accent-red); padding: 24px; margin: 24px 0; border-radius: 0 8px 8px 0; font-style: italic; }
+.blockquote p { color: var(--text); font-size: 1.1rem; font-weight: 500; margin-bottom: 0; }
+
+/* ═══ COMPARISON CARDS ═══ */
+.comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 32px 0; }
+@media (max-width: 768px) { .comparison { grid-template-columns: 1fr; } }
+.comp-card { background: var(--surface); border: 2px solid var(--border); border-radius: 12px; padding: 32px; transition: all 0.3s ease; position: relative; overflow: hidden; }
+.comp-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; }
+.comp-card.wrong::before { background: var(--accent-red); }
+.comp-card.right::before { background: var(--accent-green); }
+.comp-card:hover { transform: translateY(-4px); }
+.comp-icon { font-size: 36px; margin-bottom: 16px; }
+.comp-card h3 { font-family: 'Instrument Serif', serif; font-size: 1.4rem; margin-bottom: 12px; }
+.comp-card.wrong h3 { color: var(--accent-red); }
+.comp-card.right h3 { color: var(--accent-green); }
+.comp-card p { color: var(--text-dim); font-size: 0.95rem; line-height: 1.6; }
+
+/* ═══ ATTRIBUTE CARDS ═══ */
+.attr-grid { display: flex; flex-direction: column; gap: 16px; margin: 32px 0; }
+.attr-card { background: var(--surface); border: 2px solid var(--border); border-radius: 12px; padding: 28px; transition: all 0.3s ease; position: relative; overflow: hidden; cursor: pointer; }
+.attr-card::before { content: ''; position: absolute; top: 0; left: 0; width: 5px; height: 100%; border-radius: 12px 0 0 12px; }
+.attr-card:nth-child(1)::before { background: var(--accent-red); }
+.attr-card:nth-child(2)::before { background: var(--accent-orange); }
+.attr-card:nth-child(3)::before { background: var(--accent-yellow); }
+.attr-card:nth-child(4)::before { background: var(--accent-blue); }
+.attr-card:nth-child(5)::before { background: var(--accent-cyan); }
+.attr-card:nth-child(6)::before { background: var(--accent-purple); }
+.attr-card:nth-child(7)::before { background: var(--accent-green); }
+.attr-card:hover { border-color: rgba(255, 71, 87, 0.5); transform: translateX(8px); }
+.attr-num { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; color: var(--accent-red); }
+.attr-card h3 { font-family: 'Instrument Serif', serif; font-size: 1.3rem; margin-bottom: 8px; }
+.attr-card > p { color: var(--text-dim); font-size: 0.95rem; line-height: 1.6; margin-bottom: 0; }
+.attr-detail { max-height: 0; overflow: hidden; transition: max-height 0.5s ease, opacity 0.4s ease; opacity: 0; }
+.attr-detail.open { max-height: 2000px; opacity: 1; }
+.attr-lanes { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+@media (max-width: 768px) { .attr-lanes { grid-template-columns: 1fr; } }
+.lane-box { background: var(--card); border-radius: 10px; padding: 20px; border: 1px solid var(--border); }
+.lane-label { font-family: 'Space Mono', monospace; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; display: block; }
+.lane-box.external .lane-label { color: var(--accent-orange); }
+.lane-box.internal .lane-label { color: var(--accent-cyan); }
+.lane-box p { color: var(--text-dim); font-size: 0.9rem; line-height: 1.6; margin-bottom: 0; }
+
+/* ═══ RATIONALIZATION CARDS ═══ */
+.ration-grid { display: flex; flex-direction: column; gap: 12px; margin: 24px 0; }
+.ration-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+.ration-thought { font-style: italic; color: var(--text); font-size: 1.05rem; margin-bottom: 8px; }
+.ration-reality { color: var(--accent-red); font-weight: 600; font-size: 0.95rem; }
+
+/* ═══ DECISION CARDS ═══ */
+.decision-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin: 32px 0; }
+@media (max-width: 768px) { .decision-grid { grid-template-columns: 1fr; } }
+.decision-card { background: var(--surface); border: 2px solid var(--border); border-radius: 12px; padding: 28px; text-align: center; transition: all 0.3s ease; }
+.decision-card:hover { transform: translateY(-4px); }
+.decision-icon { font-size: 40px; margin-bottom: 16px; }
+.decision-card h3 { font-family: 'Instrument Serif', serif; font-size: 1.3rem; margin-bottom: 12px; }
+.decision-card.go { border-color: rgba(46, 204, 113, 0.4); }
+.decision-card.go h3 { color: var(--accent-green); }
+.decision-card.investigate { border-color: rgba(243, 156, 18, 0.4); }
+.decision-card.investigate h3 { color: var(--accent-yellow); }
+.decision-card.walk { border-color: rgba(255, 71, 87, 0.4); }
+.decision-card.walk h3 { color: var(--accent-red); }
+.decision-card p { color: var(--text-dim); font-size: 0.9rem; line-height: 1.6; }
+
+/* ═══ WALKAWAY PHRASES ═══ */
+.phrase-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin: 16px 0; transition: all 0.3s ease; }
+.phrase-card:hover { border-color: var(--accent-red); transform: translateX(6px); }
+.phrase-text { font-family: 'Instrument Serif', serif; font-size: 1.2rem; font-style: italic; color: var(--text); margin-bottom: 10px; }
+.phrase-when { font-size: 0.92rem; color: var(--text-dim); line-height: 1.6; }
+
+/* ═══ TAKEAWAYS ═══ */
+.takeaway-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; margin: 32px 0; }
+.takeaway-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 28px; transition: all 0.3s ease; position: relative; }
+.takeaway-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--accent-red); border-radius: 12px 0 0 12px; opacity: 0; transition: opacity 0.3s; }
+.takeaway-card:hover::before { opacity: 1; }
+.takeaway-card:hover { border-color: var(--accent-red); transform: translateY(-4px); }
+.takeaway-number { font-family: 'Space Mono', monospace; font-size: 32px; font-weight: 700; color: var(--accent-red); opacity: 0.3; margin-bottom: 12px; }
+.takeaway-card p { font-size: 0.95rem; line-height: 1.6; }
+
+/* ═══ PRACTICE ═══ */
+.practice { background: linear-gradient(135deg, #1a2332 0%, #1f2937 100%); border: 2px solid var(--accent-yellow); border-radius: 16px; padding: 36px; margin: 32px 0; }
+.practice-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.practice-icon { font-size: 28px; }
+.practice-header h3 { font-family: 'Instrument Serif', serif; font-size: 1.6rem; }
+.practice-label { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; color: var(--accent-yellow); text-transform: uppercase; letter-spacing: 1.5px; background: rgba(243, 156, 18, 0.15); padding: 4px 12px; border-radius: 20px; margin-left: auto; }
+.practice-prompt { background: var(--card); border-left: 4px solid var(--accent-yellow); padding: 20px; margin-bottom: 24px; border-radius: 0 8px 8px 0; }
+.practice-prompt p { font-style: italic; color: var(--text); font-size: 1.05rem; margin-bottom: 0; }
+.practice-textarea { width: 100%; min-height: 140px; background: var(--surface); border: 2px solid var(--border); border-radius: 8px; padding: 16px; color: var(--text); font-family: 'Work Sans', sans-serif; font-size: 1rem; resize: vertical; margin-bottom: 16px; transition: border-color 0.3s; }
+.practice-textarea:focus { outline: none; border-color: var(--accent-yellow); }
+.practice-btn { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; background: var(--accent-yellow); color: var(--bg); border: none; padding: 14px 32px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; }
+.practice-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(243, 156, 18, 0.3); }
+.practice-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.practice-btn.loading { background: var(--text-dim); cursor: wait; }
+.practice-feedback { background: var(--surface); border: 2px solid var(--accent-green); border-radius: 8px; padding: 24px; margin-top: 24px; display: none; }
+.practice-feedback.visible { display: block; }
+.practice-feedback h4 { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; color: var(--accent-green); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+
+/* ═══ QUIZ ═══ */
+.quiz { background: linear-gradient(135deg, #1c2130 0%, #242938 100%); border: 1px solid var(--border); border-radius: 16px; padding: 40px; margin: 32px 0; }
+.quiz-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+.quiz-icon { font-size: 28px; }
+.quiz-header h3 { font-family: 'Instrument Serif', serif; font-size: 1.5rem; }
+.quiz-question { font-size: 1.1rem; margin-bottom: 24px; line-height: 1.6; }
+.quiz-label { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; color: var(--accent-red); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 16px; display: block; }
+.choice-group { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+.choice-btn { background: var(--card); border: 2px solid var(--border); color: var(--text); padding: 20px 24px; border-radius: 10px; cursor: pointer; text-align: left; font-size: 1rem; transition: all 0.3s ease; }
+.choice-btn:hover { border-color: var(--accent-red); background: var(--card-hover); transform: translateX(8px); }
+.choice-btn.correct { border-color: var(--accent-green); background: var(--accent-green-dim); }
+.choice-btn.incorrect { border-color: var(--accent-red); background: var(--accent-red-dim); }
+.feedback { background: var(--surface); border-left: 4px solid var(--accent-green); padding: 20px; margin-top: 24px; border-radius: 8px; display: none; }
+.feedback.visible { display: block; }
+.feedback.incorrect { border-left-color: var(--accent-red); }
+.feedback h4 { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+.feedback.correct h4 { color: var(--accent-green); }
+.feedback.incorrect h4 { color: var(--accent-red); }
+
+/* ═══ COMPLETION ═══ */
+.completion { text-align: center; background: linear-gradient(135deg, var(--card) 0%, var(--surface) 100%); border: 2px solid var(--accent-green); border-radius: 20px; padding: 60px 40px; margin: 48px 0; }
+.completion-icon { font-size: 64px; margin-bottom: 24px; animation: bounce 1s ease; }
+@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+.completion h2 { font-family: 'Instrument Serif', serif; font-size: 2.5rem; margin-bottom: 16px; }
+.completion p { font-size: 1.1rem; color: var(--text-dim); max-width: 600px; margin: 0 auto 32px; }
+.completion-stats { display: flex; justify-content: center; gap: 48px; margin-bottom: 32px; }
+.stat { text-align: center; }
+.stat-number { font-family: 'Space Mono', monospace; font-size: 2.5rem; font-weight: 700; color: var(--accent-green); display: block; }
+.stat-label { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); }
+.next-btn { font-family: 'Space Mono', monospace; font-size: 15px; font-weight: 700; background: var(--accent-green); color: white; border: none; padding: 18px 48px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 8px 24px rgba(46, 204, 113, 0.3); }
+.next-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(46, 204, 113, 0.4); }
+
+/* ═══ NAV ═══ */
+.nav-buttons { display: flex; justify-content: space-between; align-items: center; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border); }
+.nav-btn { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; background: var(--accent-red); color: white; border: none; padding: 14px 28px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px; }
+.nav-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(255, 71, 87, 0.3); }
+.nav-btn.back { background: var(--surface); border: 2px solid var(--border); color: var(--text); }
+.nav-btn.back:hover { background: var(--card); border-color: var(--accent-red); }
+
+/* ═══ ANIMATIONS & UTILS ═══ */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+.hidden { display: none !important; }
+@media (max-width: 768px) { .section { padding: 32px 24px; } .hero { min-height: 90vh; } .hero h1 { font-size: 2.5rem; } .completion-stats { flex-direction: column; gap: 24px; } .practice { padding: 24px; } .quiz { padding: 28px; } }
+</style>
+
+  <style>
+  .bu-dash-btn {
+    position: fixed; top: 14px; right: 20px; z-index: 9999;
+    font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700;
+    background: rgba(20,24,36,0.92); color: #9195a3;
+    border: 1px solid #2d3448; border-radius: 6px;
+    padding: 7px 14px; cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: color 0.2s, border-color 0.2s;
+    text-decoration: none; display: inline-block;
+  }
+  .bu-dash-btn:hover { color: #e4e6eb; border-color: #9195a3; }
+  </style>
+</head>
+<body>
+  <a href="/dashboard.html" class="bu-dash-btn">&#8592; Dashboard</a>
+
+
+<!-- Progress Bar -->
+<div class="progress-wrapper" id="progressWrapper">
+  <div class="progress-bar" id="progressBar"></div>
+</div>
+
+<!-- Hero Section -->
+<div class="hero" id="hero">
+  <div class="module-badge">Module 7 &bull; Be Unavoidable</div>
+  <h1>
+    Know When You&rsquo;re in<br>the <span class="highlight">Right Place</span>
+  </h1>
+  <p class="hero-subtitle">The biggest waste of your time isn&rsquo;t rejection. It&rsquo;s false hope. This module teaches you the discipline of qualifying your opportunities&mdash;and the power of walking away.</p>
+  <button class="start-btn" onclick="startModule()">Begin Module &rarr;</button>
+</div>
+
+<!-- Main Content -->
+<div class="content" id="mainContent">
+
+  <!-- SECTION 1: The Hole in the Wrong Spot -->
+  <div class="section" data-section="1">
+    <div class="section-number">Section 1 of 13</div>
+    <h2>The Hole in the Wrong Spot</h2>
+    <p>In Module 6, you learned to diagnose like a professional&mdash;to ask the right questions, uncover real pain, and resist the urge to present too early. Now we need to address something just as important, and in many ways harder: <strong>knowing when to walk away.</strong></p>
+    <p>Here&rsquo;s what nobody tells you: the biggest waste of your time isn&rsquo;t rejection. Rejection is fast. Rejection is clean. Rejection gives you an answer. The biggest waste of your time is <em>false hope.</em> The opportunity that looks promising, feels exciting, and never closes.</p>
+    <p>Think of every opportunity you pursue as <strong>digging a massive hole in the ground.</strong> Every conversation, every email, every hour of preparation is another shovel full of dirt. You dig for weeks. Sometimes months. And at the end, one of two things happens: either there&rsquo;s something valuable at the bottom, or there isn&rsquo;t.</p>
+
+    <div class="info-box warning">
+      <h3>The Real Cost</h3>
+      <p>If there&rsquo;s nothing at the bottom, you don&rsquo;t get paid for <em>any</em> of the digging. The time is gone. The energy is gone. And the worst part? <strong>While you were digging that hole, you weren&rsquo;t digging somewhere else where the ground was actually worth breaking.</strong></p>
+    </div>
+
+    <p>This module is about making sure you&rsquo;re digging in the right spot before you pick up the shovel.</p>
+    <div class="nav-buttons">
+      <div></div>
+      <button class="nav-btn" onclick="goToSection(2)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 2: Why Most People Can't Walk Away -->
+  <div class="section" data-section="2">
+    <div class="section-number">Section 2 of 13</div>
+    <h2>Why Most People Can&rsquo;t Walk Away</h2>
+    <p>Intellectually, qualification is simple: don&rsquo;t waste time on opportunities that aren&rsquo;t real. Obviously. Everyone agrees with this in theory. In practice, <strong>almost nobody does it.</strong></p>
+    <p>The reason is psychological. It goes back to Module 3 and how the brain is wired:</p>
+
+    <div class="comparison">
+      <div class="comp-card wrong">
+        <div class="comp-icon">&#9875;</div>
+        <h3>The Sunk Cost Trap</h3>
+        <p>Once you&rsquo;ve invested time in a pursuit, your brain treats walking away as a <em>loss</em>&mdash;even if the opportunity was never real. <strong>&ldquo;But I&rsquo;ve already invested so much. What if it comes through?&rdquo;</strong> This is the same loss aversion from Module 3 turned against you.</p>
+      </div>
+      <div class="comp-card wrong">
+        <div class="comp-icon">&#10024;</div>
+        <h3>The Allure of the New</h3>
+        <p>A new opportunity is seductive. Full of possibility. And in that excitement, <strong>your brain fills in the gaps with optimism.</strong> No confirmed budget? <em>They probably have it.</em> No timeline? <em>They said they want to move fast.</em> These are stories, not evidence.</p>
+      </div>
+    </div>
+
+    <div class="blockquote">
+      <p>The antidote to both traps is the same thing: a clearly defined set of criteria that tells you, objectively, whether this opportunity is worth your time. Not how it feels. Not how it might turn out. What the evidence actually tells you right now.</p>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(1)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(3)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 3: The Framework Intro -->
+  <div class="section" data-section="3">
+    <div class="section-number">Section 3 of 13</div>
+    <h2>Seven Attributes of a Real Opportunity</h2>
+    <p>Here&rsquo;s the framework. Seven attributes. <strong>All of them need to be present</strong> for an opportunity to be considered qualified. Not five out of seven. Not &ldquo;most of them.&rdquo; All seven. Because each one exists for a reason, and a gap in any one of them is where deals go to die.</p>
+    <p>These attributes come directly from the diagnostic questions you learned in Module 6. If you did the diagnostic work, you already have the information. This framework is how you evaluate it.</p>
+
+    <div class="info-box cyan">
+      <h3>Both Pathways</h3>
+      <p>Throughout this program, we&rsquo;ve talked about two ways these skills serve you: <strong>becoming irreplaceable where you are</strong> and <strong>positioning yourself for a transition</strong> into a relationship-based career. These seven attributes apply to both. We&rsquo;ll walk through the internal and external applications of each one.</p>
+    </div>
+
+    <p>Click each attribute to explore its full meaning&mdash;including how it applies whether you&rsquo;re pursuing an external opportunity or strengthening your position from the inside:</p>
+
+    <div class="attr-grid">
+      <div class="attr-card" onclick="toggleAttr(1)">
+        <div class="attr-num">Attribute 1</div>
+        <h3>They&rsquo;ve articulated reasons to change in their own words.</h3>
+        <p>If the other person hasn&rsquo;t told you, in their language, why they need something different&mdash;you don&rsquo;t have an opportunity. You have a conversation.</p>
+        <div class="attr-detail" id="attr1-detail">
+          <div class="attr-lanes">
+            <div class="lane-box external">
+              <span class="lane-label">External / Transition</span>
+              <p>The hiring manager has personally stated what&rsquo;s broken and why it matters. Not the recruiter&rsquo;s version. Not the job posting language. The person who owns the pain has said it in their own words: <em>&ldquo;We can&rsquo;t keep operating this way.&rdquo;</em></p>
+            </div>
+            <div class="lane-box internal">
+              <span class="lane-label">Internal / Current Role</span>
+              <p>Has your leadership actually acknowledged the specific problem you solve? Not &ldquo;you&rsquo;re doing great&rdquo;&mdash;but something like <em>&ldquo;This project would be in trouble without you.&rdquo;</em> If they haven&rsquo;t articulated the need, they won&rsquo;t fight for you when hard decisions come.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="attr-card" onclick="toggleAttr(2)">
+        <div class="attr-num">Attribute 2</div>
+        <h3>You&rsquo;ve uncovered all the ways they&rsquo;re paying for the problem.</h3>
+        <p>Not one cost. All of them&mdash;direct, indirect, opportunity, morale, customer impact.</p>
+        <div class="attr-detail" id="attr2-detail">
+          <div class="attr-lanes">
+            <div class="lane-box external">
+              <span class="lane-label">External / Transition</span>
+              <p>The decision-maker hasn&rsquo;t just mentioned one symptom. They&rsquo;ve walked through the full scope: lost productivity, missed revenue, team burnout, delayed projects. The more dimensions they&rsquo;ve articulated, the more committed they are to solving it.</p>
+            </div>
+            <div class="lane-box internal">
+              <span class="lane-label">Internal / Current Role</span>
+              <p>Do the people who matter understand the <em>full</em> cost of the problem you solve? Not just the obvious layer&mdash;but what happens to renewal rates, institutional knowledge, client relationships, and downstream projects if you&rsquo;re gone? If they can&rsquo;t articulate these layers, you haven&rsquo;t finished the diagnostic work.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="attr-card" onclick="toggleAttr(3)">
+        <div class="attr-num">Attribute 3</div>
+        <h3>They&rsquo;ve quantified the cost, and it justifies the investment.</h3>
+        <p>The math has to make sense. If the problem costs less than the solution, the economics don&rsquo;t support the decision.</p>
+        <div class="attr-detail" id="attr3-detail">
+          <div class="attr-lanes">
+            <div class="lane-box external">
+              <span class="lane-label">External / Transition</span>
+              <p>Does the cost of the problem clearly justify the compensation they&rsquo;re offering? If the hiring manager can&rsquo;t articulate a cost that dwarfs your salary, the role may not be important enough to survive the next budget cycle.</p>
+            </div>
+            <div class="lane-box internal">
+              <span class="lane-label">Internal / Current Role</span>
+              <p>Go back to the Cost-of-Absence Test from Module 4. Is the cost of your absence significant and specific? If it&rsquo;s vague&mdash;if things would be &ldquo;temporarily inconvenient but fine&rdquo;&mdash;the math doesn&rsquo;t close. That&rsquo;s a reason to do the Module 4 work, not a reason to panic.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="attr-card" onclick="toggleAttr(4)">
+        <div class="attr-num">Attribute 4</div>
+        <h3>You understand the complete evaluation and decision process.</h3>
+        <p>Who&rsquo;s involved? What criteria? What timeline? Who has veto power? Gaps here are where blindsides come from.</p>
+        <div class="attr-detail" id="attr4-detail">
+          <div class="attr-lanes">
+            <div class="lane-box external">
+              <span class="lane-label">External / Transition</span>
+              <p>You know the full hiring process&mdash;not just the next step. How many interviews? Who decides? Is there an internal candidate? <em>&ldquo;I&rsquo;ll make the final call&rdquo;</em> often means <em>&ldquo;after my VP approves it and HR reviews the offer.&rdquo;</em></p>
+            </div>
+            <div class="lane-box internal">
+              <span class="lane-label">Internal / Current Role</span>
+              <p>When a reorg is announced, who <em>actually</em> decides which roles survive? When promotions are discussed, who&rsquo;s in the room? Most professionals assume their direct manager controls these decisions. Often, they don&rsquo;t. If you don&rsquo;t know the process, you can&rsquo;t influence it.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="attr-card" onclick="toggleAttr(5)">
+        <div class="attr-num">Attribute 5</div>
+        <h3>There&rsquo;s a specific timeframe driving the decision.</h3>
+        <p>Not &ldquo;soon.&rdquo; Not &ldquo;this quarter.&rdquo; A real deadline tied to a real consequence.</p>
+        <div class="attr-detail" id="attr5-detail">
+          <div class="attr-lanes">
+            <div class="lane-box external">
+              <span class="lane-label">External / Transition</span>
+              <p>The company has a date they need someone in the seat&mdash;driven by a product launch, a client deadline, a quarter-end. Without a date, there&rsquo;s nothing to work backward from and no reason next week is different from next month.</p>
+            </div>
+            <div class="lane-box internal">
+              <span class="lane-label">Internal / Current Role</span>
+              <p>Is there a restructuring with a decision date? A budget cycle closing? If there&rsquo;s no forcing function, there&rsquo;s no urgency&mdash;which means your initiative to prove your value needs to <em>create</em> the urgency. Go back to Modules 3 and 4.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="attr-card" onclick="toggleAttr(6)">
+        <div class="attr-num">Attribute 6</div>
+        <h3>They have adequate resources&mdash;budget, time, and internal support.</h3>
+        <p>Missing any one of these kills the deal, regardless of how much pain exists.</p>
+        <div class="attr-detail" id="attr6-detail">
+          <div class="attr-lanes">
+            <div class="lane-box external">
+              <span class="lane-label">External / Transition</span>
+              <p>Headcount is approved. Budget is allocated. The organization supports bringing someone in. A hiring manager who loves you but can&rsquo;t get the requisition approved is not a qualified opportunity. They&rsquo;re a fan.</p>
+            </div>
+            <div class="lane-box internal">
+              <span class="lane-label">Internal / Current Role</span>
+              <p>Does your manager have the political capital to fight for you? Is leadership aligned on the priorities that make your work valuable? If your company just announced cost cuts, your manager might want to keep you but lack the budget. Recognize resource realities early.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="attr-card" onclick="toggleAttr(7)">
+        <div class="attr-num">Attribute 7</div>
+        <h3>The decision-maker is identified and actively engaged.</h3>
+        <p>The person who feels the pain, owns the consequences, and can say yes must be <em>actually</em> in the process.</p>
+        <div class="attr-detail" id="attr7-detail">
+          <div class="attr-lanes">
+            <div class="lane-box external">
+              <span class="lane-label">External / Transition</span>
+              <p>You&rsquo;ve had direct contact with the person whose results depend on filling this role. If you&rsquo;re three interviews deep and haven&rsquo;t talked to that person, you&rsquo;re performing for an audience that can&rsquo;t write the check.</p>
+            </div>
+            <div class="lane-box internal">
+              <span class="lane-label">Internal / Current Role</span>
+              <p>The person deciding your fate knows who you are and has personally experienced your impact&mdash;not through secondhand advocacy. If your future is being decided by a stranger working from a spreadsheet, that&rsquo;s not a qualified position. It&rsquo;s a lottery ticket.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(2)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(4)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 4: The Evaluation -->
+  <div class="section" data-section="4">
+    <div class="section-number">Section 4 of 13</div>
+    <h2>The Evaluation: Move Forward, Investigate, or Walk Away</h2>
+    <p>Once you&rsquo;ve assessed all seven attributes, the decision is straightforward. Not easy, but straightforward:</p>
+
+    <div class="decision-grid">
+      <div class="decision-card go">
+        <div class="decision-icon">&#9989;</div>
+        <h3>All 7 Present</h3>
+        <p><strong>Move forward aggressively.</strong> The pain is owned, costs are understood, math works, process is clear, timeline is specific, resources exist, decision-maker is engaged. This is where your time belongs.</p>
+      </div>
+      <div class="decision-card investigate">
+        <div class="decision-icon">&#128269;</div>
+        <h3>1&ndash;2 Missing</h3>
+        <p><strong>Investigate before investing further.</strong> Can you close the gap with one more conversation? Set a time limit. One week. One attempt. If you can&rsquo;t fill the gap, you have your answer.</p>
+      </div>
+      <div class="decision-card walk">
+        <div class="decision-icon">&#128694;</div>
+        <h3>3+ Missing</h3>
+        <p><strong>Walk away.</strong> Every hour on an opportunity missing three or four attributes is an hour you&rsquo;re not spending on one that has all seven. The math is unforgiving.</p>
+      </div>
+    </div>
+
+    <div class="info-box insight">
+      <h3>The Opportunity Cost Math</h3>
+      <p>If you can actively pursue 4&ndash;5 opportunities properly, and 3 of them are unqualified, you just gave <strong>60% of your capacity</strong> to near-zero-probability outcomes. Meanwhile, qualified opportunities you&rsquo;re not pursuing go to someone else. The opportunity cost isn&rsquo;t abstract&mdash;it&rsquo;s the job offer, the promotion, or the funded project you didn&rsquo;t get because you were too busy chasing ghosts.</p>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(3)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(5)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 5: The Power Move -->
+  <div class="section" data-section="5">
+    <div class="section-number">Section 5 of 13</div>
+    <h2>The Power Move: Walking Away</h2>
+    <p>Here&rsquo;s the part that surprises people: <strong>walking away is often the move that creates the most leverage.</strong></p>
+    <p>Think about it through Module 3. People respond more intensely to loss than to gain. When you walk away, you create a moment where the other person has to confront what they&rsquo;re losing. Sometimes, that&rsquo;s the moment that changes everything.</p>
+    <p>Here are three phrases professionals use in these moments. Each one protects your time while giving the other person space to re-engage if the opportunity is real:</p>
+
+    <div class="phrase-card">
+      <div class="phrase-text">&ldquo;It sounds like I might be here a little early. When the timing is better, I&rsquo;d love to reconnect.&rdquo;</div>
+      <div class="phrase-when"><strong>When to use:</strong> No urgency or timeline. The conditions aren&rsquo;t right yet. You&rsquo;re not saying it&rsquo;s bad&mdash;you&rsquo;re communicating you have standards for how you invest your time.</div>
+    </div>
+    <div class="phrase-card">
+      <div class="phrase-text">&ldquo;Well, it looks like I might be here at the wrong time. I don&rsquo;t want to waste your time or mine pursuing something that doesn&rsquo;t have the right conditions to move forward.&rdquo;</div>
+      <div class="phrase-when"><strong>When to use:</strong> Multiple attributes missing. Budget, decision-maker, process&mdash;too many gaps. This positions you as someone who values their time, which counterintuitively makes them value your time more.</div>
+    </div>
+    <div class="phrase-card">
+      <div class="phrase-text">&ldquo;Based on what we&rsquo;ve discussed, I&rsquo;m not sure we&rsquo;re a fit for what you need right now. If your situation changes, I&rsquo;d be happy to reconnect.&rdquo;</div>
+      <div class="phrase-when"><strong>When to use:</strong> Your outcome advantage doesn&rsquo;t align with their problem. Honest, clean, and leaves the door open without leaving you stuck.</div>
+    </div>
+
+    <div class="info-box success">
+      <h3>What All Three Have in Common</h3>
+      <p>They&rsquo;re not apologies. They&rsquo;re not rejections. They&rsquo;re professional, confident exits that say: <strong><em>I take my time seriously, and I expect you to take yours seriously too.</em></strong> That&rsquo;s not arrogance. That&rsquo;s the posture of someone who knows their value.</p>
+    </div>
+
+    <p>And these work internally too. When you realize the leadership support isn&rsquo;t there for an initiative, recalibrating is professional judgment: <em>&ldquo;I think the timing on this isn&rsquo;t right. Let me redirect my energy to where I can have the most impact right now.&rdquo;</em> That signals strategic thinking&mdash;exactly the kind of judgment that makes you harder to replace.</p>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(4)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(6)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 6: What Happens After You Walk Away -->
+  <div class="section" data-section="6">
+    <div class="section-number">Section 6 of 13</div>
+    <h2>What Happens After You Walk Away</h2>
+    <p>Something interesting happens when you walk away with this kind of professionalism. <strong>Some of them come back.</strong></p>
+    <p>Not all of them. But a surprising number re-engage weeks or months later&mdash;with urgency they didn&rsquo;t have before. Budget approved. Timeline set. <em>&ldquo;Remember when you said the timing wasn&rsquo;t right? Well, things have changed.&rdquo;</em></p>
+    <p>Why? Because your willingness to walk away told them something about you that staying would never have communicated:</p>
+
+    <div class="takeaway-grid">
+      <div class="takeaway-card"><div class="takeaway-number">01</div><p><strong>You&rsquo;re not desperate.</strong> You have standards and options.</p></div>
+      <div class="takeaway-card"><div class="takeaway-number">02</div><p><strong>Your time is valuable.</strong> Which makes <em>you</em> valuable.</p></div>
+      <div class="takeaway-card"><div class="takeaway-number">03</div><p><strong>You&rsquo;re a professional.</strong> People want to work with people who have options, not people who chase anything that breathes.</p></div>
+    </div>
+
+    <p>And even when they don&rsquo;t come back? You&rsquo;ve still won. Because the time you freed up allowed you to pursue an opportunity that was real. <strong>That&rsquo;s not a consolation prize. That&rsquo;s the whole strategy.</strong></p>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(5)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(7)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 7: Being Honest With Yourself -->
+  <div class="section" data-section="7">
+    <div class="section-number">Section 7 of 13</div>
+    <h2>The Hardest Part: Being Honest With Yourself</h2>
+    <p>The seven attributes are a tool for evaluating opportunities. But the hardest application isn&rsquo;t evaluating other people. <strong>It&rsquo;s evaluating yourself.</strong></p>
+    <p>Because sometimes the opportunity that isn&rsquo;t qualified is the one you want the most. And when you want something badly enough, your brain finds ways to rationalize every missing attribute:</p>
+
+    <div class="ration-grid">
+      <div class="ration-card">
+        <div class="ration-thought">&ldquo;They haven&rsquo;t confirmed budget, but they seemed really interested.&rdquo;</div>
+        <div class="ration-reality">Interest isn&rsquo;t budget.</div>
+      </div>
+      <div class="ration-card">
+        <div class="ration-thought">&ldquo;I haven&rsquo;t talked to the decision-maker yet, but my contact said great things about me.&rdquo;</div>
+        <div class="ration-reality">Secondhand enthusiasm isn&rsquo;t engagement.</div>
+      </div>
+      <div class="ration-card">
+        <div class="ration-thought">&ldquo;There&rsquo;s no timeline, but they said they want to move quickly.&rdquo;</div>
+        <div class="ration-reality">Wanting to move quickly isn&rsquo;t a date.</div>
+      </div>
+      <div class="ration-card">
+        <div class="ration-thought">&ldquo;I&rsquo;ve been working this for three months and I can feel it&rsquo;s close.&rdquo;</div>
+        <div class="ration-reality">Three months of feeling close is three months of not closing. Check the attributes.</div>
+      </div>
+      <div class="ration-card">
+        <div class="ration-thought">&ldquo;My manager says she&rsquo;s going to fight for me.&rdquo;</div>
+        <div class="ration-reality">Your manager&rsquo;s intention isn&rsquo;t the decision-maker&rsquo;s commitment.</div>
+      </div>
+    </div>
+
+    <div class="blockquote">
+      <p>Discipline isn&rsquo;t talent. It isn&rsquo;t instinct. It isn&rsquo;t gut feel. Discipline is having a framework, trusting it, and following it even when your emotions are telling you to keep digging.</p>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(6)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(8)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 8: Practice Exercise 1 - Qualify the Scenario -->
+  <div class="section" data-section="8">
+    <div class="section-number">Section 8 of 13 &bull; Practice Exercise</div>
+
+    <div class="practice">
+      <div class="practice-header">
+        <span class="practice-icon">&#129658;</span>
+        <h3>Qualify the Opportunity</h3>
+        <span class="practice-label">Practice</span>
+      </div>
+      <div class="practice-prompt">
+        <p>Read this scenario: You&rsquo;ve had two great conversations with a Director of Marketing at a mid-sized SaaS company. She says the team is &ldquo;drowning&rdquo; since their content strategist left three months ago, and she&rsquo;s personally frustrated by the impact on lead generation. She says she &ldquo;definitely wants to move forward quickly&rdquo; but needs to &ldquo;run it by a few people.&rdquo; When you asked about budget, she said &ldquo;I&rsquo;m sure we can make it work.&rdquo; You haven&rsquo;t spoken with anyone else at the company.</p>
+      </div>
+      <p style="margin-bottom:16px; color: var(--text-dim);">Evaluate this opportunity against all seven attributes. For each one, state whether it&rsquo;s present, missing, or unclear&mdash;and explain your reasoning. Then give your overall verdict: move forward, investigate, or walk away?</p>
+      <textarea class="practice-textarea" id="practiceInput1" placeholder="Example:&#10;Attribute 1 (Articulated reasons to change): PRESENT — She's described the problem in her own words ('drowning,' team impact on lead gen).&#10;Attribute 2 (All costs uncovered): ...&#10;&#10;Evaluate all seven, then give your verdict..." style="min-height: 220px;"></textarea>
+      <button class="practice-btn" id="practice1Btn" onclick="getAIFeedback('practice1')">Get AI Feedback</button>
+      <div class="practice-feedback" id="practice1-feedback">
+        <h4>AI Feedback</h4>
+        <p>Your personalized feedback will appear here...</p>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(7)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(9)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 9: Knowledge Check -->
+  <div class="section" data-section="9">
+    <div class="section-number">Section 9 of 13 &bull; Knowledge Check</div>
+
+    <div class="quiz">
+      <div class="quiz-header">
+        <span class="quiz-icon">&#128161;</span>
+        <h3>Test Your Understanding</h3>
+      </div>
+
+      <span class="quiz-label">Question 1 of 5</span>
+      <div class="quiz-question">
+        You&rsquo;ve been pursuing a job opportunity for six weeks. The recruiter loves you, a team member gave you a glowing reference, but you still haven&rsquo;t spoken with the hiring manager who owns the budget. According to Module 7, what should you do?
+      </div>
+      <div class="choice-group" id="quiz1-choices">
+        <button class="choice-btn" onclick="checkQuiz(1, this, false)">Keep building the relationship with the recruiter and team member. They&rsquo;ll eventually connect you to the hiring manager.</button>
+        <button class="choice-btn" onclick="checkQuiz(1, this, false)">Send a detailed proposal highlighting your qualifications to demonstrate urgency.</button>
+        <button class="choice-btn" onclick="checkQuiz(1, this, true)">Recognize that Attribute 7 (decision-maker engaged) is missing and push for a direct conversation with the hiring manager. If you can&rsquo;t get it within a defined time window, redirect your energy.</button>
+      </div>
+      <div class="feedback" id="quiz1Feedback"><h4>Feedback</h4><p id="quiz1Text"></p></div>
+
+      <span class="quiz-label" style="margin-top:32px;">Question 2 of 5</span>
+      <div class="quiz-question">
+        What is the primary reason most professionals struggle to walk away from unqualified opportunities?
+      </div>
+      <div class="choice-group" id="quiz2-choices">
+        <button class="choice-btn" onclick="checkQuiz(2, this, false)">They don&rsquo;t know the seven attributes framework.</button>
+        <button class="choice-btn" onclick="checkQuiz(2, this, true)">Loss aversion and the sunk cost fallacy cause them to treat walking away as a loss, even when the opportunity was never real.</button>
+        <button class="choice-btn" onclick="checkQuiz(2, this, false)">They enjoy the process of pursuing opportunities regardless of outcome.</button>
+      </div>
+      <div class="feedback" id="quiz2Feedback"><h4>Feedback</h4><p id="quiz2Text"></p></div>
+
+      <span class="quiz-label" style="margin-top:32px;">Question 3 of 5</span>
+      <div class="quiz-question">
+        A prospect says, &ldquo;I&rsquo;m sure we can make the budget work.&rdquo; According to the qualification framework, is Attribute 6 (adequate resources) met?
+      </div>
+      <div class="choice-group" id="quiz3-choices">
+        <button class="choice-btn" onclick="checkQuiz(3, this, false)">Yes&mdash;they&rsquo;ve indicated budget is available.</button>
+        <button class="choice-btn" onclick="checkQuiz(3, this, true)">No&mdash;&ldquo;I&rsquo;m sure we can make it work&rdquo; is optimism, not confirmation. You need to know if budget is actually approved, allocated, and available.</button>
+        <button class="choice-btn" onclick="checkQuiz(3, this, false)">It depends on whether they seem sincere when they say it.</button>
+      </div>
+      <div class="feedback" id="quiz3Feedback"><h4>Feedback</h4><p id="quiz3Text"></p></div>
+
+      <span class="quiz-label" style="margin-top:32px;">Question 4 of 5</span>
+      <div class="quiz-question">
+        You&rsquo;re trying to survive a reorg at your current company. According to Module 7&rsquo;s internal application of Attribute 4, what do you need to understand?
+      </div>
+      <div class="choice-group" id="quiz4-choices">
+        <button class="choice-btn" onclick="checkQuiz(4, this, false)">Whether your direct manager supports you.</button>
+        <button class="choice-btn" onclick="checkQuiz(4, this, false)">Whether your most recent performance review was positive.</button>
+        <button class="choice-btn" onclick="checkQuiz(4, this, true)">How the decision actually gets made: who decides which roles survive, who&rsquo;s in the room, what criteria they&rsquo;re using, and whether there are people with influence you haven&rsquo;t accounted for.</button>
+      </div>
+      <div class="feedback" id="quiz4Feedback"><h4>Feedback</h4><p id="quiz4Text"></p></div>
+
+      <span class="quiz-label" style="margin-top:32px;">Question 5 of 5</span>
+      <div class="quiz-question">
+        Why does the module describe walking away from an unqualified opportunity as a &ldquo;power move&rdquo;?
+      </div>
+      <div class="choice-group" id="quiz5-choices">
+        <button class="choice-btn" onclick="checkQuiz(5, this, false)">Because it punishes the other person for wasting your time.</button>
+        <button class="choice-btn" onclick="checkQuiz(5, this, true)">Because it leverages loss aversion&mdash;the other person must confront what they&rsquo;re losing&mdash;and it communicates that your time is valuable, which makes <em>you</em> more valuable in their eyes.</button>
+        <button class="choice-btn" onclick="checkQuiz(5, this, false)">Because playing hard-to-get is a classic negotiation tactic.</button>
+      </div>
+      <div class="feedback" id="quiz5Feedback"><h4>Feedback</h4><p id="quiz5Text"></p></div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(8)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(10)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 10: Practice Exercise 2 - Your Own Opportunities -->
+  <div class="section" data-section="10">
+    <div class="section-number">Section 10 of 13 &bull; Practice Exercise</div>
+
+    <div class="practice">
+      <div class="practice-header">
+        <span class="practice-icon">&#129300;</span>
+        <h3>Evaluate Your Real Opportunities</h3>
+        <span class="practice-label">Application</span>
+      </div>
+      <div class="practice-prompt">
+        <p>Think about the most important professional opportunity you&rsquo;re currently pursuing&mdash;a job search, an internal initiative, a push for a promotion, a relationship you&rsquo;re building. Run it through the seven attributes. Be brutally honest: which attributes are present, which are missing, and which are you filling in with optimism? What&rsquo;s your verdict?</p>
+      </div>
+      <textarea class="practice-textarea" id="practiceInput2" placeholder="Example:&#10;Situation: Pursuing promotion to Senior PM&#10;&#10;Attr 1 (Reasons to change): UNCLEAR — My manager says I'm 'ready' but hasn't specifically articulated what problem my promotion solves for the team.&#10;Attr 7 (Decision-maker engaged): MISSING — I don't actually know who makes the final call on promotions...&#10;&#10;Be honest with yourself..." style="min-height: 240px;"></textarea>
+      <button class="practice-btn" id="practice2Btn" onclick="getAIFeedback('practice2')">Get AI Feedback</button>
+      <div class="practice-feedback" id="practice2-feedback">
+        <h4>AI Feedback</h4>
+        <p>Your personalized feedback will appear here...</p>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(9)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(11)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 11: The Conversation With Yourself -->
+  <div class="section" data-section="11">
+    <div class="section-number">Section 11 of 13</div>
+    <h2>The Conversation You Need to Have With Yourself</h2>
+    <p>As with every module, the principles here apply to the people you&rsquo;re trying to influence and to yourself. Answer these honestly:</p>
+
+    <div class="ration-grid">
+      <div class="ration-card" style="border-left: 3px solid var(--accent-cyan);">
+        <div class="ration-thought" style="color: var(--accent-cyan); font-size: 1rem;">Can I identify all seven attributes in my most important current opportunity? Which are present and which are missing?</div>
+      </div>
+      <div class="ration-card" style="border-left: 3px solid var(--accent-cyan);">
+        <div class="ration-thought" style="color: var(--accent-cyan); font-size: 1rem;">For the ones that are missing, do I have a realistic path to getting them&mdash;or am I filling in the gaps with optimism?</div>
+      </div>
+      <div class="ration-card" style="border-left: 3px solid var(--accent-cyan);">
+        <div class="ration-thought" style="color: var(--accent-cyan); font-size: 1rem;">Am I pursuing this because the evidence supports it, or because I&rsquo;ve already invested too much to walk away?</div>
+      </div>
+      <div class="ration-card" style="border-left: 3px solid var(--accent-cyan);">
+        <div class="ration-thought" style="color: var(--accent-cyan); font-size: 1rem;">If I freed up the time I&rsquo;m spending on my weakest opportunity, is there a better one I&rsquo;m not pursuing because I don&rsquo;t have the bandwidth?</div>
+      </div>
+      <div class="ration-card" style="border-left: 3px solid var(--accent-cyan);">
+        <div class="ration-thought" style="color: var(--accent-cyan); font-size: 1rem;">Am I confusing activity with progress? Am I busy, or am I moving forward?</div>
+      </div>
+    </div>
+
+    <p>If some of your current pursuits don&rsquo;t hold up under this scrutiny, that&rsquo;s not a failure. <strong>That&rsquo;s a diagnosis.</strong> And the prescription is the same one we&rsquo;ve been building across this entire program: focus your time and energy where the evidence tells you it will produce results, not where your emotions want it to.</p>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(10)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(12)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 12: Connecting It All -->
+  <div class="section" data-section="12">
+    <div class="section-number">Section 12 of 13</div>
+    <h2>Connecting It All</h2>
+    <p style="margin-bottom: 32px;">Seven modules. One complete operating system:</p>
+
+    <div class="takeaway-grid">
+      <div class="takeaway-card"><div class="takeaway-number">M1</div><p>The landscape has changed. <strong>Nobody is coming to save you.</strong></p></div>
+      <div class="takeaway-card"><div class="takeaway-number">M2</div><p>Decisions run on thinking &rarr; feeling &rarr; behavior. <strong>Change the thinking.</strong></p></div>
+      <div class="takeaway-card"><div class="takeaway-number">M3</div><p>Pain and consequences create urgency. <strong>Benefits alone don&rsquo;t.</strong></p></div>
+      <div class="takeaway-card"><div class="takeaway-number">M4</div><p>Your value = the cost of not having you. <strong>Make that cost undeniable.</strong></p></div>
+      <div class="takeaway-card"><div class="takeaway-number">M5</div><p>Find the person who feels the pain. <strong>Only they can say yes.</strong></p></div>
+      <div class="takeaway-card"><div class="takeaway-number">M6</div><p>Diagnose before you prescribe. <strong>Questions are the method.</strong></p></div>
+      <div class="takeaway-card"><div class="takeaway-number">M7</div><p>Evaluate the evidence. Have the discipline to <strong>walk away from what isn&rsquo;t real.</strong></p></div>
+    </div>
+
+    <div class="blockquote">
+      <p>Know where you are. Know what&rsquo;s real. And have the discipline to walk away from what isn&rsquo;t.</p>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(11)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(13)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 13: What's Next -->
+  <div class="section" data-section="13">
+    <div class="section-number">Section 13 of 13</div>
+    <h2>What&rsquo;s Next</h2>
+    <p>In the next module, you&rsquo;ll learn what happens after qualification: how to gain commitment, move the process forward, and close&mdash;not with pressure or tricks, but as the natural conclusion of a well-run process.</p>
+    <p>Because when you&rsquo;ve done everything in Modules 1 through 7 correctly, <strong>closing isn&rsquo;t something you do to someone. It&rsquo;s something that happens</strong> because the decision was already made the moment the other person&rsquo;s thinking changed.</p>
+    <p>But closing only works on qualified opportunities. If you skip this step, if you try to close something that was never real, you&rsquo;re back to digging holes in the wrong spot.</p>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(12)">&larr; Back</button>
+      <button class="nav-btn" onclick="showCompletion()">Complete Module &rarr;</button>
+    </div>
+  </div>
+
+  <!-- COMPLETION -->
+  <div class="completion hidden" id="completion">
+    <div class="completion-icon">&#127919;</div>
+    <h2>Module 7 Complete</h2>
+    <p>You now have the discipline of qualification: seven clear attributes, the courage to walk away, and the understanding that protecting your time is the ultimate power move.</p>
+    <div class="completion-stats">
+      <div class="stat"><span class="stat-number" id="timeSpent">0</span><span class="stat-label">Minutes</span></div>
+      <div class="stat"><span class="stat-number">13</span><span class="stat-label">Sections</span></div>
+      <div class="stat"><span class="stat-number" id="quizScore">--</span><span class="stat-label">Quiz Score</span></div>
+    </div>
+    <button class="next-btn" onclick="nextModule()">Continue to Module 8 &rarr;</button>
+  </div>
+
+</div>
+
+<script>
+let currentSection = 0;
+const totalSections = 13;
+let startTime = Date.now();
+const quizState = { 1: null, 2: null, 3: null, 4: null, 5: null };
+
+function startModule() {
+  document.getElementById('hero').style.display = 'none';
+  document.getElementById('mainContent').classList.add('visible');
+  document.getElementById('progressWrapper').classList.add('visible');
+  goToSection(1);
+}
+
+function goToSection(num) {
+  currentSection = num;
+  document.querySelectorAll('.section').forEach(s => {
+    const sNum = parseInt(s.dataset.section);
+    if (sNum === num) { s.classList.add('visible'); s.classList.remove('hidden'); }
+    else { s.classList.remove('visible'); s.classList.add('hidden'); }
+  });
+  document.getElementById('progressBar').style.width = ((num / totalSections) * 100) + '%';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ═══ ATTRIBUTE TOGGLE ═══
+function toggleAttr(num) {
+  const detail = document.getElementById('attr' + num + '-detail');
+  detail.classList.toggle('open');
+}
+
+// ═══ QUIZ ═══
+function checkQuiz(qNum, btn, isCorrect) {
+  if (quizState[qNum] !== null) return;
+  quizState[qNum] = isCorrect;
+
+  const choices = document.getElementById('quiz' + qNum + '-choices');
+  choices.querySelectorAll('.choice-btn').forEach(b => { b.style.pointerEvents = 'none'; });
+  btn.classList.add(isCorrect ? 'correct' : 'incorrect');
+
+  if (!isCorrect) {
+    choices.querySelectorAll('.choice-btn').forEach(b => {
+      if (b !== btn) {
+        const onclick = b.getAttribute('onclick');
+        if (onclick && onclick.includes('true')) b.classList.add('correct');
+      }
+    });
+  }
+
+  const fb = document.getElementById('quiz' + qNum + 'Feedback');
+  fb.classList.add('visible', isCorrect ? 'correct' : 'incorrect');
+  fb.querySelector('h4').textContent = isCorrect ? '\u2713 Correct' : '\u2717 Not Quite';
+
+  const explanations = {
+    1: {
+      true: 'Exactly. Attribute 7 requires that the decision-maker is actively engaged\u2014not theoretically reachable through intermediaries. Six weeks without access to the person who owns the pain and the budget is a clear signal. Set a time limit to close that gap, and if you can\u2019t, redirect your energy to qualified opportunities.',
+      false: 'The recruiter and team member are enthusiastic, but enthusiasm without decision-making authority is Attribute 7 missing. You need direct engagement with the person who owns the budget and feels the pain. Set a time limit to get that access\u2014if you can\u2019t, redirect your energy.'
+    },
+    2: {
+      true: 'Right. It goes back to Module 3\u2019s loss aversion. Once you\u2019ve invested time and started imagining the outcome, your brain treats walking away as losing something\u2014even if the opportunity was never real. The sunk cost fallacy keeps people digging in the wrong spot long after the evidence says to stop.',
+      false: 'Knowledge of the framework helps, but the real barrier is psychological. Loss aversion and sunk cost fallacy make walking away feel like losing something\u2014even when the opportunity was never real. That\u2019s why discipline (following the framework despite your emotions) is the critical skill.'
+    },
+    3: {
+      true: 'Exactly. \u201CI\u2019m sure we can make it work\u201D is a story someone tells when they haven\u2019t confirmed the reality. Attribute 6 requires actual confirmation: budget approved, bandwidth available, internal support secured. Optimism is not a resource\u2014you need evidence.',
+      false: '\u201CI\u2019m sure we can make it work\u201D is optimism, not confirmation. This is exactly the kind of gap-filling the module warns about. Attribute 6 requires confirmed resources\u2014approved budget, available bandwidth, secured internal support. Without evidence, you\u2019re relying on someone else\u2019s hope.'
+    },
+    4: {
+      true: 'That\u2019s the Module 7 application of Attribute 4 to an internal situation. Your manager\u2019s support and your performance review are data points, but they\u2019re not the decision process. You need to understand who actually decides, what criteria they use, and whether there are influencers or veto holders you\u2019ve never interacted with.',
+      false: 'Manager support and positive reviews are helpful but don\u2019t tell you how the decision actually gets made. Attribute 4 requires understanding the complete process: who decides which roles survive, what criteria they use, who\u2019s in the room, and who has veto power. If you don\u2019t know the process, you can\u2019t influence it.'
+    },
+    5: {
+      true: 'Correct. It\u2019s rooted in the Module 3 principle of loss aversion\u2014walking away forces the other person to confront the loss of what you bring. It also communicates that you value your time, which makes them value you more. It\u2019s not a tactic\u2014it\u2019s the natural result of having standards and discipline.',
+      false: 'It\u2019s not about punishment or games. The power comes from two things: loss aversion (Module 3) forces them to confront what they\u2019re losing, and your willingness to walk communicates that your time has value\u2014which makes you more valuable in their eyes. It\u2019s the natural result of having standards.'
+    }
+  };
+
+  fb.querySelector('p').textContent = explanations[qNum][isCorrect];
+}
+
+function updateQuizScore() {
+  const correct = Object.values(quizState).filter(v => v === true).length;
+  const total = Object.values(quizState).filter(v => v !== null).length;
+  if (total >= 1) {
+    document.getElementById('quizScore').textContent = Math.round((correct / total) * 100) + '%';
+  }
+}
+
+// ═══ AI FEEDBACK ═══
+async function getAIFeedback(practiceId) {
+  const inputId = practiceId === 'practice1' ? 'practiceInput1' : 'practiceInput2';
+  const btnId = practiceId === 'practice1' ? 'practice1Btn' : 'practice2Btn';
+  const feedbackId = practiceId + '-feedback';
+
+  const input = document.getElementById(inputId);
+  const button = document.getElementById(btnId);
+  const feedback = document.getElementById(feedbackId);
+  const userAnswer = input.value.trim();
+
+  if (!userAnswer) { alert('Please write your answer first before getting feedback!'); return; }
+
+  button.disabled = true;
+  button.classList.add('loading');
+  button.textContent = 'Getting AI Feedback...';
+
+  try {
+    let prompt;
+
+    if (practiceId === 'practice1') {
+      prompt = `You are a career coach and sales training expert for the "Be Unavoidable" program, which teaches non-sales professionals to use sales skills to navigate AI displacement.
+
+The student just completed a qualification exercise. They were given this scenario:
+
+"You've had two great conversations with a Director of Marketing at a mid-sized SaaS company. She says the team is 'drowning' since their content strategist left three months ago, and she's personally frustrated by the impact on lead generation. She says she 'definitely wants to move forward quickly' but needs to 'run it by a few people.' When you asked about budget, she said 'I'm sure we can make it work.' You haven't spoken with anyone else at the company."
+
+The seven attributes of a qualified opportunity are:
+1. They've articulated reasons to change in their own words
+2. You've uncovered all the ways they're paying for the problem
+3. They've quantified the cost and it justifies the investment
+4. You understand the complete evaluation and decision process
+5. There's a specific timeframe driving the decision
+6. They have adequate resources (budget, time, internal support)
+7. The decision-maker is identified and actively engaged
+
+Correct assessment: Attribute 1 is PRESENT (she's articulated pain in her own words). Attribute 2 is PARTIALLY present (she mentioned lead gen impact but hasn't fully quantified all costs). Attribute 3 is MISSING (no quantification). Attribute 4 is MISSING ("run it by a few people" is vague). Attribute 5 is MISSING ("quickly" is not a date). Attribute 6 is UNCLEAR/MISSING ("I'm sure we can make it work" is optimism, not confirmed budget). Attribute 7 is UNCLEAR (she may be the decision-maker but "run it by a few people" suggests she's not the only one). Overall: 3+ attributes missing = investigate aggressively with a time limit, or walk away.
+
+Their answer: "${userAnswer}"
+
+Provide brief, personalized feedback (6-8 sentences max):
+1. Did they correctly identify which attributes are present vs. missing?
+2. Did they catch the key red flags ("run it by a few people," "I'm sure we can make it work," "quickly" without a date)?
+3. Is their overall verdict reasonable given the evidence?
+4. Did they fall into the "allure of the new" trap by being too optimistic, or were they appropriately disciplined?
+5. Give one specific next step they should take.
+
+Be encouraging but direct. Use the program's language naturally.`;
+    } else {
+      prompt = `You are a career coach and sales training expert for the "Be Unavoidable" program.
+
+The student was asked to evaluate their most important current professional opportunity against the seven qualification attributes:
+1. They've articulated reasons to change in their own words
+2. You've uncovered all the ways they're paying for the problem
+3. They've quantified the cost and it justifies the investment
+4. You understand the complete evaluation and decision process
+5. There's a specific timeframe driving the decision
+6. They have adequate resources (budget, time, internal support)
+7. The decision-maker is identified and actively engaged
+
+This applies to both external opportunities (job search, new role) AND internal situations (surviving a reorg, earning a promotion, getting a project funded).
+
+Their response: "${userAnswer}"
+
+Provide brief feedback (6-8 sentences max):
+1. Are they being genuinely honest in their assessment, or are they filling gaps with optimism?
+2. For attributes they marked as missing or unclear, do they have a realistic plan to close the gap?
+3. Are they correctly identifying who the real decision-maker is in their situation?
+4. Is their overall verdict (move forward, investigate, or walk away) supported by the evidence they've described?
+5. Give one specific, actionable recommendation based on their situation.
+
+Be encouraging but challenge them where they might be rationalizing. Remember these are non-sales professionals learning to think strategically about their careers. The goal is to help them see their situation clearly.`;
+    }
+
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 600,
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+
+    if (!response.ok) throw new Error('API request failed');
+    const data = await response.json();
+    const feedbackText = data.content[0].text;
+
+    feedback.querySelector('h4').textContent = 'AI Feedback';
+    feedback.querySelector('p').innerHTML = feedbackText;
+    feedback.classList.add('visible');
+    feedback.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    button.textContent = 'Get New Feedback';
+
+  } catch (error) {
+    console.error('Error getting AI feedback:', error);
+    alert('Unable to get AI feedback right now. Please try again.');
+    button.textContent = 'Get AI Feedback';
+  } finally {
+    button.disabled = false;
+    button.classList.remove('loading');
+  }
+}
+
+// ═══ COMPLETION ═══
+function showCompletion() {
+  document.getElementById('completion').classList.remove('hidden');
+  const elapsed = Math.round((Date.now() - startTime) / 60000);
+  document.getElementById('timeSpent').textContent = elapsed;
+  updateQuizScore();
+  document.getElementById('completion').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ═══ DOWNLOAD ═══
+function downloadPDF() {
+  window.print();
+}
+
+// ═══ NEXT MODULE ═══
+function nextModule() {
+  window.location.href = '/module8.html';
+}
+</script>
+
+
+<script>
+  async function logOut() {
+    await fetch('/api/logout');
+    window.location.href = '/login.html';
+  }
+</script>
+</body>
+</html>

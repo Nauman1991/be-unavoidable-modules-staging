@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- AUTH GUARD -->
+  <script>
+    (async function() {
+      try {
+        const res = await fetch('/api/verify');
+        if (!res.ok) throw new Error('not authenticated');
+        const data = await res.json();
+        if (!data.authenticated) throw new Error('not authenticated');
+        window.BU_USER = { name: data.name, email: data.email };
+        document.dispatchEvent(new Event('bu:user-ready'));
+      } catch(e) {
+        window.location.href = '/login.html';
+      }
+    })();
+  </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 1: No One Is Coming For You</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Mono:wght@400;700&family=Work+Sans:wght@300;400;500;600;700&display=swap');
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+--bg: #0a0e1a; --surface: #141824; --card: #1c2130; --border: #2d3448;
+--text: #e4e6eb; --text-dim: #9195a3;
+--accent-red: #ff4757; --accent-green: #2ecc71; --accent-blue: #3498db;
+--accent-yellow: #f39c12; --accent-purple: #9b59b6;
+}
+body { font-family: 'Work Sans', sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+.hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 60px 24px; background: radial-gradient(ellipse 800px 500px at 50% 40%, rgba(255, 71, 87, 0.08), transparent 60%); }
+.module-badge { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--accent-yellow); border: 2px solid var(--accent-yellow); padding: 8px 20px; border-radius: 30px; margin-bottom: 28px; opacity: 0; animation: fadeUp 0.8s ease forwards 0.2s; }
+.hero h1 { font-family: 'Instrument Serif', serif; font-size: clamp(2.5rem, 6vw, 4.5rem); line-height: 1.1; max-width: 900px; margin-bottom: 24px; opacity: 0; animation: fadeUp 0.8s ease forwards 0.4s; }
+.hero-subtitle { font-size: 1.15rem; color: var(--text-dim); max-width: 680px; margin-bottom: 48px; opacity: 0; animation: fadeUp 0.8s ease forwards 0.6s; }
+.start-btn { font-family: 'Space Mono', monospace; font-size: 15px; font-weight: 700; background: var(--accent-blue); color: white; border: none; padding: 18px 48px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; opacity: 0; animation: fadeUp 0.8s ease forwards 0.8s; box-shadow: 0 8px 24px rgba(52, 152, 219, 0.3); }
+.start-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(52, 152, 219, 0.4); }
+.progress-wrapper { position: fixed; top: 0; left: 0; right: 0; height: 4px; background: var(--surface); z-index: 1000; opacity: 0; transition: opacity 0.3s; }
+.progress-wrapper.visible { opacity: 1; }
+.progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent-red), var(--accent-green)); width: 0%; transition: width 0.5s ease; }
+.content { max-width: 900px; margin: 0 auto; padding: 80px 24px 120px; opacity: 0; transition: opacity 0.5s; }
+.content.visible { opacity: 1; }
+.section { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 48px; margin-bottom: 32px; opacity: 0; transform: translateY(40px); transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+.section.visible { opacity: 1; transform: translateY(0); }
+.section-number { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; }
+.section h2 { font-family: 'Instrument Serif', serif; font-size: 2.2rem; margin-bottom: 24px; line-height: 1.2; }
+.section p { color: var(--text-dim); margin-bottom: 20px; font-size: 1.05rem; }
+.section strong { color: var(--text); font-weight: 600; }
+.stat-block { background: var(--surface); border-left: 4px solid var(--accent-red); padding: 20px 24px; margin: 20px 0; border-radius: 0 8px 8px 0; }
+.stat-block .stat-label { font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700; color: var(--accent-red); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.stat-block p { margin-bottom: 0; }
+.reflection-box { background: linear-gradient(135deg, #1a2332 0%, #1f2937 100%); border: 2px solid var(--accent-yellow); border-radius: 16px; padding: 36px; margin: 24px 0; }
+.reflection-box h3 { font-family: 'Instrument Serif', serif; font-size: 1.4rem; margin-bottom: 20px; color: var(--text); }
+.reflection-label { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; color: var(--accent-yellow); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 16px; }
+.reflection-question { background: var(--card); border-left: 4px solid var(--accent-yellow); padding: 16px 20px; margin-bottom: 16px; border-radius: 0 8px 8px 0; }
+.reflection-question p { margin-bottom: 0; font-size: 1rem; }
+.reflection-textarea { width: 100%; min-height: 100px; background: var(--surface); border: 2px solid var(--border); border-radius: 8px; padding: 16px; color: var(--text); font-family: 'Work Sans', sans-serif; font-size: 1rem; resize: vertical; margin-bottom: 20px; transition: border-color 0.3s; }
+.reflection-textarea:focus { outline: none; border-color: var(--accent-yellow); }
+.category-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin: 16px 0; transition: all 0.3s ease; cursor: pointer; }
+.category-card:hover { border-color: var(--accent-blue); transform: translateX(4px); }
+.category-card.expanded { border-color: var(--accent-purple); }
+.category-number { font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.category-card h4 { font-family: 'Instrument Serif', serif; font-size: 1.3rem; margin-bottom: 8px; color: var(--text); }
+.category-card .summary { color: var(--text-dim); font-size: 0.95rem; margin-bottom: 0; }
+.category-detail { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, opacity 0.4s ease; opacity: 0; }
+.category-detail.open { max-height: 500px; opacity: 1; margin-top: 16px; }
+.category-detail p { font-size: 0.95rem; }
+.scenario-block { background: var(--surface); border-radius: 12px; padding: 24px; margin: 20px 0; }
+.scenario-label { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; color: var(--accent-green); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+.comp-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--border); }
+.comp-item:last-child { border-bottom: none; }
+.comp-role { font-weight: 600; color: var(--text); }
+.comp-pay { font-family: 'Space Mono', monospace; font-weight: 700; color: var(--accent-green); font-size: 1.1rem; }
+.comp-source { font-size: 0.8rem; color: var(--text-dim); }
+.role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 20px 0; }
+.role-tag { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; font-size: 0.95rem; color: var(--text-dim); transition: all 0.3s; }
+.role-tag:hover { border-color: var(--accent-blue); color: var(--text); }
+.role-tag strong { color: var(--text); display: block; margin-bottom: 4px; font-size: 0.9rem; }
+.callout-box { background: linear-gradient(135deg, rgba(52, 152, 219, 0.1) 0%, rgba(46, 204, 113, 0.05) 100%); border: 2px solid var(--accent-blue); border-radius: 16px; padding: 32px; margin: 28px 0; }
+.callout-box p { color: var(--text); font-size: 1.1rem; line-height: 1.7; }
+.reveal-trigger { display: inline-flex; align-items: center; gap: 8px; font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; color: var(--accent-blue); background: none; border: 2px solid var(--accent-blue); padding: 12px 24px; border-radius: 8px; cursor: pointer; margin-top: 24px; transition: all 0.3s ease; }
+.reveal-trigger:hover { background: var(--accent-blue); color: white; transform: translateX(4px); }
+.reveal-content { max-height: 0; overflow: hidden; transition: max-height 0.5s ease, opacity 0.5s ease; opacity: 0; }
+.reveal-content.open { max-height: 5000px; opacity: 1; margin-top: 28px; }
+.completion { text-align: center; background: linear-gradient(135deg, var(--card) 0%, var(--surface) 100%); border: 2px solid var(--accent-green); border-radius: 20px; padding: 60px 40px; margin: 48px 0; }
+.completion-icon { font-size: 64px; margin-bottom: 24px; animation: bounce 1s ease; }
+@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+.completion h2 { font-family: 'Instrument Serif', serif; font-size: 2.5rem; margin-bottom: 16px; }
+.next-btn { font-family: 'Space Mono', monospace; font-size: 15px; font-weight: 700; background: var(--accent-green); color: white; border: none; padding: 18px 48px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 8px 24px rgba(46, 204, 113, 0.3); margin-top: 24px; }
+.next-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(46, 204, 113, 0.4); }
+.nav-buttons { display: flex; justify-content: space-between; align-items: center; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border); }
+.nav-btn { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; background: var(--accent-blue); color: white; border: none; padding: 14px 28px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px; }
+.nav-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(52, 152, 219, 0.3); }
+.nav-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+.nav-btn.back { background: var(--surface); border: 2px solid var(--border); }
+.nav-btn.back:hover:not(:disabled) { background: var(--card); border-color: var(--accent-blue); }
+.hidden { display: none !important; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+@media (max-width: 768px) {
+  .section { padding: 32px 24px; }
+  .role-grid { grid-template-columns: 1fr; }
+  .comp-item { flex-direction: column; align-items: flex-start; gap: 4px; }
+}
+</style>
+
+  <style>
+  .bu-dash-btn {
+    position: fixed; top: 14px; right: 20px; z-index: 9999;
+    font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 700;
+    background: rgba(255,255,255,0.92); color: #6b6560;
+    border: 1px solid rgba(0,0,0,0.08); border-radius: 6px;
+    padding: 7px 14px; cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: all 0.2s;
+    text-decoration: none; display: inline-block;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+  .bu-dash-btn:hover { color: #1a1a1a; border-color: rgba(0,0,0,0.2); transform: translateY(-1px); }
+  </style>
+</head>
+<body>
+<a href="/dashboard.html" class="bu-dash-btn">Dashboard</a>
+
+
+<div class="progress-wrapper" id="progressWrapper">
+<div class="progress-bar" id="progressBar"></div>
+</div>
+
+<div class="hero" id="hero">
+<div class="module-badge">Module 1 &bull; Be Unavoidable</div>
+<h1>No One Is Coming For You</h1>
+<p class="hero-subtitle">The world changed. Your playbook didn't. Let's fix that.</p>
+<button class="start-btn" onclick="startModule()">Start Learning &rarr;</button>
+</div>
+
+<div class="content" id="content">
+
+<!-- ===== SECTION 1: THE GUT PUNCH ===== -->
+<div class="section" data-section="1">
+<div class="section-number">Section 1 of 8</div>
+<h2>The World Changed. Your Playbook Didn't.</h2>
+<p>Let me start with something you probably already know but haven't said out loud: <strong>no one is coming to save your career.</strong></p>
+<p>Not HR. Not your former employer. Not the government. Not some magical job board that's going to match you with the perfect role. If you're here, you already sense what's happening. The question is whether you've looked at the data.</p>
+<p><strong>Let's look at the data.</strong></p>
+
+<div class="stat-block">
+<div class="stat-label">The CEO building the technology is sounding the alarm</div>
+<p>Anthropic CEO Dario Amodei, the man running one of the most powerful AI companies on earth, has publicly warned that AI could eliminate <strong>50% of all entry-level white-collar jobs</strong> within five years, and that unemployment could spike to 10 to 20% as a direct result. This isn't a pundit speculating. This is the guy building the AI telling you what it's about to do.</p>
+</div>
+
+<div class="stat-block">
+<div class="stat-label">The layoffs are already accelerating</div>
+<p>AI was cited as a contributing factor in nearly 55,000 U.S. layoffs in 2025. But the real number is estimated at four to six times that, because companies have every incentive to call it "restructuring" instead of "replaced by AI." January 2026 saw <strong>108,435 announced job cuts</strong>, the highest January total since the financial crisis.</p>
+</div>
+
+<button class="reveal-trigger" onclick="revealContent('stats-more')">See the full picture <span>&rarr;</span></button>
+<div class="reveal-content" id="stats-more">
+
+<div class="stat-block">
+<div class="stat-label">The workers closest to the technology got hit first</div>
+<p>A Federal Reserve study found that occupations with the highest AI exposure experienced the steepest unemployment increases between 2022 and 2025. Computer and math occupations, the people who thought AI would help them the most, were among the hardest hit.</p>
+</div>
+
+<div class="stat-block">
+<div class="stat-label">The majority of workers already feel it coming</div>
+<p><strong>60%</strong> of U.S. workers say AI will eliminate more jobs than it creates this year. <strong>51%</strong> say they are personally worried about losing their job to AI in 2026. Employee concerns about AI-driven job loss have jumped from 28% in 2024 to 40% in 2026 globally.</p>
+</div>
+
+<div class="stat-block">
+<div class="stat-label">It's not just about losing your job. It's about becoming obsolete.</div>
+<p><strong>52%</strong> of workers now worry about AI's impact on their future in the workplace. Researchers are calling it FOBO, or Fear of Becoming Obsolete. The question keeping people up at night isn't "will I have a job next year?" It's "will I matter in five years?" <strong>64%</strong> of workers are now "job hugging," clinging to roles they're unhappy in because they don't trust they can compete for something better.</p>
+</div>
+
+<div class="stat-block">
+<div class="stat-label">We're only seeing the tip of the iceberg</div>
+<p>92% of Fortune 500 companies have adopted generative AI, but only 5 to 6% have scaled it beyond pilot programs. What you're seeing right now is what happens when <strong>almost nobody has fully deployed AI yet.</strong> The real wave hasn't hit.</p>
+</div>
+
+<p style="font-style: italic; border-left: 3px solid var(--accent-purple); padding-left: 20px; margin: 24px 0;">As AI entrepreneur Matt Shumer wrote in a post viewed over 60 million times: "If your job happens on a screen, if the core of what you do is reading, writing, analyzing, deciding, communicating through a keyboard, then AI is coming for significant parts of it. The timeline isn't 'someday.' It's already started."</p>
+
+<p><strong>That's the reality. Now let's talk about you.</strong></p>
+</div>
+
+<div class="nav-buttons">
+  <button class="nav-btn back" disabled>&larr; Back</button>
+  <button class="nav-btn" onclick="goToSection(2)">Next &rarr;</button>
+</div>
+</div>
+
+<!-- ===== SECTION 2: THE MIRROR ===== -->
+<div class="section" data-section="2">
+<div class="section-number">Section 2 of 8</div>
+<h2>Let's Get Honest</h2>
+<p>Before we go any further, I want you to answer four questions. Not in your head. On paper, or in the text boxes below. Write the actual words. The point of this exercise isn't for anyone else to read your answers. It's for you to see them.</p>
+
+<div class="reflection-box">
+<div class="reflection-label">Self-Assessment</div>
+
+<div class="reflection-question"><p><strong>Question 1:</strong> What is your plan to avoid being displaced by AI?</p></div>
+<textarea class="reflection-textarea" id="reflect1" placeholder="Write your honest answer here..."></textarea>
+
+<div class="reflection-question"><p><strong>Question 2:</strong> If you were laid off tomorrow, what would you do?</p></div>
+<textarea class="reflection-textarea" id="reflect2" placeholder="Write your honest answer here..."></textarea>
+
+<div class="reflection-question"><p><strong>Question 3:</strong> If your company announced a 20% headcount reduction tomorrow, what would you say to make the case that you should stay?</p></div>
+<textarea class="reflection-textarea" id="reflect3" placeholder="Write your honest answer here..."></textarea>
+
+<div class="reflection-question"><p><strong>Question 4:</strong> If the people who control your future (your boss, your team, the decision-makers above you) were asked "What would it cost us to lose this person?" would they have a clear, specific answer?</p></div>
+<textarea class="reflection-textarea" id="reflect4" placeholder="Write your honest answer here..."></textarea>
+</div>
+
+<p>If you struggled with those questions, if you stared at the blank space and realized you don't have a good answer, you are not alone. Most people don't. And that's not because they lack value. It's because nobody ever taught them how to identify it, articulate it, and make it impossible to ignore.</p>
+<p><strong>That's exactly what this program is designed to fix.</strong></p>
+<p>But first, let's look at your options.</p>
+
+<div class="nav-buttons">
+  <button class="nav-btn back" onclick="goToSection(1)">&larr; Back</button>
+  <button class="nav-btn" onclick="goToSection(3)">Next &rarr;</button>
+</div>
+</div>
+
+<!-- ===== SECTION 3: THE OPTIONS ===== -->
+<div class="section" data-section="3">
+<div class="section-number">Section 3 of 8</div>
+<h2>So What Are Your Options?</h2>
+<p>Let's agree on something: the problem is real. The passive approach (keep your head down, do good work, hope someone notices) is no longer a strategy. It's a risk. So what can you actually do about it?</p>
+<p>The research is clear about which types of work are most resistant to AI displacement. They fall into four categories. <strong>Click each one to learn more:</strong></p>
+
+<div class="category-card" onclick="toggleCategory('cat1')">
+<div class="category-number">Category 1</div>
+<h4>Licensed and Credentialed Professions</h4>
+<p class="summary">Doctors, surgeons, nurses, lawyers, licensed therapists, pharmacists.</p>
+<div class="category-detail" id="cat1">
+<p>Research shows these roles score among the highest in AI resistance: mental health counselors at 97 out of 100, surgeons at 96, registered nurses at 93. These are well-protected paths. They also require <strong>4 to 10 years of school</strong>, professional licenses, clinical rotations, and significant financial investment.</p>
+</div>
+</div>
+
+<div class="category-card" onclick="toggleCategory('cat2')">
+<div class="category-number">Category 2</div>
+<h4>Skilled Trades and Physical Presence Roles</h4>
+<p class="summary">Electricians, plumbers, HVAC technicians, welders, construction.</p>
+<div class="category-detail" id="cat2">
+<p>Physical presence is the single strongest predictor of AI resistance. These are solid, well-paying careers, but they require apprenticeships, physical labor, and starting from scratch in a new trade.</p>
+</div>
+</div>
+
+<div class="category-card" onclick="toggleCategory('cat3')">
+<div class="category-number">Category 3</div>
+<h4>High-Regulation and Compliance Roles</h4>
+<p class="summary">Cybersecurity, regulatory compliance, auditing, government clearance roles.</p>
+<div class="category-detail" id="cat3">
+<p>Protected by institutional inertia and legal liability, because someone still has to sign off, take responsibility, stand in a courtroom. But these are specialized roles that often require certifications and a non-obvious path in.</p>
+</div>
+</div>
+
+<div class="category-card" onclick="toggleCategory('cat4')" style="border-color: var(--accent-green);">
+<div class="category-number" style="color: var(--accent-green);">Category 4</div>
+<h4>Human Relationship and Trust-Based Roles</h4>
+<p class="summary">Empathy, communication, relationship-building, persuasion, trust, and moral judgment.</p>
+<div class="category-detail" id="cat4">
+<p>This is the category built on the skills that every study identifies as the <strong>hardest for AI to replace.</strong> McKinsey identifies emotional labor (care, conflict resolution, persuasion, trust-building) as the fastest-growing skill set in today's labor market. Multiple AI resistance studies confirm that jobs requiring human connection, negotiation, and understanding client needs remain firmly dependent on human intuition.</p>
+</div>
+</div>
+
+<p style="margin-top: 28px;">Let's be direct. If you have the means, the time, and the desire to become a doctor, a lawyer, an electrician, or a cybersecurity specialist, go for it. Those are legitimate paths and we'd be the first to tell you so.</p>
+<p>But if you're like most people reading this, regardless of your career stage, with bills to pay, maybe a mortgage, maybe kids, and you definitely don't have five years or the money to go back to school, then let's talk about what you can actually do <strong>right now, this month,</strong> with the skills and experience you already have.</p>
+<p>Look at that fourth category again. Relationships. Trust. Persuasion. Understanding how people make decisions. Articulating value. Those aren't nice-to-have soft skills. They're the skills that every study and every expert identifies as the hardest for AI to replace.</p>
+
+<div class="nav-buttons">
+  <button class="nav-btn back" onclick="goToSection(2)">&larr; Back</button>
+  <button class="nav-btn" onclick="goToSection(4)">Next &rarr;</button>
+</div>
+</div>
+
+<!-- ===== SECTION 4: HOW THESE SKILLS HELP YOU RIGHT WHERE YOU ARE ===== -->
+<div class="section" data-section="4">
+<div class="section-number">Section 4 of 8</div>
+<h2>How These Skills Help You Right Where You Are</h2>
+<p>You don't have to change careers to use these skills. They change the way you operate in whatever role you're already in. Here's what that looks like in practice:</p>
+
+<div class="scenario-block">
+<div class="scenario-label">The Reorg</div>
+<p>Your company announces restructuring. Two people in the same role, same performance ratings. One has spent the last year quietly doing great work and assuming people noticed. The other has been deliberately making sure the decision-makers understand exactly what they contribute, what would break without them, and what it would cost to replace them. <strong>Who survives the cut?</strong></p>
+</div>
+
+<div class="scenario-block">
+<div class="scenario-label">The Performance Review</div>
+<p>You could list your accomplishments and hope your manager connects the dots. Or you could frame every accomplishment in terms of the problem it solved, the cost it avoided, and the outcome it created for the business, and then ask your manager directly whether they see your value the same way. Same person, same work. <strong>Completely different result based on one skill: the ability to articulate value.</strong></p>
+</div>
+
+<div class="scenario-block">
+<div class="scenario-label">The Job Interview</div>
+<p>One candidate walks in and recites their resume. Here's what I did, here's my experience, here are my skills. The other candidate walks in and says: "Let me tell you about the three problems I solve that are costing companies like yours real money right now." <strong>Same qualifications. One gets the offer.</strong></p>
+</div>
+
+<button class="reveal-trigger" onclick="revealContent('pivot-reveal')">See the most important scenario <span>&rarr;</span></button>
+<div class="reveal-content" id="pivot-reveal">
+
+<div class="scenario-block" style="border: 2px solid var(--accent-yellow);">
+<div class="scenario-label" style="color: var(--accent-yellow);">The Internal Pivot</div>
+<p>Sometimes the bottom line is the bottom line, and your role is getting replaced by AI. Period. But here's the difference between someone who saw it coming and someone who didn't: you've spent the last six months building real relationships with decision-makers in other departments, departments at less risk of AI displacement. You got to know them. You asked questions about their team, their priorities, what's important to them, how they make decisions. You weren't networking. <strong>You were using these skills to understand people and earn trust before you needed something from them.</strong></p>
+<p>So when the displacement decision comes down, your manager doesn't just shrug. Managers across multiple departments say the same thing: "I know this person's role was eliminated, but we need to find a spot for them. They embody our values. Best work ethic I've seen in a while. Coachable. Wants to win. This is exactly the kind of person we want in this organization."</p>
+<p>And here's the line that closes it: <strong>"We almost always take the best athlete over the best pedigree. We can teach someone the job. We can't teach desire, character, and drive. And what's the alternative? Open up a search, conduct interviews, go through onboarding, hope it works out, when we have someone right here with rock star potential?"</strong></p>
+<p>That doesn't happen by accident. It happens because you used these skills to understand your own value, articulate it clearly in terms other people understand, and make the cost and consequence of losing you impossible to ignore.</p>
+</div>
+
+</div>
+
+<p style="margin-top: 24px;">Every one of those scenarios is a sales skill applied to your existing life. No quota. No cold calls. No job change required. Just a fundamentally different way of operating that makes you harder to replace.</p>
+
+<div class="nav-buttons">
+  <button class="nav-btn back" onclick="goToSection(3)">&larr; Back</button>
+  <button class="nav-btn" onclick="goToSection(5)">Next &rarr;</button>
+</div>
+</div>
+
+<!-- ===== SECTION 5: TRUST-BASED ROLES ===== -->
+<div class="section" data-section="5">
+<div class="section-number">Section 5 of 8</div>
+<h2>What Are Human Relationship and Trust-Based Roles?</h2>
+<p>For those open to exploring new career paths, the landscape of trust-based roles is broader than most people realize, and it pays better than most people expect.</p>
+
+<h3 style="font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; color: var(--accent-green); text-transform: uppercase; letter-spacing: 1.5px; margin: 28px 0 16px;">The Compensation Reality</h3>
+
+<div style="background: var(--surface); border-radius: 12px; padding: 24px; margin-bottom: 28px;">
+<div class="comp-item">
+<div><span class="comp-role">Account Executives (mid-market)</span><br><span class="comp-source">RepVue, January 2026</span></div>
+<div class="comp-pay">$190K median / $469K+ top</div>
+</div>
+<div class="comp-item">
+<div><span class="comp-role">Enterprise Account Executives</span><br><span class="comp-source">RepVue, February 2026</span></div>
+<div class="comp-pay">$270K median / $634K+ top</div>
+</div>
+<div class="comp-item">
+<div><span class="comp-role">Medical Device Sales</span><br><span class="comp-source">Glassdoor, November 2025</span></div>
+<div class="comp-pay">$182K avg / $333K+ top</div>
+</div>
+<div class="comp-item">
+<div><span class="comp-role">Sales Development Reps (entry-level)</span><br><span class="comp-source">Salesforce</span></div>
+<div class="comp-pay">$85K OTE starting</div>
+</div>
+<div class="comp-item">
+<div><span class="comp-role">Sales Managers</span><br><span class="comp-source">Salesforce</span></div>
+<div class="comp-pay">$150K+ average</div>
+</div>
+</div>
+
+<h3 style="font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 1.5px; margin: 28px 0 16px;">The AI Resistance Reality</h3>
+
+<p>AI isn't replacing these roles. It's making them more valuable. Sales teams using AI are reporting <strong>68% higher hiring rates</strong> than those without. Companies with AI are hiring more salespeople, not fewer, because AI handles the administrative work and makes each human rep more productive. The human elements (negotiation, empathy, trust-building) remain irreplaceable.</p>
+
+<h3 style="font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; color: var(--accent-purple); text-transform: uppercase; letter-spacing: 1.5px; margin: 28px 0 16px;">The Breadth of Roles</h3>
+
+<p>And quota-carrying sales is just one slice. The broader trust-based ecosystem includes:</p>
+
+<div class="role-grid">
+<div class="role-tag"><strong>Customer Success</strong> Ensuring clients get value, managing renewals, driving expansion</div>
+<div class="role-tag"><strong>Business Development</strong> Building strategic relationships with other companies</div>
+<div class="role-tag"><strong>Account Management</strong> Growing existing relationships, cross-selling, retention</div>
+<div class="role-tag"><strong>Sales Engineering</strong> Bridging technical expertise with client relationships</div>
+<div class="role-tag"><strong>Recruiting</strong> Fundamentally a relationship and persuasion role</div>
+<div class="role-tag"><strong>Fundraising (nonprofit)</strong> Selling mission and vision to donors</div>
+<div class="role-tag"><strong>Consulting</strong> Trusted advisor relationships across every industry</div>
+<div class="role-tag"><strong>Revenue Operations</strong> Supporting the sales ecosystem from the inside</div>
+</div>
+
+<p>Every one of these roles is built on the same foundation: understanding how people make decisions, building trust, and articulating value. The same skills that make someone irreplaceable in their current job are the same skills that open the door to any of these careers.</p>
+
+<div class="nav-buttons">
+  <button class="nav-btn back" onclick="goToSection(4)">&larr; Back</button>
+  <button class="nav-btn" onclick="goToSection(6)">Next &rarr;</button>
+</div>
+</div>
+
+<!-- ===== SECTION 6: THE REVEAL ===== -->
+<div class="section" data-section="6">
+<div class="section-number">Section 6 of 8</div>
+<h2>The Name for All of This</h2>
+<p>So what do you call a set of skills that makes you harder to replace in your current role, opens the door to an entirely new category of well-paying careers, and sits squarely in the space where AI is weakest and humans are strongest?</p>
+
+<div class="callout-box" style="text-align: center;">
+<p style="font-family: 'Instrument Serif', serif; font-size: 2rem; color: var(--text); margin-bottom: 0;">They're called <strong>sales skills.</strong></p>
+</div>
+
+<p>Not the version you're picturing. Not the cold calls and car lots. The real version. The version where you understand human behavior, diagnose what matters to the people who control your future, and articulate your value in terms they can't ignore.</p>
+
+<div class="callout-box" style="border-color: var(--accent-green);">
+<p><strong>And here is what makes this program different from every other career advice out there: we're not teaching you to sell random products or services. We're teaching you to sell the most valuable thing you own: you. When you learn how to do that, you can sell anything.</strong></p>
+</div>
+
+<div class="nav-buttons">
+  <button class="nav-btn back" onclick="goToSection(5)">&larr; Back</button>
+  <button class="nav-btn" onclick="goToSection(7)">Next &rarr;</button>
+</div>
+</div>
+
+<!-- ===== SECTION 7: WHAT'S NEXT ===== -->
+<div class="section" data-section="7">
+<div class="section-number">Section 7 of 8</div>
+<h2>What's Next</h2>
+<p>The rest of this program is going to teach you curated and proven sales skills from industry experts that will help you sell yourself, or frankly, sell anything. We're going to strip away the mystery, give you concrete frameworks, and let you practice in a safe environment until you're confident.</p>
+<p>You'll learn how people actually make decisions. You'll learn why pain moves people to action when benefits alone don't. You'll learn how to ask questions that uncover consequences instead of just gathering information. You'll learn how to quantify what a problem is actually costing someone. And you'll learn how to facilitate a decision process that puts your value front and center, whether you're selling a product, selling a project to your leadership team, or selling yourself in a job interview.</p>
+<p>You don't have to be faster than the bear. You just have to be faster than the person next to you who is still running the old playbook.</p>
+<p>No one is coming for you. But that's okay. Because by the time you finish this program, you won't need anyone to come for you.</p>
+
+<div class="callout-box" style="text-align: center; border-color: var(--accent-green); background: linear-gradient(135deg, rgba(46, 204, 113, 0.1) 0%, rgba(52, 152, 219, 0.05) 100%);">
+<p style="font-family: 'Instrument Serif', serif; font-size: 2.5rem; color: var(--text); margin-bottom: 0;"><strong>You'll Be Unavoidable.</strong></p>
+</div>
+
+<div class="nav-buttons">
+  <button class="nav-btn back" onclick="goToSection(6)">&larr; Back</button>
+  <button class="nav-btn" onclick="goToSection(8)">Finish Module &rarr;</button>
+</div>
+</div>
+
+<!-- ===== SECTION 8: COMPLETION ===== -->
+<div class="section" data-section="8">
+<div class="completion">
+<div class="completion-icon">&#x1f525;</div>
+<h2>Module 1 Complete</h2>
+<p style="color: var(--text-dim); font-size: 1.1rem; max-width: 600px; margin: 0 auto 24px;">You now understand why the old playbook is dead, what your real options are, and why sales skills are the most valuable, AI-resistant skill set you can develop. Next up: understanding how people actually make decisions.</p>
+<button class="next-btn" onclick="nextModule()">Continue to Module 2 &rarr;</button>
+</div>
+</div>
+
+</div>
+
+<script>
+let currentSection = 0;
+
+function startModule() {
+  document.getElementById('hero').style.display = 'none';
+  document.getElementById('content').classList.add('visible');
+  document.getElementById('progressWrapper').classList.add('visible');
+  observeSections();
+  goToSection(1);
+}
+
+function observeSections() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        const sectionNum = parseInt(entry.target.dataset.section);
+        if (sectionNum > currentSection) {
+          currentSection = sectionNum;
+          updateProgress();
+        }
+      }
+    });
+  }, { threshold: 0.2 });
+  document.querySelectorAll('.section').forEach(section => observer.observe(section));
+}
+
+function updateProgress() {
+  const totalSections = 8;
+  const progress = (currentSection / totalSections) * 100;
+  document.getElementById('progressBar').style.width = progress + '%';
+}
+
+function goToSection(sectionNum) {
+  const section = document.querySelector('[data-section="' + sectionNum + '"]');
+  if (section) {
+    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(() => { section.classList.add('visible'); }, 300);
+    if (sectionNum > currentSection) {
+      currentSection = sectionNum;
+      updateProgress();
+    }
+  }
+}
+
+function revealContent(id) {
+  document.getElementById(id).classList.add('open');
+  event.target.style.display = 'none';
+}
+
+function toggleCategory(id) {
+  const detail = document.getElementById(id);
+  const card = detail.parentElement;
+  if (detail.classList.contains('open')) {
+    detail.classList.remove('open');
+    card.classList.remove('expanded');
+  } else {
+    detail.classList.add('open');
+    card.classList.add('expanded');
+  }
+}
+
+function nextModule() {
+  window.location.href = '/module2.html';
+}
+</script>
+
+
+<script>
+  async function logOut() {
+    await fetch('/api/logout');
+    window.location.href = '/login.html';
+  }
+</script>
+</body>
+</html>

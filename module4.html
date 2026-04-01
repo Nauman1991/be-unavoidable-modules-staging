@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- AUTH GUARD -->
+  <script>
+    (async function() {
+      try {
+        const res = await fetch('/api/verify');
+        if (!res.ok) throw new Error('not authenticated');
+        const data = await res.json();
+        if (!data.authenticated) throw new Error('not authenticated');
+        window.BU_USER = { name: data.name, email: data.email };
+        document.dispatchEvent(new Event('bu:user-ready'));
+      } catch(e) {
+        window.location.href = '/login.html';
+      }
+    })();
+  </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 4: What Happens If They Don't Choose You?</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Mono:wght@400;700&family=Work+Sans:wght@300;400;500;600;700&display=swap');
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0a0e1a; --surface: #141824; --card: #1c2130; --card-hover: #242938; --border: #2d3448;
+  --text: #e4e6eb; --text-dim: #9195a3;
+  --accent-red: #ff4757; --accent-red-dim: rgba(255, 71, 87, 0.15);
+  --accent-green: #2ecc71; --accent-green-dim: rgba(46, 204, 113, 0.15);
+  --accent-blue: #3498db; --accent-yellow: #f39c12; --accent-purple: #9b59b6;
+  --accent-orange: #e67e22;
+}
+body { font-family: 'Work Sans', sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; overflow-x: hidden; }
+
+/* ═══ HERO ═══ */
+.hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 60px 24px; position: relative; background: radial-gradient(ellipse 800px 500px at 50% 40%, rgba(230, 126, 34, 0.08), transparent 60%), radial-gradient(ellipse 600px 400px at 30% 60%, rgba(255, 71, 87, 0.06), transparent 60%); }
+.module-badge { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--accent-yellow); border: 2px solid var(--accent-yellow); padding: 8px 20px; border-radius: 30px; margin-bottom: 28px; display: inline-block; opacity: 0; animation: fadeUp 0.8s ease forwards 0.2s; }
+.hero h1 { font-family: 'Instrument Serif', serif; font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 400; line-height: 1.1; max-width: 900px; margin-bottom: 24px; opacity: 0; animation: fadeUp 0.8s ease forwards 0.4s; }
+.hero h1 .highlight { color: var(--accent-orange); font-style: italic; }
+.hero-subtitle { font-size: 1.15rem; color: var(--text-dim); max-width: 680px; margin-bottom: 48px; opacity: 0; animation: fadeUp 0.8s ease forwards 0.6s; }
+.start-btn { font-family: 'Space Mono', monospace; font-size: 15px; font-weight: 700; background: var(--accent-blue); color: white; border: none; padding: 18px 48px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; opacity: 0; animation: fadeUp 0.8s ease forwards 0.8s; box-shadow: 0 8px 24px rgba(52, 152, 219, 0.3); }
+.start-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(52, 152, 219, 0.4); }
+
+/* ═══ PROGRESS ═══ */
+.progress-wrapper { position: fixed; top: 0; left: 0; right: 0; height: 4px; background: var(--surface); z-index: 1000; opacity: 0; transition: opacity 0.3s; }
+.progress-wrapper.visible { opacity: 1; }
+.progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent-orange), var(--accent-green)); width: 0%; transition: width 0.5s ease; }
+
+/* ═══ CONTENT ═══ */
+.content { max-width: 900px; margin: 0 auto; padding: 80px 24px 120px; opacity: 0; transition: opacity 0.5s; }
+.content.visible { opacity: 1; }
+
+/* ═══ SECTIONS ═══ */
+.section { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 48px; margin-bottom: 32px; opacity: 0; transform: translateY(40px); transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+.section.visible { opacity: 1; transform: translateY(0); }
+.section-number { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; }
+.section h2 { font-family: 'Instrument Serif', serif; font-size: 2.2rem; font-weight: 400; margin-bottom: 24px; line-height: 1.2; }
+.section p { color: var(--text-dim); margin-bottom: 20px; font-size: 1.05rem; }
+.section p:last-child { margin-bottom: 0; }
+.section strong { color: var(--text); font-weight: 600; }
+
+/* ═══ DEEP DIVE ═══ */
+.deep-dive { background: linear-gradient(135deg, rgba(155, 89, 182, 0.1) 0%, rgba(142, 68, 173, 0.05) 100%); border: 1px solid rgba(155, 89, 182, 0.3); border-radius: 12px; padding: 24px; margin: 24px 0; }
+.deep-dive-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; cursor: pointer; user-select: none; }
+.deep-dive-icon { font-size: 20px; }
+.deep-dive-title { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; color: var(--accent-purple); text-transform: uppercase; letter-spacing: 1.2px; flex: 1; }
+.deep-dive-toggle { font-size: 20px; color: var(--accent-purple); transition: transform 0.3s; }
+.deep-dive-toggle.open { transform: rotate(180deg); }
+.deep-dive-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, opacity 0.4s ease; opacity: 0; }
+.deep-dive-content.open { max-height: 4000px; opacity: 1; }
+.deep-dive-content p { color: var(--text-dim); font-size: 0.95rem; margin-bottom: 12px; line-height: 1.6; }
+
+/* ═══ INFO BOXES ═══ */
+.info-box { background: var(--surface); border-left: 4px solid; padding: 20px; margin: 24px 0; border-radius: 0 8px 8px 0; }
+.info-box.warning { border-left-color: var(--accent-red); background: linear-gradient(135deg, rgba(255, 71, 87, 0.08) 0%, var(--surface) 100%); }
+.info-box.success { border-left-color: var(--accent-green); background: linear-gradient(135deg, rgba(46, 204, 113, 0.08) 0%, var(--surface) 100%); }
+.info-box.insight { border-left-color: var(--accent-orange); background: linear-gradient(135deg, rgba(230, 126, 34, 0.08) 0%, var(--surface) 100%); }
+.info-box h3 { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+.info-box.warning h3 { color: var(--accent-red); }
+.info-box.success h3 { color: var(--accent-green); }
+.info-box.insight h3 { color: var(--accent-orange); }
+
+/* ═══ LEVEL CARDS ═══ */
+.level-cards { display: flex; flex-direction: column; gap: 20px; margin: 32px 0; }
+.level-card { background: var(--surface); border: 2px solid var(--border); border-radius: 12px; padding: 28px; transition: all 0.3s ease; position: relative; overflow: hidden; cursor: pointer; }
+.level-card::before { content: ''; position: absolute; top: 0; left: 0; width: 5px; height: 100%; border-radius: 12px 0 0 12px; }
+.level-card.l1::before { background: var(--text-dim); }
+.level-card.l2::before { background: var(--accent-yellow); }
+.level-card.l3::before { background: var(--accent-orange); }
+.level-card:hover { border-color: var(--accent-blue); transform: translateX(8px); }
+.level-label { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; }
+.level-card.l1 .level-label { color: var(--text-dim); }
+.level-card.l2 .level-label { color: var(--accent-yellow); }
+.level-card.l3 .level-label { color: var(--accent-orange); }
+.level-card h3 { font-family: 'Instrument Serif', serif; font-size: 1.3rem; margin-bottom: 8px; }
+.level-card p { color: var(--text-dim); font-size: 0.95rem; line-height: 1.6; margin-bottom: 0; }
+
+/* ═══ REVEAL ═══ */
+.reveal-trigger { display: inline-flex; align-items: center; gap: 8px; font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; color: var(--accent-blue); background: none; border: 2px solid var(--accent-blue); padding: 12px 24px; border-radius: 8px; cursor: pointer; margin-top: 24px; transition: all 0.3s ease; }
+.reveal-trigger:hover { background: var(--accent-blue); color: white; transform: translateX(4px); }
+.reveal-content { max-height: 0; overflow: hidden; transition: max-height 0.5s ease, opacity 0.5s ease; opacity: 0; }
+.reveal-content.open { max-height: 5000px; opacity: 1; margin-top: 28px; }
+
+/* ═══ COMPARISON CARDS ═══ */
+.comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 32px 0; }
+@media (max-width: 768px) { .comparison { grid-template-columns: 1fr; } }
+.comp-card { background: var(--surface); border: 2px solid var(--border); border-radius: 12px; padding: 32px; transition: all 0.3s ease; position: relative; overflow: hidden; }
+.comp-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; }
+.comp-card.weak::before { background: var(--text-dim); }
+.comp-card.strong::before { background: var(--accent-orange); }
+.comp-card:hover { transform: translateY(-4px); }
+.comp-card.weak { border-color: var(--text-dim); }
+.comp-card.strong { border-color: var(--accent-orange); }
+.comp-icon { font-size: 36px; margin-bottom: 16px; }
+.comp-card h3 { font-family: 'Instrument Serif', serif; font-size: 1.5rem; margin-bottom: 12px; }
+.comp-card.weak h3 { color: var(--text-dim); }
+.comp-card.strong h3 { color: var(--accent-orange); }
+.comp-card p { color: var(--text-dim); font-size: 0.95rem; line-height: 1.6; }
+
+/* ═══ PRACTICE ═══ */
+.practice { background: linear-gradient(135deg, #1a2332 0%, #1f2937 100%); border: 2px solid var(--accent-yellow); border-radius: 16px; padding: 36px; margin: 32px 0; }
+.practice-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.practice-icon { font-size: 28px; }
+.practice-header h3 { font-family: 'Instrument Serif', serif; font-size: 1.6rem; }
+.practice-label { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; color: var(--accent-yellow); text-transform: uppercase; letter-spacing: 1.5px; background: rgba(243, 156, 18, 0.15); padding: 4px 12px; border-radius: 20px; margin-left: auto; }
+.practice-prompt { background: var(--card); border-left: 4px solid var(--accent-yellow); padding: 20px; margin-bottom: 24px; border-radius: 0 8px 8px 0; }
+.practice-prompt p { font-style: italic; color: var(--text); font-size: 1.05rem; margin-bottom: 0; }
+.practice-textarea { width: 100%; min-height: 140px; background: var(--surface); border: 2px solid var(--border); border-radius: 8px; padding: 16px; color: var(--text); font-family: 'Work Sans', sans-serif; font-size: 1rem; resize: vertical; margin-bottom: 16px; transition: border-color 0.3s; }
+.practice-textarea:focus { outline: none; border-color: var(--accent-yellow); }
+.practice-btn { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; background: var(--accent-yellow); color: var(--bg); border: none; padding: 14px 32px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; }
+.practice-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(243, 156, 18, 0.3); }
+.practice-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.practice-btn.loading { background: var(--text-dim); cursor: wait; }
+.practice-feedback { background: var(--surface); border: 2px solid var(--accent-green); border-radius: 8px; padding: 24px; margin-top: 24px; display: none; }
+.practice-feedback.visible { display: block; }
+.practice-feedback h4 { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; color: var(--accent-green); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+
+/* ═══ QUIZ ═══ */
+.quiz { background: linear-gradient(135deg, #1c2130 0%, #242938 100%); border: 1px solid var(--border); border-radius: 16px; padding: 40px; margin: 32px 0; }
+.quiz-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+.quiz-icon { font-size: 28px; }
+.quiz-header h3 { font-family: 'Instrument Serif', serif; font-size: 1.5rem; }
+.quiz-question { font-size: 1.1rem; margin-bottom: 24px; line-height: 1.6; }
+.quiz-label { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 16px; display: block; }
+.choice-group { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+.choice-btn { background: var(--card); border: 2px solid var(--border); color: var(--text); padding: 20px 24px; border-radius: 10px; cursor: pointer; text-align: left; font-size: 1rem; transition: all 0.3s ease; }
+.choice-btn:hover { border-color: var(--accent-blue); background: var(--card-hover); transform: translateX(8px); }
+.choice-btn.correct { border-color: var(--accent-green); background: var(--accent-green-dim); }
+.choice-btn.incorrect { border-color: var(--accent-red); background: var(--accent-red-dim); }
+.feedback { background: var(--surface); border-left: 4px solid var(--accent-green); padding: 20px; margin-top: 24px; border-radius: 8px; display: none; }
+.feedback.visible { display: block; }
+.feedback.incorrect { border-left-color: var(--accent-red); }
+.feedback h4 { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+.feedback.correct h4 { color: var(--accent-green); }
+.feedback.incorrect h4 { color: var(--accent-red); }
+
+/* ═══ BLOCKQUOTE ═══ */
+.blockquote { background: var(--surface); border-left: 4px solid var(--accent-orange); padding: 24px; margin: 24px 0; border-radius: 0 8px 8px 0; font-style: italic; }
+.blockquote p { color: var(--text); font-size: 1.1rem; font-weight: 500; margin-bottom: 0; }
+
+/* ═══ TAKEAWAYS ═══ */
+.takeaway-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; margin: 32px 0; }
+.takeaway-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 28px; transition: all 0.3s ease; position: relative; }
+.takeaway-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--accent-orange); border-radius: 12px 0 0 12px; opacity: 0; transition: opacity 0.3s; }
+.takeaway-card:hover::before { opacity: 1; }
+.takeaway-card:hover { border-color: var(--accent-orange); transform: translateY(-4px); }
+.takeaway-number { font-family: 'Space Mono', monospace; font-size: 32px; font-weight: 700; color: var(--accent-orange); opacity: 0.3; margin-bottom: 12px; }
+.takeaway-card p { font-size: 0.95rem; line-height: 1.6; }
+
+/* ═══ DOWNLOAD ═══ */
+.download-section { background: linear-gradient(135deg, var(--surface) 0%, var(--card) 100%); border: 2px dashed var(--border); border-radius: 16px; padding: 32px; margin: 32px 0; text-align: center; }
+.download-section h3 { font-family: 'Instrument Serif', serif; font-size: 1.5rem; margin-bottom: 12px; }
+.download-btn { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; background: var(--accent-green); color: white; border: none; padding: 16px 40px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3); }
+.download-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(46, 204, 113, 0.4); }
+
+/* ═══ COMPLETION ═══ */
+.completion { text-align: center; background: linear-gradient(135deg, var(--card) 0%, var(--surface) 100%); border: 2px solid var(--accent-green); border-radius: 20px; padding: 60px 40px; margin: 48px 0; }
+.completion-icon { font-size: 64px; margin-bottom: 24px; animation: bounce 1s ease; }
+@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+.completion h2 { font-family: 'Instrument Serif', serif; font-size: 2.5rem; margin-bottom: 16px; }
+.completion p { font-size: 1.1rem; color: var(--text-dim); max-width: 600px; margin: 0 auto 32px; }
+.completion-stats { display: flex; justify-content: center; gap: 48px; margin-bottom: 32px; }
+.stat { text-align: center; }
+.stat-number { font-family: 'Space Mono', monospace; font-size: 2.5rem; font-weight: 700; color: var(--accent-green); display: block; }
+.stat-label { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); }
+.next-btn { font-family: 'Space Mono', monospace; font-size: 15px; font-weight: 700; background: var(--accent-green); color: white; border: none; padding: 18px 48px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 8px 24px rgba(46, 204, 113, 0.3); }
+.next-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(46, 204, 113, 0.4); }
+
+/* ═══ NAV ═══ */
+.nav-buttons { display: flex; justify-content: space-between; align-items: center; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border); }
+.nav-btn { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; background: var(--accent-red); color: white; border: none; padding: 14px 28px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px; }
+.nav-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(255, 71, 87, 0.3); }
+.nav-btn.back { background: var(--surface); border: 2px solid var(--border); color: var(--text); }
+.nav-btn.back:hover { background: var(--card); border-color: var(--accent-red); }
+
+/* ═══ ANIMATIONS & UTILS ═══ */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+.hidden { display: none !important; }
+@media (max-width: 768px) { .section { padding: 32px 24px; } .hero { min-height: 90vh; } .hero h1 { font-size: 2.5rem; } .completion-stats { flex-direction: column; gap: 24px; } }
+</style>
+
+  <a href="/dashboard.html" class="bu-dash-btn">&#8592; Dashboard</a>
+
+
+<!-- Progress Bar -->
+<div class="progress-wrapper" id="progressWrapper">
+  <div class="progress-bar" id="progressBar"></div>
+</div>
+
+<!-- Hero Section -->
+<div class="hero" id="hero">
+  <div class="module-badge">Module 4 &bull; Be Unavoidable</div>
+  <h1>
+    What Happens If They<br>
+    <span class="highlight">Don&rsquo;t Choose You?</span>
+  </h1>
+  <p class="hero-subtitle">
+    The true measure of your value isn&rsquo;t what you bring to the table &mdash; it&rsquo;s what it costs them to not have you.
+  </p>
+  <button class="start-btn" onclick="startModule()">Start Learning &rarr;</button>
+</div>
+
+<!-- Main Content -->
+<div class="content" id="content">
+
+  <!-- SECTION 1: The Opening Question -->
+  <div class="section" data-section="1">
+    <div class="section-number">Section 1 of 12</div>
+    <h2>The Question That Reframes Everything</h2>
+    <p>If someone decides not to hire you, not to keep you, not to fund your project, not to choose whatever it is you&rsquo;re offering &mdash; what actually happens to <em>them</em>?</p>
+    <p>Not what happens to you. Not the hit to your ego, your income, or your plan. <strong>What happens to the person who said no?</strong></p>
+
+    <div class="blockquote">
+      <p>If the honest answer is &ldquo;nothing bad happens to them,&rdquo; then they made the right decision. If there is no consequence for not choosing you, they were right to pass.</p>
+    </div>
+
+    <p>That might sting. But it&rsquo;s the most useful thing anyone can tell you about how to become indispensable. Because once you understand this principle, you stop trying to convince people you&rsquo;re great and start showing them <strong>what it costs to not have you.</strong></p>
+    <div class="nav-buttons">
+      <button class="nav-btn back" disabled>&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(2)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 2: The Elon Musk Story -->
+  <div class="section" data-section="2">
+    <div class="section-number">Section 2 of 12</div>
+    <h2>The Two-Week Test</h2>
+    <p>There&rsquo;s a story about Elon Musk that illustrates this principle with brutal clarity. Whether every detail is accurate has been debated, but the lesson is undeniable.</p>
+    <p>According to Ashlee Vance&rsquo;s biography, Musk&rsquo;s longtime executive assistant, Mary Beth Brown, asked for a raise after <strong>twelve years</strong> of devoted service. She&rsquo;d been described as Musk&rsquo;s &ldquo;Pepper Potts&rdquo; &mdash; managing his schedule across SpaceX and Tesla, handling press, arranging time with his kids, pulling him out of meetings to keep him on track. She worked twenty-hour days alongside him.</p>
+
+    <button class="reveal-trigger" onclick="revealContent('reveal2')">
+      What Happened Next <span class="arrow">&rarr;</span>
+    </button>
+    <div class="reveal-content" id="reveal2">
+      <p>Musk told her to take two weeks off so he could assess the value of her role by doing it himself. When she came back, he told her the relationship was no longer going to work. After twelve years.</p>
+      <p>Not because she did bad work. By all accounts, she was exceptional. But because when Musk tested what it was actually like to operate without her, his conclusion was that the consequences weren&rsquo;t significant enough. The operation didn&rsquo;t break. The pain wasn&rsquo;t acute enough.</p>
+      <p>Musk later disputed parts of the account, saying the role had simply outgrown a single generalist. But here&rsquo;s what matters for you:</p>
+
+      <div class="info-box warning">
+        <h3>The Lesson</h3>
+        <p>It doesn&rsquo;t matter how hard you work, how many hours you put in, or how loyal you&rsquo;ve been. If the person who controls your future can function without you and not feel the pain of your absence, <strong>your leverage disappears.</strong></p>
+      </div>
+
+      <p>That&rsquo;s not a cautionary tale about bad bosses. It&rsquo;s a cautionary tale about what happens when your value is defined by <strong>what you do</strong> rather than <strong>what breaks without you.</strong></p>
+    </div>
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(1)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(3)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 3: Where We Are (connecting modules) -->
+  <div class="section" data-section="3">
+    <div class="section-number">Section 3 of 12</div>
+    <h2>Where We Are</h2>
+    <p>This module is where the previous three come together.</p>
+    <p><strong>Module 1:</strong> AI is displacing white-collar work. Nobody is coming to rescue your career. The skills that make you hardest to replace are rooted in human relationships, trust, and persuasion.</p>
+    <p><strong>Module 2:</strong> Every decision runs on thinking, feeling, and behaving. Good vibes don&rsquo;t produce results. The real work is changing how someone <em>thinks</em> about their situation.</p>
+    <p><strong>Module 3:</strong> The most powerful lever for changing how someone thinks is the pain of consequences. People will do more to avoid a loss than to pursue a gain of equal value.</p>
+
+    <div class="info-box insight">
+      <h3>Module 4: The Inward Turn</h3>
+      <p>Now we turn all of that understanding inward. The most important question in your entire professional life: <strong>What is the cost and consequence of not having you?</strong></p>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(2)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(4)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 4: The Wrong Question -->
+  <div class="section" data-section="4">
+    <div class="section-number">Section 4 of 12</div>
+    <h2>The Wrong Question</h2>
+    <p>Throughout your career, you&rsquo;ve been trained to answer one version of the value question: <em>&ldquo;What do you bring to the table?&rdquo;</em> Your resume answers it. Your elevator pitch answers it. Every job interview is structured around it.</p>
+    <p><strong>It&rsquo;s the wrong question.</strong></p>
+    <p>&ldquo;What do you bring to the table?&rdquo; focuses entirely on the gain side &mdash; benefits, features, the pleasure side of the equation. And as you now know from Module 3, the pleasure side creates interest, not action.</p>
+
+    <div class="blockquote">
+      <p>The question that actually drives decisions: What happens if they don&rsquo;t have you?</p>
+    </div>
+
+    <p>This isn&rsquo;t rhetorical. It&rsquo;s the question every decision-maker is unconsciously answering every time they evaluate whether to hire, keep, promote, or invest in someone. Not what you do. <strong>What breaks, stalls, costs, or deteriorates without you.</strong></p>
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(3)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(5)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 5: Three Levels of Value -->
+  <div class="section" data-section="5">
+    <div class="section-number">Section 5 of 12</div>
+    <h2>Three Levels of Value</h2>
+    <p>Most people describe their value at Level 1 or 2. Only Level 3 changes how a decision-maker <em>thinks</em> about losing you.</p>
+
+    <div class="level-cards">
+      <div class="level-card l1" onclick="toggleLevel('l1')">
+        <div class="level-label">Level 1 &mdash; What You Do</div>
+        <h3>Features &amp; Activities</h3>
+        <p>&ldquo;I manage a team of eight.&rdquo; &ldquo;I handle client relationships.&rdquo; &ldquo;I oversee quarterly reporting.&rdquo;</p>
+        <div class="level-detail" id="l1-detail" style="max-height:0;overflow:hidden;transition:max-height 0.4s;opacity:0;">
+          <p style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);color:var(--text-dim);font-size:0.9rem;">This is where most people stop. It tells the other person what you&rsquo;re busy with. It tells them <strong>nothing about what it&rsquo;s worth.</strong></p>
+        </div>
+      </div>
+      <div class="level-card l2" onclick="toggleLevel('l2')">
+        <div class="level-label">Level 2 &mdash; What They Get</div>
+        <h3>Benefits &amp; Outcomes</h3>
+        <p>&ldquo;My team consistently delivers on time.&rdquo; &ldquo;My clients have a 95% renewal rate.&rdquo;</p>
+        <div class="level-detail" id="l2-detail" style="max-height:0;overflow:hidden;transition:max-height 0.4s;opacity:0;">
+          <p style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);color:var(--text-dim);font-size:0.9rem;">Better &mdash; it connects your work to results. But it still lives on the pleasure side. It creates interest. It earns a nod. <strong>It doesn&rsquo;t create urgency.</strong></p>
+        </div>
+      </div>
+      <div class="level-card l3" onclick="toggleLevel('l3')">
+        <div class="level-label">Level 3 &mdash; What It Costs Them to Not Have You</div>
+        <h3>Consequences &amp; Cost of Absence</h3>
+        <p>&ldquo;Without this team functioning at this level, the project pipeline stalls and the company misses its Q3 revenue commitments.&rdquo;</p>
+        <div class="level-detail" id="l3-detail" style="max-height:0;overflow:hidden;transition:max-height 0.4s;opacity:0;">
+          <p style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);color:var(--text-dim);font-size:0.9rem;"><strong>This is the only level that changes how the decision-maker thinks about losing you.</strong> This is where you stop being a &ldquo;solid employee&rdquo; and start being someone they can&rsquo;t afford to let go.</p>
+        </div>
+      </div>
+    </div>
+
+    <p><em>Click each card to expand.</em> Same person, same work, same skills &mdash; three completely different levels of perceived value.</p>
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(4)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(6)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 6: The Cost-of-Absence Test -->
+  <div class="section" data-section="6">
+    <div class="section-number">Section 6 of 12</div>
+    <h2>The Cost-of-Absence Test</h2>
+    <p>Here&rsquo;s a practical tool you&rsquo;re going to use from this point forward. Think of it as the structured version of what Elon Musk did with those two weeks off &mdash; except you&rsquo;re running it on yourself, on your own terms, <strong>before someone else runs it on you.</strong></p>
+
+    <div class="takeaway-grid">
+      <div class="takeaway-card">
+        <div class="takeaway-number">01</div>
+        <p><strong>If I disappeared tomorrow, what specifically breaks, stalls, or gets worse?</strong> Not &ldquo;things would be harder.&rdquo; Specifically: what project stalls? What client calls stop? What process falls apart?</p>
+      </div>
+      <div class="takeaway-card">
+        <div class="takeaway-number">02</div>
+        <p><strong>What does that disruption actually cost?</strong> Translate it into terms the decision-maker cares about: money, time, risk, reputation, or opportunity cost. If you can&rsquo;t put a number on it, that&rsquo;s your first problem to solve.</p>
+      </div>
+      <div class="takeaway-card">
+        <div class="takeaway-number">03</div>
+        <p><strong>Can someone else solve this just as well, just as fast, at the same cost?</strong> This requires honesty. If yes, your value isn&rsquo;t differentiated at the consequence level yet. That&rsquo;s not a failure &mdash; it&rsquo;s a diagnosis.</p>
+      </div>
+    </div>
+
+    <div class="info-box success">
+      <h3>Remember</h3>
+      <p>Vague pain doesn&rsquo;t drive action. Specific, quantifiable consequences do. The same principle from Module 3 applies to your own value. If you can&rsquo;t quantify what your absence costs, the decision-maker can&rsquo;t either &mdash; and <strong>manageable losses don&rsquo;t create urgency.</strong></p>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(5)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(7)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 7: Why People Fail This Test -->
+  <div class="section" data-section="7">
+    <div class="section-number">Section 7 of 12</div>
+    <h2>Why Most People Fail This Test</h2>
+    <p>Most people struggle with the Cost-of-Absence Test. Not because they lack value &mdash; because of four very common patterns.</p>
+
+    <div class="deep-dive">
+      <div class="deep-dive-header" onclick="toggleDeepDive('dive7')">
+        <span class="deep-dive-icon">&#128269;</span>
+        <span class="deep-dive-title">The Four Patterns</span>
+        <span class="deep-dive-toggle" id="dive7-toggle">&#9660;</span>
+      </div>
+      <div class="deep-dive-content" id="dive7-content">
+        <p><strong>Pattern 1: They describe what they do instead of what happens without them.</strong> &ldquo;I manage the onboarding process&rdquo; is a job description. &ldquo;Without me, new hires take twice as long to become productive, costing $15,000 per hire in lost output&rdquo; is a cost equation. Decision-makers don&rsquo;t fight to keep job descriptions. They fight to avoid costs.</p>
+        <p><strong>Pattern 2: They assume their value is obvious.</strong> The curse of competence: the better you are at your job, the more invisible your contributions become. Things just work. Nobody wonders why. Until you&rsquo;re gone.</p>
+        <p><strong>Pattern 3: They can&rsquo;t quantify the impact.</strong> &ldquo;I do important work&rdquo; is a feeling. &ldquo;My work prevents an estimated $500,000 in annual compliance risk&rdquo; is a fact. If you can&rsquo;t quantify it, you&rsquo;re leaving it to someone else to decide what you&rsquo;re worth.</p>
+        <p><strong>Pattern 4: They haven&rsquo;t built value that creates consequences.</strong> The toughest one. Some people struggle because their current role genuinely doesn&rsquo;t create significant consequences if they leave. That&rsquo;s not a reason to feel bad. It&rsquo;s a diagnosis that tells you exactly what needs to change.</p>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(6)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(8)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 8: The Litmus Test Principle -->
+  <div class="section" data-section="8">
+    <div class="section-number">Section 8 of 12</div>
+    <h2>No Consequence, No Leverage</h2>
+
+    <div class="blockquote">
+      <p>If someone can choose something other than what you&rsquo;re offering, and there is no meaningful consequence for doing that, they have made the right decision. Your job is to make the consequence of not choosing you real, specific, and impossible to ignore.</p>
+    </div>
+
+    <p>This applies everywhere:</p>
+
+    <div class="comparison">
+      <div class="comp-card weak">
+        <div class="comp-icon">&#128100;</div>
+        <h3>Job Interview</h3>
+        <p>The next candidate solves their problem just as well. You presented a great resume but never helped them see what they&rsquo;d <em>miss</em> by choosing someone else.</p>
+      </div>
+      <div class="comp-card strong">
+        <div class="comp-icon">&#128293;</div>
+        <h3>Reorg / Layoff</h3>
+        <p>The person who survives the cut is the one whose absence would create a problem <strong>the decision-maker has to explain upward.</strong></p>
+      </div>
+    </div>
+
+    <div class="comparison">
+      <div class="comp-card weak">
+        <div class="comp-icon">&#128202;</div>
+        <h3>Internal Pitch</h3>
+        <p>Leadership can table your idea and nothing gets worse. You presented an opportunity, but not a <strong>cost of inaction.</strong></p>
+      </div>
+      <div class="comp-card strong">
+        <div class="comp-icon">&#128200;</div>
+        <h3>Promotion</h3>
+        <p>&ldquo;Deserved&rdquo; lives in benefits. &ldquo;We can&rsquo;t afford to have this person leave because someone else got the role&rdquo; lives in <strong>consequences.</strong></p>
+      </div>
+    </div>
+
+    <p>In every one of these situations, the person who wins isn&rsquo;t necessarily the most talented. <strong>It&rsquo;s the person whose absence carries the highest cost.</strong></p>
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(7)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(9)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 9: Applying This — Four Scenarios -->
+  <div class="section" data-section="9">
+    <div class="section-number">Section 9 of 12</div>
+    <h2>Applying This When You&rsquo;re the Product</h2>
+    <p>We&rsquo;re not teaching you to sell random products. We&rsquo;re teaching you to sell the most valuable thing you own: <strong>you.</strong> Let&rsquo;s walk through four scenarios.</p>
+
+    <button class="reveal-trigger" onclick="revealContent('scenario1')">
+      Scenario 1: The Job Interview <span class="arrow">&rarr;</span>
+    </button>
+    <div class="reveal-content" id="scenario1">
+      <p>Most candidates recite their experience. That&rsquo;s Level 1 and Level 2 value. The candidate who gets hired flips the question: <em>&ldquo;What prompted you to open this role now? What&rsquo;s happening in the business that made this hire a priority?&rdquo;</em></p>
+      <p>Then they connect their value to the specific consequences the company will continue to experience if they don&rsquo;t solve this problem:</p>
+      <div class="info-box insight">
+        <h3>Example</h3>
+        <p><em>&ldquo;I understand you&rsquo;re losing about 20% of your mid-market accounts annually, and most of that churn is in the first 90 days. In my last role, I rebuilt the onboarding process and cut early-stage churn by more than half. If someone doesn&rsquo;t solve this for you, that&rsquo;s roughly $1.5 million you&rsquo;re going to keep losing every year.&rdquo;</em></p>
+      </div>
+      <p>The interviewer&rsquo;s thinking shifts from &ldquo;good candidate&rdquo; to &ldquo;I can see what it costs us to not have this person.&rdquo; Different thinking. Different feeling. Different behavior.</p>
+    </div>
+
+    <button class="reveal-trigger" onclick="revealContent('scenario2')" style="margin-top:16px;">
+      Scenario 2: The Reorg <span class="arrow">&rarr;</span>
+    </button>
+    <div class="reveal-content" id="scenario2">
+      <p>Most people default to the benefits pitch: &ldquo;Here&rsquo;s everything I do. Here&rsquo;s how hard I work.&rdquo; The person who survives makes consequences explicit:</p>
+      <div class="info-box insight">
+        <h3>Example</h3>
+        <p><em>&ldquo;The three accounts I manage represent $2.4 million in annual revenue. Two are in active renewal conversations. If those relationships transfer to someone who doesn&rsquo;t know the history, we&rsquo;re looking at renewal risk on at least one. Beyond that, I&rsquo;m the only person who&rsquo;s been through the full implementation cycle. If we hit issues during the Q3 rollout, the team will be troubleshooting without the person who built the playbook.&rdquo;</em></p>
+      </div>
+      <p>That person isn&rsquo;t begging. They&rsquo;re making it easy for their manager to say, &ldquo;Cutting this person creates more problems than it solves.&rdquo;</p>
+    </div>
+
+    <button class="reveal-trigger" onclick="revealContent('scenario3')" style="margin-top:16px;">
+      Scenario 3: The Internal Pitch <span class="arrow">&rarr;</span>
+    </button>
+    <div class="reveal-content" id="scenario3">
+      <p>Most people lead with opportunity: &ldquo;Here&rsquo;s what we could gain.&rdquo; Leadership says, &ldquo;Great idea. Let&rsquo;s revisit next quarter.&rdquo; Dead.</p>
+      <p>The pitch that gets funded leads with cost of inaction:</p>
+      <div class="info-box insight">
+        <h3>Example</h3>
+        <p><em>&ldquo;Before I walk through the recommendation, I want to show you what the current approach is costing us. Every quarter we delay, we&rsquo;re losing an estimated $150,000 in inefficiency and falling behind two competitors who&rsquo;ve already made this investment. The question isn&rsquo;t whether this is a good idea. It&rsquo;s whether we can afford another quarter of the status quo.&rdquo;</em></p>
+      </div>
+    </div>
+
+    <button class="reveal-trigger" onclick="revealContent('scenario4')" style="margin-top:16px;">
+      Scenario 4: The Internal Pivot <span class="arrow">&rarr;</span>
+    </button>
+    <div class="reveal-content" id="scenario4">
+      <p>This is the scenario that scares people the most. Sometimes the bottom line is the bottom line, and your role is getting replaced by AI. Period. No version of the Cost-of-Absence Test saves a role the company has decided to eliminate.</p>
+      <p>But here&rsquo;s the difference between someone who saw it coming and someone who didn&rsquo;t.</p>
+      <p>You&rsquo;ve spent the last six months building real relationships with decision-makers in other departments &mdash; departments at less risk of AI displacement. You got to know them. You asked questions about their team, their priorities, how they make decisions. You weren&rsquo;t networking. You were using these skills to <strong>understand people and earn trust before you needed something from them.</strong></p>
+      <p>So when the displacement decision comes down, your manager doesn&rsquo;t just shrug. Managers across multiple departments say the same thing: <em>&ldquo;I know this person&rsquo;s role was eliminated, but we need to find a spot for them. They embody our values. Best work ethic I&rsquo;ve seen in a while. Coachable. Wants to win. This is exactly the kind of person we want in this organization.&rdquo;</em></p>
+      <p>And here&rsquo;s the line that closes it: <em>&ldquo;We almost always take the best athlete over the best pedigree. We can teach someone the job. We can&rsquo;t teach desire, character, and drive. And what&rsquo;s the alternative? Open up a search, conduct interviews, go through onboarding, hope it works out, when we have someone right here with rock star potential?&rdquo;</em></p>
+
+      <div class="info-box success">
+        <h3>What Happened Here</h3>
+        <p>The role failed the Cost-of-Absence Test. But you created a <strong>different kind of consequence</strong>: the cost of losing <em>you as a person</em> from the organization. You changed the thinking of multiple decision-makers (Module 2). You made the pain of your departure concrete (Module 3). And you did it all <strong>before the crisis hit</strong> &mdash; which is the only time it actually works.</p>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(8)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(10)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 10: Practice Exercise -->
+  <div class="section" data-section="10">
+    <div class="section-number">Section 10 of 12 &bull; Practice Exercise</div>
+    <div class="practice">
+      <div class="practice-header">
+        <span class="practice-icon">&#9998;&#65039;</span>
+        <h3>Your Turn: Run the Cost-of-Absence Test</h3>
+        <span class="practice-label">Hands-On</span>
+      </div>
+      <div class="practice-prompt">
+        <p>Think about your current role (or your most recent role). Answer the three questions of the Cost-of-Absence Test as specifically as you can. Name the projects, the relationships, and the dollar amounts. Don&rsquo;t settle for vague.</p>
+      </div>
+      <textarea class="practice-textarea" id="practiceInput1" placeholder="1. If I disappeared tomorrow, what specifically breaks, stalls, or gets worse?
+
+2. What does that disruption actually cost (in dollars, time, risk, or opportunity)?
+
+3. Could someone else step in and resolve it quickly? Be honest."></textarea>
+      <button class="practice-btn" id="practice1Btn" onclick="getAIFeedback('practice1')">Get AI Feedback</button>
+      <div class="practice-feedback" id="practice1-feedback">
+        <h4>AI Feedback</h4>
+        <p>Your personalized feedback will appear here...</p>
+      </div>
+    </div>
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(9)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(11)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 11: Knowledge Check (Quiz) + Reflection -->
+  <div class="section" data-section="11">
+    <div class="section-number">Section 11 of 12 &bull; Knowledge Check</div>
+
+    <div class="quiz">
+      <div class="quiz-header">
+        <span class="quiz-icon">&#128161;</span>
+        <h3>Test Your Understanding</h3>
+      </div>
+
+      <span class="quiz-label">Question 1 of 2</span>
+      <div class="quiz-question">
+        Your company announces a restructuring. You go to your manager and say: &ldquo;I&rsquo;m one of the hardest workers on this team. I&rsquo;ve never missed a deadline, I&rsquo;ve been here for six years, and I&rsquo;m passionate about what we do.&rdquo; At what level are you communicating your value?
+      </div>
+      <div class="choice-group" id="quiz1-choices">
+        <button class="choice-btn" onclick="checkQuiz1(this, false, 'A')">
+          Level 3 &mdash; Consequence level. You&rsquo;re showing what it costs to lose you.
+        </button>
+        <button class="choice-btn" onclick="checkQuiz1(this, false, 'B')">
+          Level 1 &mdash; Feature level. You&rsquo;re describing your activities and traits.
+        </button>
+        <button class="choice-btn" onclick="checkQuiz1(this, true, 'C')">
+          Level 2 &mdash; Benefit level. You&rsquo;re listing positive outcomes but not connecting them to the cost of your absence.
+        </button>
+      </div>
+      <div class="feedback" id="quiz1Feedback">
+        <h4>Feedback</h4>
+        <p id="quiz1Text"></p>
+      </div>
+
+      <span class="quiz-label" style="margin-top:32px;">Question 2 of 2</span>
+      <div class="quiz-question">
+        A hiring manager can pass on you and hire the next candidate with no meaningful difference in outcome. According to the principle from this module, which is true?
+      </div>
+      <div class="choice-group" id="quiz2-choices">
+        <button class="choice-btn" onclick="checkQuiz2(this, false, 'A')">
+          You need to be more persistent and follow up more aggressively.
+        </button>
+        <button class="choice-btn" onclick="checkQuiz2(this, true, 'B')">
+          They made the right decision. You haven&rsquo;t differentiated your value at the consequence level.
+        </button>
+        <button class="choice-btn" onclick="checkQuiz2(this, false, 'C')">
+          The hiring manager failed to recognize your potential and made a mistake.
+        </button>
+      </div>
+      <div class="feedback" id="quiz2Feedback">
+        <h4>Feedback</h4>
+        <p id="quiz2Text"></p>
+      </div>
+    </div>
+
+    <!-- Reflection Exercise -->
+    <div class="practice" style="margin-top: 32px;">
+      <div class="practice-header">
+        <span class="practice-icon">&#129300;</span>
+        <h3>Level 3 Rewrite</h3>
+        <span class="practice-label">Application</span>
+      </div>
+      <p style="margin-bottom: 16px; color: var(--text-dim);">Take your current &ldquo;elevator pitch&rdquo; or the way you typically describe yourself professionally. Rewrite it entirely at <strong>Level 3 &mdash; consequence level.</strong> Start with the problem you solve, quantify the cost of that problem going unsolved, and position yourself as the resolution.</p>
+      <textarea class="practice-textarea" id="practiceInput2" placeholder="Example of a Level 2 pitch: 'I'm an experienced project manager who keeps teams organized and delivers results.'
+
+Your Level 3 rewrite: Start with what breaks without you, what it costs, and why you're the specific person who makes it stop..."></textarea>
+      <button class="practice-btn" id="practice2Btn" onclick="getAIFeedback('practice2')">Get AI Feedback</button>
+      <div class="practice-feedback" id="practice2-feedback">
+        <h4>AI Feedback</h4>
+        <p>Your personalized feedback will appear here...</p>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(10)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(12)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 12: Key Takeaways + Download + Completion -->
+  <div class="section" data-section="12">
+    <div class="section-number">Section 12 of 12</div>
+    <h2>Building Consequence-Level Value</h2>
+    <p style="margin-bottom: 32px;">Four ways to become the person whose absence creates real consequences:</p>
+
+    <div class="takeaway-grid">
+      <div class="takeaway-card">
+        <div class="takeaway-number">01</div>
+        <p><strong>Own outcomes, not activities.</strong> Attach your name to results that matter to the business. Outcomes create accountability, and accountability creates consequences.</p>
+      </div>
+      <div class="takeaway-card">
+        <div class="takeaway-number">02</div>
+        <p><strong>Build relationships that can&rsquo;t be transferred.</strong> Trust-based relationships are institutional equity. They can&rsquo;t be copied, downloaded, or handed off without significant cost and risk.</p>
+      </div>
+      <div class="takeaway-card">
+        <div class="takeaway-number">03</div>
+        <p><strong>Accumulate institutional knowledge.</strong> Understand not just the process but the context behind it. Your departure should create a knowledge vacuum that takes months to fill.</p>
+      </div>
+      <div class="takeaway-card">
+        <div class="takeaway-number">04</div>
+        <p><strong>Make the consequences visible now.</strong> Don&rsquo;t wait for a reorg. Communicate your impact in consequence terms as part of your regular work, before anyone has to evaluate it under pressure.</p>
+      </div>
+    </div>
+
+    <div class="blockquote" style="margin-top: 32px;">
+      <p>The question isn&rsquo;t &ldquo;What do you bring to the table?&rdquo; The question is &ldquo;What does it cost them to not have you?&rdquo; If you can answer that with specificity, evidence, and in terms the decision-maker cares about, you have leverage most people never will.</p>
+    </div>
+
+    <div class="download-section" style="margin-top: 32px;">
+      <div style="font-size: 48px; margin-bottom: 16px;">&#128229;</div>
+      <h3>Take This With You</h3>
+      <p>Download: <strong>&ldquo;The Cost-of-Absence Framework&rdquo;</strong></p>
+      <p style="font-size: 0.9rem; margin-top: -12px; color: var(--text-dim);">Three questions + four strategies for consequence-level value</p>
+      <button class="download-btn" onclick="window.print()">
+        <span>Download PDF</span>
+        <span>&rarr;</span>
+      </button>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(11)">&larr; Back</button>
+      <button class="nav-btn" onclick="showCompletion()">Finish Module &rarr;</button>
+    </div>
+  </div>
+
+  <!-- Completion -->
+  <div class="completion hidden" id="completion">
+    <div class="completion-icon">&#127881;</div>
+    <h2>Module Complete!</h2>
+    <p>You now understand the true measure of your value: not what you bring to the table, but what it costs them to not have you. You have the Cost-of-Absence Test, the three levels of value, and a clear path to building consequence-level impact.</p>
+    <div class="completion-stats">
+      <div class="stat">
+        <span class="stat-number" id="timeSpent">0</span>
+        <span class="stat-label">Minutes</span>
+      </div>
+      <div class="stat">
+        <span class="stat-number">12/12</span>
+        <span class="stat-label">Sections</span>
+      </div>
+      <div class="stat">
+        <span class="stat-number" id="quizScore">&mdash;</span>
+        <span class="stat-label">Quiz Score</span>
+      </div>
+    </div>
+    <button class="next-btn" onclick="nextModule()">Continue to Next Module &rarr;</button>
+  </div>
+
+</div>
+
+<script>
+// ═══ STATE ═══
+let currentSection = 0;
+let startTime = null;
+let quiz1Answered = false;
+let quiz2Answered = false;
+let quiz1Correct = false;
+let quiz2Correct = false;
+
+// ═══ MODULE START ═══
+function startModule() {
+  document.getElementById('hero').style.display = 'none';
+  document.getElementById('content').classList.add('visible');
+  document.getElementById('progressWrapper').classList.add('visible');
+  startTime = Date.now();
+  observeSections();
+}
+
+// ═══ SECTION OBSERVER ═══
+function observeSections() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        const sectionNum = parseInt(entry.target.dataset.section);
+        if (sectionNum > currentSection) {
+          currentSection = sectionNum;
+          updateProgress();
+        }
+      }
+    });
+  }, { threshold: 0.3 });
+  document.querySelectorAll('.section').forEach(section => observer.observe(section));
+}
+
+// ═══ PROGRESS ═══
+function updateProgress() {
+  const progress = (currentSection / 12) * 100;
+  document.getElementById('progressBar').style.width = progress + '%';
+}
+
+// ═══ NAVIGATION ═══
+function goToSection(sectionNum) {
+  const section = document.querySelector(`[data-section="${sectionNum}"]`);
+  if (section) {
+    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (sectionNum > currentSection) {
+      currentSection = sectionNum;
+      updateProgress();
+    }
+  }
+}
+
+// ═══ REVEAL ═══
+function revealContent(id) {
+  document.getElementById(id).classList.add('open');
+  event.target.style.display = 'none';
+}
+
+// ═══ DEEP DIVE ═══
+function toggleDeepDive(id) {
+  const content = document.getElementById(id + '-content');
+  const toggle = document.getElementById(id + '-toggle');
+  if (content.classList.contains('open')) {
+    content.classList.remove('open');
+    toggle.classList.remove('open');
+  } else {
+    content.classList.add('open');
+    toggle.classList.add('open');
+  }
+}
+
+// ═══ LEVEL CARDS ═══
+function toggleLevel(id) {
+  const detail = document.getElementById(id + '-detail');
+  if (detail.style.maxHeight === '0px') {
+    detail.style.maxHeight = '200px';
+    detail.style.opacity = '1';
+  } else {
+    detail.style.maxHeight = '0px';
+    detail.style.opacity = '0';
+  }
+}
+
+// ═══ QUIZ 1 ═══
+function checkQuiz1(button, isCorrect, choice) {
+  if (quiz1Answered) return;
+  quiz1Answered = true;
+  quiz1Correct = isCorrect;
+
+  const allButtons = document.querySelectorAll('#quiz1-choices .choice-btn');
+  allButtons.forEach(btn => btn.style.pointerEvents = 'none');
+
+  const feedback = document.getElementById('quiz1Feedback');
+  const feedbackText = document.getElementById('quiz1Text');
+
+  if (isCorrect) {
+    button.classList.add('correct');
+    feedback.classList.add('visible', 'correct');
+    feedbackText.innerHTML = '<strong>Correct.</strong> "Hardest worker," "never missed a deadline," and "passionate" are all positive attributes — benefits. They tell the manager what they gain by keeping you, but they don\'t make the cost of losing you feel real. A Level 3 response would spell out exactly what breaks, what it costs, and what the manager would have to explain upward.';
+  } else {
+    button.classList.add('incorrect');
+    feedback.classList.add('visible', 'incorrect');
+    if (choice === 'A') {
+      feedbackText.innerHTML = '<strong>Not quite.</strong> You\'re not describing consequences at all — you\'re listing positive attributes like work ethic and tenure. That\'s benefit-level communication. Level 3 would be: "If my role is eliminated, here\'s the project that stalls, the client at risk, and what it costs to replace my institutional knowledge."';
+    } else {
+      feedbackText.innerHTML = '<strong>Close, but not quite.</strong> "Hardest worker" and "never missed a deadline" straddle the line between features and benefits. The key issue is that none of these statements answer the question: "What does it cost to lose this person?" That\'s Level 3, and it\'s where decisions actually change.';
+    }
+  }
+  updateQuizScore();
+}
+
+// ═══ QUIZ 2 ═══
+function checkQuiz2(button, isCorrect, choice) {
+  if (quiz2Answered) return;
+  quiz2Answered = true;
+  quiz2Correct = isCorrect;
+
+  const allButtons = document.querySelectorAll('#quiz2-choices .choice-btn');
+  allButtons.forEach(btn => btn.style.pointerEvents = 'none');
+
+  const feedback = document.getElementById('quiz2Feedback');
+  const feedbackText = document.getElementById('quiz2Text');
+
+  if (isCorrect) {
+    button.classList.add('correct');
+    feedback.classList.add('visible', 'correct');
+    feedbackText.innerHTML = '<strong>Correct.</strong> This is the core principle of the module. If there\'s no meaningful consequence for not choosing you, they made the right call. Your job isn\'t to be persistent — it\'s to make the cost of your absence real, specific, and impossible to ignore before the decision is made.';
+  } else {
+    button.classList.add('incorrect');
+    feedback.classList.add('visible', 'incorrect');
+    if (choice === 'A') {
+      feedbackText.innerHTML = '<strong>Not quite.</strong> Persistence doesn\'t fix a value articulation problem. If the hiring manager saw no meaningful difference between you and the next candidate, more follow-ups won\'t change that. The issue is upstream: you haven\'t differentiated yourself at the consequence level.';
+    } else {
+      feedbackText.innerHTML = '<strong>Not quite.</strong> It\'s tempting to blame the other side, but this module asks you to own it. If they could pass on you with no consequence, the gap isn\'t in their judgment — it\'s in how you communicated (or failed to communicate) the cost of not having you.';
+    }
+  }
+  updateQuizScore();
+}
+
+function updateQuizScore() {
+  if (quiz1Answered && quiz2Answered) {
+    const correct = (quiz1Correct ? 1 : 0) + (quiz2Correct ? 1 : 0);
+    document.getElementById('quizScore').textContent = (correct * 50) + '%';
+  }
+}
+
+// ═══ AI FEEDBACK ═══
+async function getAIFeedback(practiceId) {
+  const inputId = practiceId === 'practice1' ? 'practiceInput1' : 'practiceInput2';
+  const btnId = practiceId === 'practice1' ? 'practice1Btn' : 'practice2Btn';
+  const feedbackId = practiceId + '-feedback';
+
+  const input = document.getElementById(inputId);
+  const button = document.getElementById(btnId);
+  const feedback = document.getElementById(feedbackId);
+  const userAnswer = input.value.trim();
+
+  if (!userAnswer) {
+    alert('Please write your answer first before getting feedback!');
+    return;
+  }
+
+  button.disabled = true;
+  button.classList.add('loading');
+  button.textContent = 'Getting AI Feedback...';
+
+  try {
+    let prompt;
+
+    if (practiceId === 'practice1') {
+      prompt = `You are a career coach and sales training expert for the "Be Unavoidable" program, which helps non-sales professionals deal with AI displacement by learning to articulate their value.
+
+The student just completed the "Cost-of-Absence Test" for their current or most recent role. The test has three questions:
+1. If they disappeared tomorrow, what specifically breaks, stalls, or gets worse?
+2. What does that disruption cost in dollars, time, risk, or opportunity?
+3. Could someone else resolve it quickly?
+
+Their answers: "${userAnswer}"
+
+Provide brief, personalized feedback (4-5 sentences max):
+1. Assess their specificity — did they name concrete projects, clients, or dollar amounts? Or did they stay vague?
+2. If they quantified the cost, acknowledge it. If they didn't, push them to try.
+3. Evaluate their honesty on Question 3 (replaceability) — self-awareness here is strength, not weakness.
+4. Give one specific action they could take THIS WEEK to strengthen their Cost-of-Absence position.
+
+Be encouraging, direct, and practical. This person may be anxious about AI displacement.`;
+    } else {
+      prompt = `You are a career coach and sales training expert for the "Be Unavoidable" program.
+
+The student was asked to rewrite their typical professional self-description from "Level 2" (benefits/outcomes) to "Level 3" (consequences/cost of absence). Level 3 means: starting with the problem they solve, quantifying the cost of that problem going unsolved, and positioning themselves as the resolution.
+
+Their Level 3 rewrite: "${userAnswer}"
+
+Provide brief feedback (4-5 sentences max):
+1. Does it start with a problem or cost, not with "I am" or "I have"?
+2. Does it quantify specific consequences (dollars, time, risk)?
+3. Does it position their value as the thing that makes the pain stop?
+4. Rate it: Is this Level 1 (features), Level 2 (benefits), or genuinely Level 3 (consequences)?
+5. Give one specific improvement to push it further into Level 3.
+
+Be encouraging but honest. Remember this person is learning to sell themselves, not products.`;
+    }
+
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 500,
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+
+    if (!response.ok) throw new Error('API request failed');
+    const data = await response.json();
+    const feedbackText = data.content[0].text;
+
+    feedback.querySelector('h4').textContent = 'AI Feedback';
+    feedback.querySelector('p').innerHTML = feedbackText;
+    feedback.classList.add('visible');
+    feedback.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    button.textContent = 'Get New Feedback';
+
+  } catch (error) {
+    console.error('Error getting AI feedback:', error);
+    alert('Unable to get AI feedback right now. Please try again.');
+    button.textContent = 'Get AI Feedback';
+  } finally {
+    button.disabled = false;
+    button.classList.remove('loading');
+  }
+}
+
+// ═══ DOWNLOAD ═══
+function downloadPDF() {
+  window.print();
+}
+
+// ═══ COMPLETION ═══
+function showCompletion() {
+  document.getElementById('completion').classList.remove('hidden');
+  const elapsed = Math.round((Date.now() - startTime) / 60000);
+  document.getElementById('timeSpent').textContent = elapsed;
+  updateQuizScore();
+  document.getElementById('completion').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ═══ NEXT MODULE ═══
+function nextModule() {
+  window.location.href = '/module5.html';
+}
+</script>
+
+
+<script>
+  async function logOut() {
+    await fetch('/api/logout');
+    window.location.href = '/login.html';
+  }
+</script>
+</body>
+</html>

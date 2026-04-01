@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- AUTH GUARD -->
+  <script>
+    (async function() {
+      try {
+        const res = await fetch('/api/verify');
+        if (!res.ok) throw new Error('not authenticated');
+        const data = await res.json();
+        if (!data.authenticated) throw new Error('not authenticated');
+        window.BU_USER = { name: data.name, email: data.email, userId: data.userId };
+        document.dispatchEvent(new Event('bu:user-ready'));
+      } catch(e) {
+        window.location.href = '/login.html';
+      }
+    })();
+  </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sales Roleplay Engine | Be Unavoidable</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@400;500;600;700&display=swap');
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f5f0ea; --surface: #ece6de; --card: #ffffff; --border: rgba(26,26,26,0.08);
+  --text: #1a1a1a; --text-dim: #6b6560; --text-light: #958e85;
+  --accent-red: #a93e33; --accent-green: #5a9a5a; --accent-blue: #1e4f8a;
+  --accent-yellow: #b5714a; --accent-purple: #7a5e8a;
+  --accent-teal: #1e4f8a;
+}
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+
+/* Selection Screen */
+.selection-screen { min-height: 100vh; padding: 60px 24px; }
+.selection-inner { max-width: 900px; margin: 0 auto; }
+.engine-badge { font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--accent-blue); border: 2px solid var(--accent-blue); padding: 8px 20px; border-radius: 30px; display: inline-block; margin-bottom: 28px; }
+.selection-screen h1 { font-family: 'Source Serif 4', serif; font-size: clamp(2rem, 4vw, 3.2rem); margin-bottom: 12px; }
+.selection-screen .subtitle { color: var(--text-dim); font-size: 1.05rem; max-width: 620px; margin-bottom: 48px; }
+.section-label { font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 700; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 20px; }
+.product-input-wrap { margin-bottom: 40px; }
+.product-input { width: 100%; max-width: 580px; background: var(--card); border: 2px solid var(--border); border-radius: 10px; padding: 14px 18px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 1rem; transition: border-color 0.2s; }
+.product-input:focus { outline: none; border-color: var(--accent-blue); }
+.product-input::placeholder { color: var(--text-dim); }
+.product-hint { font-size: 0.85rem; color: var(--text-dim); margin-top: 8px; }
+.scenarios-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin-bottom: 40px; }
+.scenario-card { background: var(--card); border: 2px solid var(--border); border-radius: 14px; padding: 24px; cursor: pointer; transition: all 0.25s ease; }
+.scenario-card:hover { border-color: var(--accent-blue); transform: translateY(-2px); }
+.scenario-card.selected { border-color: var(--accent-blue); background: rgba(52,152,219,0.08); }
+.scenario-icon { font-size: 28px; margin-bottom: 12px; }
+.scenario-card h3 { font-family: 'Source Serif 4', serif; font-size: 1.2rem; margin-bottom: 8px; }
+.scenario-card p { font-size: 0.87rem; color: var(--text-dim); line-height: 1.55; }
+.module-tag { font-family: 'DM Sans', sans-serif; font-size: 10px; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+.difficulty-row { display: flex; gap: 12px; margin-bottom: 40px; flex-wrap: wrap; }
+.diff-btn { font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 700; padding: 10px 20px; border-radius: 8px; border: 2px solid var(--border); background: none; color: var(--text-dim); cursor: pointer; transition: all 0.2s; }
+.diff-btn:hover { border-color: var(--accent-blue); color: var(--text); }
+.diff-btn.selected { border-color: var(--accent-blue); color: var(--accent-blue); background: rgba(52,152,219,0.08); }
+.start-btn { font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700; background: var(--accent-blue); color: white; border: none; padding: 18px 48px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 8px 24px rgba(52,152,219,0.3); opacity: 0; animation: fadeUp 0.8s ease forwards 0.8s; }
+.start-btn:hover { transform: translateY(-2px); }
+.start-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+.bu-dash-btn {
+  position: fixed; top: 14px; right: 20px; z-index: 9999;
+  font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 700;
+  background: rgba(255,255,255,0.92); color: #6b6560;
+  border: 1px solid rgba(0,0,0,0.08); border-radius: 6px;
+  padding: 7px 14px; cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s;
+  text-decoration: none; display: inline-block;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.bu-dash-btn:hover { color: #1a1a1a; border-color: rgba(0,0,0,0.2); transform: translateY(-1px); }
+
+
+/* Chat Interface */
+.chat-app { display: none; flex-direction: column; height: 100vh; }
+.chat-app.visible { display: flex; }
+.chat-header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 24px; display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
+.chat-header .back-btn { font-family: 'DM Sans', sans-serif; font-size: 12px; color: var(--text-dim); background: none; border: 1px solid var(--border); padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+.chat-header-info { flex: 1; }
+.chat-header-title { font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 1px; }
+.chat-header-sub { font-size: 0.82rem; color: var(--text-dim); }
+.debrief-btn { font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 700; background: rgba(52,152,219,0.15); border: 1px solid var(--accent-blue); color: var(--accent-blue); padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+.debrief-btn:hover { background: var(--accent-blue); color: white; }
+
+.messages-area { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 20px; scroll-behavior: smooth; }
+.messages-area::-webkit-scrollbar { width: 4px; }
+.messages-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.message { max-width: 78%; display: flex; flex-direction: column; gap: 6px; }
+.message.user { align-self: flex-end; align-items: flex-end; }
+.message.assistant { align-self: flex-start; align-items: flex-start; }
+.message-bubble { padding: 14px 18px; border-radius: 16px; line-height: 1.65; font-size: 0.97rem; }
+.message.user .message-bubble { background: var(--accent-blue); color: white; border-bottom-right-radius: 4px; }
+.message.assistant .message-bubble { background: var(--card); border: 1px solid var(--border); color: var(--text); border-bottom-left-radius: 4px; }
+.message-label { font-family: 'DM Sans', sans-serif; font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+
+.typing-indicator { align-self: flex-start; display: flex; align-items: center; gap: 12px; padding: 14px 18px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; border-bottom-left-radius: 4px; }
+.typing-dots { display: flex; gap: 4px; }
+.typing-dots span { width: 7px; height: 7px; border-radius: 50%; background: var(--text-dim); animation: typingBounce 1.2s infinite; }
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingBounce { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-6px); opacity: 1; } }
+
+.input-area { background: var(--surface); border-top: 1px solid var(--border); padding: 16px 24px; display: flex; gap: 12px; align-items: flex-end; flex-shrink: 0; }
+.input-area textarea { flex: 1; background: var(--card); border: 2px solid var(--border); border-radius: 12px; padding: 12px 16px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.97rem; resize: none; min-height: 48px; max-height: 140px; line-height: 1.5; transition: border-color 0.2s; }
+.input-area textarea:focus { outline: none; border-color: var(--accent-blue); }
+.input-area textarea::placeholder { color: var(--text-dim); }
+.send-btn { background: var(--accent-blue); color: white; border: none; border-radius: 10px; width: 48px; height: 48px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; }
+.send-btn:hover { background: #2980b9; transform: scale(1.05); }
+.send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.send-btn svg { width: 20px; height: 20px; }
+
+/* Debrief */
+.debrief-overlay { display: none; position: fixed; inset: 0; background: rgba(10,14,26,0.95); z-index: 100; overflow-y: auto; padding: 40px 24px; }
+.debrief-overlay.visible { display: block; }
+.debrief-inner { max-width: 760px; margin: 0 auto; }
+.debrief-section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 28px; margin-bottom: 20px; }
+.debrief-section h3 { font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 700; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+.debrief-section p { color: var(--text-dim); margin-bottom: 12px; font-size: 0.95rem; }
+.score-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-bottom: 32px; }
+.score-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+.score-label { font-family: 'DM Sans', sans-serif; font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.score-value { font-family: 'DM Sans', sans-serif; font-size: 1.8rem; font-weight: 700; color: var(--accent-blue); }
+.debrief-actions { display: flex; gap: 12px; margin-top: 32px; flex-wrap: wrap; }
+.debrief-actions button { font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700; padding: 14px 24px; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+.btn-primary { background: var(--accent-blue); color: white; border: none; }
+.btn-secondary { background: none; border: 2px solid var(--border); color: var(--text); }
+</style>
+</head>
+<a href="/dashboard.html" class="bu-dash-btn">&#8592; Dashboard</a>
+<body>
+
+<!-- Selection Screen -->
+<div class="selection-screen" id="selectionScreen">
+  <div class="selection-inner">
+    <div class="engine-badge">Component 4.7 — Sales Roleplay Engine</div>
+    <h1>Practice Selling Until<br>Rejection Feels Routine</h1>
+    <p class="subtitle">An AI buyer that behaves like a real one — guarded, skeptical, and protecting their time. Practice each module skill in isolation or run a full sales cycle.</p>
+
+    <div class="section-label">What Are You Selling? (Optional)</div>
+    <div class="product-input-wrap">
+      <input type="text" class="product-input" id="productInput" placeholder="e.g. SaaS platform, consulting services, yourself as a candidate, marketing automation tool...">
+      <div class="product-hint">Leave blank and the AI will generate a realistic scenario for you.</div>
+    </div>
+
+    <div class="section-label">Choose Your Focus</div>
+    <div class="scenarios-grid">
+      <div class="scenario-card" onclick="selectScenario(this, 'module2')">
+        <div class="module-tag">Module 2</div>
+        <div class="scenario-icon">🧠</div>
+        <h3>Change How They Think</h3>
+        <p>Practice moving beyond good vibes to actually shifting the buyer's thinking about their situation.</p>
+      </div>
+      <div class="scenario-card" onclick="selectScenario(this, 'module3')">
+        <div class="module-tag">Module 3</div>
+        <div class="scenario-icon">💥</div>
+        <h3>Make Status Quo Painful</h3>
+        <p>Lead with consequences, not features. Make the cost of doing nothing vivid and specific.</p>
+      </div>
+      <div class="scenario-card" onclick="selectScenario(this, 'module4')">
+        <div class="module-tag">Module 4</div>
+        <div class="scenario-icon">🧮</div>
+        <h3>Articulate Cost of Absence</h3>
+        <p>Quantify your value at the consequence level — not what you do, but what breaks without you.</p>
+      </div>
+      <div class="scenario-card" onclick="selectScenario(this, 'module5')">
+        <div class="module-tag">Module 5</div>
+        <div class="scenario-icon">🎯</div>
+        <h3>Find the Decision-Maker</h3>
+        <p>Navigate from enthusiastic non-decision-makers to the person who can actually say yes.</p>
+      </div>
+      <div class="scenario-card" onclick="selectScenario(this, 'module6')">
+        <div class="module-tag">Module 6</div>
+        <div class="scenario-icon">🔬</div>
+        <h3>Expert Diagnosis</h3>
+        <p>Ask before you pitch. Catch Symptom Words. Build the full picture before you prescribe anything.</p>
+      </div>
+      <div class="scenario-card" onclick="selectScenario(this, 'module7')">
+        <div class="module-tag">Module 7</div>
+        <div class="scenario-icon">✅</div>
+        <h3>Qualification Discipline</h3>
+        <p>Identify the 7 attributes. Walk away from dead ends. Pursue only real opportunities.</p>
+      </div>
+      <div class="scenario-card" onclick="selectScenario(this, 'module8')">
+        <div class="module-tag">Module 8</div>
+        <div class="scenario-icon">🤝</div>
+        <h3>Close the Deal</h3>
+        <p>Run the confirmation checkpoint. Ask directly. Handle "let me think about it." Pin a date.</p>
+      </div>
+    </div>
+
+    <div class="section-label">Difficulty</div>
+    <div class="difficulty-row">
+      <button class="diff-btn selected" onclick="selectDifficulty(this, 'beginner')">Beginner</button>
+      <button class="diff-btn" onclick="selectDifficulty(this, 'intermediate')">Intermediate</button>
+      <button class="diff-btn" onclick="selectDifficulty(this, 'advanced')">Advanced</button>
+    </div>
+
+    <button class="start-btn" id="startBtn" onclick="startRoleplay()">Select a Scenario to Begin →</button>
+  </div>
+</div>
+
+<!-- Chat Interface -->
+<div class="chat-app" id="chatApp">
+  <div class="chat-header">
+    <button class="back-btn" onclick="goBack()">← Scenarios</button>
+    <div class="chat-header-info">
+      <div class="chat-header-title" id="headerTitle">Sales Roleplay</div>
+      <div class="chat-header-sub">Stay in character · Type "debrief" anytime for feedback</div>
+    </div>
+    <button class="debrief-btn" onclick="requestDebrief()">Get Debrief</button>
+    <a href="/dashboard.html" class="back-btn" style="margin-left: 12px; text-decoration: none;">Dashboard</a>
+    <button class="back-btn" onclick="logOut()" style="margin-left:4px;">Log out</button>
+  </div>
+  <div class="messages-area" id="messagesArea"></div>
+  <div class="input-area">
+    <textarea id="userInput" placeholder="Lead the conversation..." rows="1" onkeydown="handleKeydown(event)" oninput="autoResize(this)"></textarea>
+    <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"></line>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<!-- Debrief Overlay -->
+<div class="debrief-overlay" id="debriefOverlay">
+  <div class="debrief-inner" id="debriefContent"></div>
+</div>
+
+<script>
+let selectedScenario = null;
+let selectedDifficulty = 'beginner';
+let conversationHistory = [];
+let isLoading = false;
+let productOrService = '';
+
+const SCENARIO_LABELS = {
+  module2: 'Changing Thinking (M2)',
+  module3: 'Pain vs Pleasure (M3)',
+  module4: 'Cost of Absence (M4)',
+  module5: 'Find Decision-Maker (M5)',
+  module6: 'Expert Diagnosis (M6)',
+  module7: 'Qualification (M7)',
+  module8: 'Closing (M8)'
+};
+
+const MASTER_SYSTEM_PROMPT = `You are the Be Unavoidable Sales Role Play Engine. You play the role of a realistic buyer, hiring manager, boss, VP, committee member, or other counterpart in a simulated professional conversation. You never break character during a scenario unless the user explicitly asks to pause, debrief, or get coaching.
+
+CORE BEHAVIORAL RULES:
+1. STAY IN CHARACTER. You are the buyer, not a coach. Save all feedback for the debrief.
+2. RESPOND LIKE A REAL HUMAN. Natural conversational language. Filler words occasionally. Ramble slightly when asked good open-ended questions. Short guarded answers for weak questions.
+3. PROTECT YOUR PAIN. Do not volunteer your problems unprompted. The user must earn this through skilled questioning.
+4. REACT TO SKILL LEVEL. If they pitch before diagnosing — polite disinterest. If they demonstrate real diagnostic skill — open up.
+5. HAVE A HIDDEN AGENDA. Pain, costs, consequences, decision process, timeline, budget, and at least one unvoiced concern. User must uncover these through questioning.
+6. USE SYMPTOM WORDS. "It's been challenging," "We're figuring it out," "Things have been hectic," "We tried something similar before." These are doors.
+7. RESPOND TO CLOSING REALISTICALLY. Before full diagnostic — deflect with "Let me think about it." After good diagnostic and qualification work — respond positively but require proper closing mechanics.
+8. NEVER COACH DURING THE SCENE.
+
+CONVERSATION FLOW:
+OPENING: Let the user lead. If they pitch immediately — respond with guarded politeness.
+MIDDLE: Escalate or de-escalate engagement based on technique. Good questions get detailed answers. Poor questions get vague non-committal answers.
+CLOSING: Based on how well they've earned it.
+DEBRIEF: When user says "debrief," "pause," "how am I doing" — exit character and provide module-referenced feedback.
+
+SCORING for debrief (1-5 each):
+- Module 2 (Changing Thinking): Did they shift what you THINK, not just how you FEEL?
+- Module 3 (Pain & Consequences): Did they help you quantify and feel the cost of status quo?
+- Module 4 (Cost of Absence): Did they articulate value at the consequence level with specifics?
+- Module 5 (Decision-Maker): Did they confirm authority and navigate the decision process?
+- Module 6 (Diagnosis): Did they ask before pitching? Catch Symptom Words? Resist presenting early?
+- Module 7 (Qualification): Did they probe all 7 attributes? Willing to walk away?
+- Module 8 (Closing): Did they run confirmation checkpoint, ask directly, handle stalls, pin a date?`;
+
+const SCENARIO_PROMPTS = {
+  module2: `FOCUS: Module 2 — Changing How People Think
+YOUR HIDDEN PROFILE: VP of Product at a mid-size SaaS company (450 employees). Real problem: last three product launches shipped late, costing $1.2M in delayed revenue. You've interviewed or talked to six vendors/candidates who all seemed solid but none changed how you think about the problem.
+UNVOICED CONCERN: You suspect the issue is process-level, not a headcount/vendor problem. You're afraid another solution will fail like the last ones.
+SYMPTOM WORDS: "execution challenges," "complicated launch cycles," "we've struggled to find the right fit"
+SUCCESS CRITERIA: User succeeds when you say something like "I hadn't thought about it that way" — that signals a THINKING shift, not just a feeling shift.`,
+
+  module3: `FOCUS: Module 3 — Pain vs. Pleasure
+YOUR HIDDEN PROFILE: Sales Director at a tech company (150 reps). Team ramp time is 9 months vs 4-month industry average. Lost 14 reps last year (31% turnover = ~$2.6M cost). You've normalized this as "just how sales is." CEO has started asking pointed questions about productivity.
+UNVOICED CONCERN: Your job might be at risk if numbers don't improve next quarter.
+SYMPTOM WORDS: "we're doing okay," "turnover is just part of the business," "it's been a tough market"
+SUCCESS CRITERIA: User helps you DO THE MATH on the real cost and you visibly shift from casual to urgent.`,
+
+  module4: `FOCUS: Module 4 — Cost of Absence / Value Articulation
+YOUR HIDDEN PROFILE: SVP responsible for cutting 40 positions. Evaluating based on: cost vs output, what breaks if they're gone, how hard to replace. You've already decided to cut people who can only describe what they DO, not what their absence COSTS.
+SYMPTOM WORDS: "these are tough decisions," "I appreciate your contributions," "we have to look at the whole picture"
+SUCCESS CRITERIA: User articulates their value at consequence level — specific, quantified costs of them NOT being here.`,
+
+  module5: `FOCUS: Module 5 — Finding the Decision-Maker
+YOUR HIDDEN PROFILE: Senior Manager who is enthusiastic about the user's product/candidacy but CANNOT make the final decision. That's your VP. You will say things like "I'm going to push this forward" but when asked about timeline your answers get vague.
+UNVOICED: You're willing to introduce the user to the VP if asked properly, but won't volunteer it.
+SYMPTOM WORDS: "I need to run this by a few people," "let me socialize this internally," "I'm really excited about this"
+SUCCESS CRITERIA: User recognizes they're talking to the wrong person and navigates to the decision-maker respectfully.`,
+
+  module6: `FOCUS: Module 6 — Expert Diagnosis
+YOUR HIDDEN PROFILE: COO of a healthcare services company (600 employees). Patient satisfaction scores dropped from 92% to 78% over 18 months. Staff turnover 42% annually (~$3.8M cost). Two major contracts ($8.2M combined) up for renewal in 90 days. Below 75% = lose Joint Commission accreditation.
+UNVOICED CONCERN: You're worried this is a leadership problem, not a training problem. You might be part of the issue.
+SYMPTOM WORDS: "we've had some challenges with patient experience," "staffing has been tight," "the industry is going through a lot"
+BEHAVIOR: If they pitch their solution early — disengage completely. If they catch Symptom Words and probe — reward with meaningful answers.`,
+
+  module7: `FOCUS: Module 7 — Qualification Discipline
+YOUR HIDDEN PROFILE: Director of IT at a Fortune 1000 company. Genuinely interested BUT: MISSING — (1) Timeline: "We're exploring options" (2) Budget: Not approved, hoping for next quarter (3) Decision-maker: CIO hasn't been involved, has final say.
+Everything else IS present: you've articulated pain, quantified costs, understand the solution.
+BEHAVIOR: If user identifies missing attributes and asks directly — be honest and respect their professionalism. If they never qualify — stay enthusiastic and drag this out.`,
+
+  module8: `FOCUS: Module 8 — Gaining Commitment & Closing
+YOUR HIDDEN PROFILE: VP of Sales at growing SaaS company. The user has done excellent diagnostic work. You ARE ready to move forward. But you need them to: (a) run confirmation checkpoint, (b) present tailored solution, (c) ask directly for commitment, (d) lay out specific next steps with dates.
+UNVOICED: If they ask for commitment before running the checkpoint — you'll introduce a last-minute "actually, one more thing..." objection.
+TEST: When you deploy "let me think about it" — see if they: (1) Validate, (2) Diagnose what's underneath, (3) Re-anchor to cost, (4) Pin a date.`
+};
+
+const DIFFICULTY_INSTRUCTIONS = {
+  beginner: 'DIFFICULTY: BEGINNER — Be relatively open. Pain is near the surface. Symptom Words are obvious. Give room to recover from mistakes.',
+  intermediate: 'DIFFICULTY: INTERMEDIATE — Be guarded. Pain requires 2-3 layers of questioning. Deploy "let me think about it" at least once. One hidden concern must be surfaced.',
+  advanced: 'DIFFICULTY: ADVANCED — Skeptical, busy, protective of time. Pain deeply buried. Multiple deflections. Test closing discipline aggressively. At least one critical qualification data point is missing.'
+};
+
+function selectScenario(el, key) {
+  document.querySelectorAll('.scenario-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedScenario = key;
+  const btn = document.getElementById('startBtn');
+  btn.textContent = `Start ${SCENARIO_LABELS[key]} →`;
+}
+
+function selectDifficulty(el, level) {
+  document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedDifficulty = level;
+}
+
+function startRoleplay() {
+  if (!selectedScenario) {
+    const btn = document.getElementById('startBtn');
+    btn.textContent = '⚠ Please select a scenario above first';
+    setTimeout(() => { btn.textContent = 'Select a Scenario to Begin →'; }, 2500);
+    return;
+  }
+  productOrService = document.getElementById('productInput').value.trim();
+  document.getElementById('selectionScreen').style.display = 'none';
+  document.getElementById('chatApp').classList.add('visible');
+  document.getElementById('headerTitle').textContent = SCENARIO_LABELS[selectedScenario];
+  conversationHistory = [];
+  sendOpeningMessage();
+}
+
+function goBack() {
+  document.getElementById('chatApp').classList.remove('visible');
+  document.getElementById('selectionScreen').style.display = 'block';
+  document.getElementById('messagesArea').innerHTML = '';
+}
+
+function buildSystemPrompt() {
+  let prompt = MASTER_SYSTEM_PROMPT;
+  prompt += '\n\n' + DIFFICULTY_INSTRUCTIONS[selectedDifficulty];
+  prompt += '\n\n' + SCENARIO_PROMPTS[selectedScenario];
+  if (productOrService) {
+    prompt += `\n\nUSER'S PRODUCT/SERVICE: "${productOrService}" — incorporate this into the scenario naturally. The user is selling or advocating for this specific thing.`;
+  }
+  return prompt;
+}
+
+async function sendOpeningMessage() {
+  const system = buildSystemPrompt();
+  const openingMsg = { role: 'user', content: 'Begin the roleplay. Set the scene briefly and hand control to the user.' };
+  showTyping();
+  try {
+    const response = await callAPI(system, [openingMsg]);
+    hideTyping();
+    addMessage('assistant', response);
+    conversationHistory.push(openingMsg);
+    conversationHistory.push({ role: 'assistant', content: response });
+  } catch (e) {
+    hideTyping();
+    addMessage('assistant', 'Failed to start scenario. Please try again.');
+  }
+}
+
+async function sendMessage() {
+  const input = document.getElementById('userInput');
+  const text = input.value.trim();
+  if (!text || isLoading) return;
+
+  input.value = '';
+  input.style.height = 'auto';
+  addMessage('user', text);
+  conversationHistory.push({ role: 'user', content: text });
+
+  if (text.toLowerCase().includes('debrief') || text.toLowerCase().includes('how am i doing') || text.toLowerCase().includes('pause')) {
+    await requestDebrief();
+    return;
+  }
+
+  isLoading = true;
+  document.getElementById('sendBtn').disabled = true;
+  showTyping();
+
+  try {
+    const response = await callAPI(buildSystemPrompt(), conversationHistory);
+    hideTyping();
+    addMessage('assistant', response);
+    conversationHistory.push({ role: 'assistant', content: response });
+  } catch (e) {
+    hideTyping();
+    addMessage('assistant', 'Something went wrong. Please try again.');
+  } finally {
+    isLoading = false;
+    document.getElementById('sendBtn').disabled = false;
+  }
+}
+
+async function requestDebrief() {
+  if (isLoading) return;
+  isLoading = true;
+  document.getElementById('sendBtn').disabled = true;
+  showTyping();
+
+  // Use only last 20 messages to avoid token overflow on long sessions
+  const recentHistory = conversationHistory.slice(-20);
+
+  const debriefPrompt = `The roleplay session is over. You are now a sales coach reviewing this conversation. Analyse the user performance and return ONLY a raw JSON object with no markdown, no backticks, no explanation before or after. Use exactly this structure:
+{
+  "overall_score": 3,
+  "scenario_focus": "${SCENARIO_LABELS[selectedScenario] || 'Sales Roleplay'}",
+  "what_worked": ["specific observation", "observation 2", "observation 3"],
+  "to_improve": ["specific improvement with example language", "improvement 2"],
+  "missed_opportunities": ["specific moment and what they could have said"],
+  "scores": {
+    "module2_changing_thinking": {"score": 3, "note": "brief note"},
+    "module3_pain_consequences": {"score": 3, "note": "brief note"},
+    "module6_diagnosis": {"score": 3, "note": "brief note"},
+    "module8_closing": {"score": 3, "note": "brief note"}
+  },
+  "recommended_next": "One specific thing to practice next"
+}
+IMPORTANT: Return ONLY the JSON. No other text whatsoever.`;
+
+  const attemptDebrief = async () => {
+    const response = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1500,
+        system: 'You are a sales coach providing structured feedback. Return ONLY a valid JSON object — no markdown, no code fences, no backticks, no text before or after the JSON.',
+        messages: [...recentHistory, { role: 'user', content: debriefPrompt }]
+      })
+    });
+    if (!response.ok) throw new Error(`API error: ${response.status}`);
+    const data = await response.json();
+    if (!data.content || !data.content[0] || !data.content[0].text) throw new Error('Empty API response');
+
+    let rawText = data.content[0].text.trim();
+    rawText = rawText.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
+
+    const jsonStart = rawText.indexOf('{');
+    const jsonEnd = rawText.lastIndexOf('}');
+    if (jsonStart === -1 || jsonEnd === -1) throw new Error('No JSON object found');
+    let cleanJson = rawText.slice(jsonStart, jsonEnd + 1);
+    // Repair common Claude JSON issues: missing commas between } or ] and next "key"
+    cleanJson = cleanJson.replace(/\}\s*\n(\s*")/g, '},\n$1');
+    cleanJson = cleanJson.replace(/\]\s*\n(\s*")/g, '],\n$1');
+    cleanJson = cleanJson.replace(/,(\s*[}\]])/g, '$1');
+    return JSON.parse(cleanJson);
+  };
+
+  try {
+    let debrief;
+    try {
+      debrief = await attemptDebrief();
+    } catch (firstErr) {
+      console.warn('Debrief attempt 1 failed, retrying...', firstErr);
+      await new Promise(r => setTimeout(r, 1500));
+      debrief = await attemptDebrief();
+    }
+    hideTyping();
+    showDebrief(debrief);
+  } catch (e) {
+    hideTyping();
+    console.error('Debrief failed after retries:', e);
+    addMessage('assistant', 'Taking a moment to generate your debrief… please click "Get Debrief" again.');
+  } finally {
+    isLoading = false;
+    document.getElementById('sendBtn').disabled = false;
+  }
+}
+function showDebrief(d) {
+  const overlay = document.getElementById('debriefOverlay');
+  const content = document.getElementById('debriefContent');
+  const scoreColor = d.overall_score >= 4 ? 'var(--accent-green)' : d.overall_score >= 3 ? 'var(--accent-yellow)' : 'var(--accent-red)';
+
+  content.innerHTML = `
+    <div style="margin-bottom:36px;">
+      <div style="font-family:'Space Mono',monospace; font-size:11px; color:var(--accent-blue); text-transform:uppercase; letter-spacing:2px; margin-bottom:12px;">Session Debrief</div>
+      <h2 style="font-family:'Instrument Serif',serif; font-size:2rem; margin-bottom:8px;">${d.scenario_focus}</h2>
+      <div style="display:flex; align-items:baseline; gap:8px; margin-top:12px;">
+        <span style="font-family:'Space Mono',monospace; font-size:3rem; font-weight:700; color:${scoreColor}">${d.overall_score}</span>
+        <span style="color:var(--text-dim); font-size:1.2rem;">/5 overall</span>
+      </div>
+    </div>
+
+    <div class="score-grid">
+      ${Object.entries(d.scores).map(([key, val]) => `
+        <div class="score-card">
+          <div class="score-label">${key.replace(/_/g, ' ').replace('module', 'M').toUpperCase()}</div>
+          <div class="score-value">${val.score}<span style="font-size:0.9rem; color:var(--text-dim)">/5</span></div>
+          <div style="font-size:0.82rem; color:var(--text-dim); margin-top:6px;">${val.note}</div>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="debrief-section">
+      <h3>✓ What Worked</h3>
+      ${d.what_worked.map(w => `<p>• ${w}</p>`).join('')}
+    </div>
+
+    <div class="debrief-section">
+      <h3>→ What to Improve</h3>
+      ${d.to_improve.map(i => `<p>• ${i}</p>`).join('')}
+    </div>
+
+    ${d.missed_opportunities && d.missed_opportunities.length ? `
+    <div class="debrief-section">
+      <h3>Missed Opportunities</h3>
+      ${d.missed_opportunities.map(m => `<p>• ${m}</p>`).join('')}
+    </div>` : ''}
+
+    <div class="debrief-section">
+      <h3>Recommended Next Practice</h3>
+      <p>${d.recommended_next}</p>
+    </div>
+
+    <div class="debrief-actions">
+      <button class="btn-primary" onclick="tryAgain()">Try Again</button>
+      <button class="btn-secondary" onclick="document.getElementById('debriefOverlay').classList.remove('visible')">Continue</button>
+      <button class="btn-secondary" onclick="goBackToScenarios()">New Scenario</button>
+    </div>
+  `;
+  overlay.classList.add('visible');
+}
+
+function tryAgain() {
+  document.getElementById('debriefOverlay').classList.remove('visible');
+  document.getElementById('messagesArea').innerHTML = '';
+  conversationHistory = [];
+  sendOpeningMessage();
+}
+
+function goBackToScenarios() {
+  document.getElementById('debriefOverlay').classList.remove('visible');
+  goBack();
+}
+
+async function callAPI(system, messages) {
+  const response = await fetch('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 350,
+      system: system,
+      messages: messages
+    })
+  });
+  if (!response.ok) throw new Error('API error');
+  const data = await response.json();
+  return data.content[0].text;
+}
+
+function addMessage(role, content) {
+  const area = document.getElementById('messagesArea');
+  const wrapper = document.createElement('div');
+  wrapper.className = `message ${role}`;
+  const label = document.createElement('div');
+  label.className = 'message-label';
+  label.textContent = role === 'user' ? 'You' : 'Buyer / Counterpart';
+  const bubble = document.createElement('div');
+  bubble.className = 'message-bubble';
+  bubble.innerHTML = content.replace(/\n/g, '<br>');
+  wrapper.appendChild(label);
+  wrapper.appendChild(bubble);
+  area.appendChild(wrapper);
+  area.scrollTop = area.scrollHeight;
+}
+
+function showTyping() {
+  const area = document.getElementById('messagesArea');
+  const t = document.createElement('div');
+  t.className = 'typing-indicator';
+  t.id = 'typingIndicator';
+  t.innerHTML = `<div class="typing-dots"><span></span><span></span><span></span></div>`;
+  area.appendChild(t);
+  area.scrollTop = area.scrollHeight;
+}
+
+function hideTyping() {
+  const el = document.getElementById('typingIndicator');
+  if (el) el.remove();
+}
+
+function handleKeydown(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 140) + 'px';
+}
+</script>
+
+<script>
+  async function logOut() {
+    await fetch('/api/logout');
+    window.location.href = '/login.html';
+  }
+</script>
+</body>
+</html>

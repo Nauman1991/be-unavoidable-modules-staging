@@ -1,0 +1,2555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Be Unavoidable — No One Is Coming For You</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --bg-dark: #0e0e0e;
+  --bg-darker: #161616;
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0a0;
+  --brand-blue: #0050a5;
+  --accent-red: #d32f2f;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-dark);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* ─── NAVIGATION ─── */
+  .beu-nav {
+    position: fixed; top:0; left:0; width:100%; z-index:9999;
+    padding: 24px 48px;
+    display: flex; justify-content:space-between; align-items:center;
+    background: rgba(14,14,14,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    box-sizing: border-box;
+  }
+  
+  @media (max-width:768px) {
+    .beu-nav { padding:18px 24px; }
+  }
+
+  /* ─── HERO ─── */
+  .beu-hero {
+    min-height: 100vh;
+    display: flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center;
+    padding: 140px 24px 80px;
+    background: var(--bg-dark);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  /* Background texture */
+  .beu-hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: 
+      radial-gradient(circle at 20% 30%, rgba(0,80,165,0.08) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(211,47,47,0.05) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  
+  .beu-hero-content {
+    max-width: 1000px;
+    position: relative;
+    z-index: 1;
+  }
+  
+  /* Eyebrow */
+  .beu-eyebrow {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--brand-blue);
+    margin-bottom: 24px;
+    opacity: 0;
+    animation: fadeInUp 0.8s ease-out 0.2s forwards;
+  }
+  
+  /* Headline */
+  .beu-headline {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3.5rem, 10vw, 7rem);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    margin-bottom: 32px;
+    opacity: 0;
+    animation: fadeInUp 0.8s ease-out 0.4s forwards;
+  }
+  
+  .beu-headline-accent {
+    color: var(--brand-blue);
+    display: block;
+  }
+  
+  /* Subheadline */
+  .beu-subhead {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.25rem, 2.5vw, 2rem);
+    line-height: 1.4;
+    color: var(--text-secondary);
+    font-style: italic;
+    max-width: 700px;
+    margin: 0 auto 48px;
+    opacity: 0;
+    animation: fadeInUp 0.8s ease-out 0.6s forwards;
+  }
+  
+  /* Data Point */
+  .beu-data-point {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-left: 3px solid var(--accent-red);
+    padding: 24px 32px;
+    margin: 48px auto;
+    max-width: 800px;
+    text-align: left;
+    opacity: 0;
+    animation: fadeInUp 0.8s ease-out 0.8s forwards;
+  }
+  
+  .beu-data-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent-red);
+    margin-bottom: 8px;
+  }
+  
+  .beu-data-stat {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.5rem;
+    line-height: 1;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+  }
+  
+  .beu-data-text {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+  }
+  
+  .beu-data-text strong {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+  
+  /* CTA Group */
+  .beu-cta-group {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: 48px;
+    opacity: 0;
+    animation: fadeInUp 0.8s ease-out 1s forwards;
+  }
+  
+  .beu-cta-primary {
+    display: inline-block;
+    padding: 18px 48px;
+    background: var(--brand-blue);
+    color: #ffffff;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: 2px solid var(--brand-blue);
+    border-radius: 2px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .beu-cta-primary:hover {
+    background: transparent;
+    color: var(--brand-blue);
+    transform: translateY(-2px);
+  }
+  
+  .beu-cta-secondary {
+    display: inline-block;
+    padding: 18px 48px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 2px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .beu-cta-secondary:hover {
+    border-color: rgba(255,255,255,0.4);
+    color: var(--text-primary);
+  }
+  
+  /* Scroll Indicator */
+  .beu-scroll-indicator {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    animation: fadeInUp 0.8s ease-out 1.2s forwards, float 3s ease-in-out infinite;
+  }
+  
+  .beu-scroll-indicator svg {
+    width: 24px;
+    height: 24px;
+    stroke: var(--text-secondary);
+  }
+  
+  /* Animations */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes float {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(10px); }
+  }
+  
+  /* Responsive */
+  @media (max-width:768px) {
+    .beu-hero {
+      padding: 120px 20px 60px;
+    }
+    
+    .beu-data-point {
+      padding: 20px 24px;
+      margin: 32px auto;
+    }
+    
+    .beu-cta-group {
+      flex-direction: column;
+      width: 100%;
+      max-width: 320px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .beu-cta-primary,
+    .beu-cta-secondary {
+      width: 100%;
+      text-align: center;
+    }
+  }
+
+/* === section-02-data.html === */
+
+  /* ─── SECTION 02: THE DATA ─── */
+  .beu-section-02 {
+    background: var(--bg-darker);
+    padding: 120px 24px;
+    position: relative;
+  }
+  
+  .beu-section-02-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  /* Section Header */
+  .beu-section-header {
+    text-align: center;
+    margin-bottom: 80px;
+  }
+  
+  .beu-section-eyebrow {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent-red);
+    margin-bottom: 16px;
+  }
+  
+  .beu-section-headline {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3rem, 8vw, 5rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin-bottom: 24px;
+  }
+  
+  .beu-section-subhead {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.1rem, 2vw, 1.5rem);
+    line-height: 1.5;
+    color: var(--text-secondary);
+    font-style: italic;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  
+  /* Stats Grid */
+  .beu-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 32px;
+    margin-bottom: 64px;
+  }
+  
+  .beu-stat-card {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-left: 3px solid var(--brand-blue);
+    padding: 32px;
+    transition: all 0.3s ease;
+  }
+  
+  .beu-stat-card:hover {
+    background: rgba(255,255,255,0.03);
+    border-left-color: var(--accent-red);
+    transform: translateY(-4px);
+  }
+  
+  .beu-stat-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--brand-blue);
+    margin-bottom: 12px;
+  }
+  
+  .beu-stat-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3.5rem;
+    line-height: 1;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+  }
+  
+  .beu-stat-number-red {
+    color: var(--accent-red);
+  }
+  
+  .beu-stat-text {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+  }
+  
+  .beu-stat-text strong {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+  
+  /* Featured Quote */
+  .beu-featured-quote {
+    background: rgba(0,80,165,0.08);
+    border: 1px solid rgba(0,80,165,0.2);
+    border-left: 4px solid var(--brand-blue);
+    padding: 48px;
+    margin: 64px auto;
+    max-width: 900px;
+  }
+  
+  .beu-quote-text {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+    line-height: 1.5;
+    font-style: italic;
+    color: var(--text-primary);
+    margin-bottom: 24px;
+  }
+  
+  .beu-quote-attribution {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--brand-blue);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  .beu-quote-context {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 8px;
+  }
+  
+  /* Reality Check */
+  .beu-reality-check {
+    text-align: center;
+    margin-top: 80px;
+    padding: 48px 24px;
+    background: rgba(211,47,47,0.05);
+    border: 1px solid rgba(211,47,47,0.2);
+  }
+  
+  .beu-reality-headline {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2rem, 5vw, 3rem);
+    line-height: 1.1;
+    margin-bottom: 16px;
+    color: var(--accent-red);
+  }
+  
+  .beu-reality-text {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.1rem, 2vw, 1.5rem);
+    line-height: 1.5;
+    color: var(--text-secondary);
+    font-style: italic;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  /* Responsive */
+  @media (max-width:768px) {
+    .beu-section-02 {
+      padding: 80px 20px;
+    }
+    
+    .beu-section-header {
+      margin-bottom: 48px;
+    }
+    
+    .beu-stats-grid {
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+    
+    .beu-stat-card {
+      padding: 24px;
+    }
+    
+    .beu-featured-quote {
+      padding: 32px 24px;
+      margin: 48px auto;
+    }
+    
+    .beu-reality-check {
+      margin-top: 48px;
+      padding: 32px 20px;
+    }
+  }
+
+/* === section-03-gap.html === */
+
+  /* ─── SECTION 03: THE GAP ─── */
+  .beu-section-03 {
+    background: var(--bg-dark);
+    padding: 120px 24px;
+    position: relative;
+  }
+  
+  .beu-section-03-container {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  
+  /* Section Header */
+  .beu-section-header {
+    text-align: center;
+    margin-bottom: 80px;
+  }
+  
+  .beu-section-eyebrow {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--brand-blue);
+    margin-bottom: 16px;
+  }
+  
+  .beu-section-headline {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3rem, 8vw, 5rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin-bottom: 24px;
+  }
+  
+  .beu-section-subhead {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.1rem, 2vw, 1.5rem);
+    line-height: 1.5;
+    color: var(--text-secondary);
+    font-style: italic;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  /* Options Grid */
+  .beu-options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 32px;
+    margin-bottom: 64px;
+  }
+  
+  .beu-option-card {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 40px 32px;
+    position: relative;
+  }
+  
+  .beu-option-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--accent-red);
+  }
+  
+  .beu-option-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    color: var(--accent-red);
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+  
+  .beu-option-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    line-height: 1.1;
+    margin-bottom: 16px;
+    color: var(--text-primary);
+  }
+  
+  .beu-option-desc {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+  }
+  
+  .beu-option-verdict {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--accent-red);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  
+  /* The Question */
+  .beu-the-question {
+    background: rgba(0,80,165,0.08);
+    border: 1px solid rgba(0,80,165,0.2);
+    border-left: 4px solid var(--brand-blue);
+    padding: 48px;
+    margin: 64px auto;
+    max-width: 900px;
+    text-align: center;
+  }
+  
+  .beu-question-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--brand-blue);
+    margin-bottom: 20px;
+  }
+  
+  .beu-question-text {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.5rem, 3vw, 2.25rem);
+    line-height: 1.3;
+    font-style: italic;
+    color: var(--text-primary);
+    margin-bottom: 24px;
+  }
+  
+  .beu-question-answer {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    line-height: 1;
+    color: var(--brand-blue);
+    margin-bottom: 16px;
+  }
+  
+  .beu-question-clarification {
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+  }
+  
+  .beu-question-clarification strong {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+  
+  /* Transition Statement */
+  .beu-transition {
+    text-align: center;
+    margin-top: 64px;
+    padding: 48px 24px;
+  }
+  
+  .beu-transition-text {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+    line-height: 1.5;
+    color: var(--text-secondary);
+    font-style: italic;
+    max-width: 800px;
+    margin: 0 auto 24px;
+  }
+  
+  .beu-transition-emphasis {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1.2;
+    color: var(--text-primary);
+  }
+  
+  .beu-transition-emphasis span {
+    color: var(--brand-blue);
+  }
+  
+  /* Responsive */
+  @media (max-width:768px) {
+    .beu-section-03 {
+      padding: 80px 20px;
+    }
+    
+    .beu-section-header {
+      margin-bottom: 48px;
+    }
+    
+    .beu-options-grid {
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+    
+    .beu-option-card {
+      padding: 32px 24px;
+    }
+    
+    .beu-the-question {
+      padding: 32px 24px;
+      margin: 48px auto;
+    }
+    
+    .beu-transition {
+      margin-top: 48px;
+      padding: 32px 20px;
+    }
+  }
+
+/* === section-04-lanes.html === */
+
+  /* ─── SECTION 04: SALES SKILLS REFRAMED ─── */
+  .beu-section-04 {
+    background: var(--bg-darker);
+    padding: 120px 24px;
+    position: relative;
+  }
+  
+  .beu-section-04-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  /* Section Header */
+  .beu-section-header {
+    text-align: center;
+    margin-bottom: 80px;
+  }
+  
+  .beu-section-eyebrow {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--brand-blue);
+    margin-bottom: 16px;
+  }
+  
+  .beu-section-headline {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2.5rem, 7vw, 4.5rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin-bottom: 32px;
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .beu-section-headline span {
+    color: var(--brand-blue);
+  }
+  
+  .beu-section-subhead {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.1rem, 2vw, 1.5rem);
+    line-height: 1.5;
+    color: var(--text-secondary);
+    font-style: italic;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  /* Intro Text */
+  .beu-intro-text {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: var(--text-secondary);
+    max-width: 900px;
+    margin: 0 auto 64px;
+    text-align: center;
+  }
+  
+  .beu-intro-text strong {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+  
+  /* Lanes Container */
+  .beu-lanes-container {
+    margin: 80px 0;
+  }
+  
+  .beu-lanes-intro {
+    text-align: center;
+    margin-bottom: 64px;
+  }
+  
+  .beu-lanes-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+  
+  .beu-lanes-subtitle {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    line-height: 1.5;
+    color: var(--text-secondary);
+    font-style: italic;
+  }
+  
+  /* Lanes Grid */
+  .beu-lanes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 48px;
+    margin-bottom: 64px;
+  }
+  
+  .beu-lane-card {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-top: 4px solid var(--brand-blue);
+    padding: 48px 40px;
+  }
+  
+  .beu-lane-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    color: var(--brand-blue);
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+  }
+  
+  .beu-lane-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.5rem;
+    line-height: 1;
+    margin-bottom: 24px;
+    color: var(--text-primary);
+  }
+  
+  .beu-lane-desc {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: var(--text-secondary);
+    margin-bottom: 32px;
+  }
+  
+  .beu-lane-desc strong {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+  
+  .beu-lane-examples-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--brand-blue);
+    margin-bottom: 16px;
+  }
+  
+  .beu-lane-example {
+    padding: 16px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  
+  .beu-lane-example:last-child {
+    border-bottom: none;
+  }
+  
+  .beu-lane-example-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+  }
+  
+  .beu-lane-example-text {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+  }
+  
+  /* Key Insight */
+  .beu-key-insight {
+    background: rgba(0,80,165,0.08);
+    border: 1px solid rgba(0,80,165,0.2);
+    border-left: 4px solid var(--brand-blue);
+    padding: 48px;
+    margin: 64px auto;
+    max-width: 900px;
+    text-align: center;
+  }
+  
+  .beu-insight-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--brand-blue);
+    margin-bottom: 20px;
+  }
+  
+  .beu-insight-text {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+    line-height: 1.5;
+    font-style: italic;
+    color: var(--text-primary);
+  }
+  
+  .beu-insight-text strong {
+    color: var(--brand-blue);
+    font-style: normal;
+  }
+  
+  /* Responsive */
+  @media (max-width:768px) {
+    .beu-section-04 {
+      padding: 80px 20px;
+    }
+    
+    .beu-section-header {
+      margin-bottom: 48px;
+    }
+    
+    .beu-lanes-grid {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+    
+    .beu-lane-card {
+      padding: 32px 24px;
+    }
+    
+    .beu-key-insight {
+      padding: 32px 24px;
+      margin: 48px auto;
+    }
+  }
+
+/* === section-05-how-it-works.html === */
+
+  /* ─── SECTION 05: HOW IT WORKS ─── */
+  .beu-section-05 {
+    background: var(--bg-dark);
+    padding: 120px 24px;
+    position: relative;
+  }
+  
+  .beu-section-05-container {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  
+  /* Section Header */
+  .beu-section-header {
+    text-align: center;
+    margin-bottom: 80px;
+  }
+  
+  .beu-section-eyebrow {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--brand-blue);
+    margin-bottom: 16px;
+  }
+  
+  .beu-section-headline {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3rem, 8vw, 5rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin-bottom: 24px;
+  }
+  
+  .beu-section-subhead {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.1rem, 2vw, 1.5rem);
+    line-height: 1.5;
+    color: var(--text-secondary);
+    font-style: italic;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  /* Journey Flow */
+  .beu-journey-flow {
+    position: relative;
+    margin: 80px 0;
+  }
+  
+  /* Connector Line */
+  .beu-journey-flow::before {
+    content: '';
+    position: absolute;
+    left: 40px;
+    top: 80px;
+    bottom: 80px;
+    width: 2px;
+    background: linear-gradient(to bottom, 
+      var(--brand-blue) 0%, 
+      var(--brand-blue) 80%, 
+      transparent 100%
+    );
+  }
+  
+  .beu-step {
+    position: relative;
+    margin-bottom: 64px;
+    padding-left: 120px;
+  }
+  
+  .beu-step:last-child {
+    margin-bottom: 0;
+  }
+  
+  /* Step Number */
+  .beu-step-number {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 80px;
+    height: 80px;
+    background: var(--brand-blue);
+    border: 3px solid var(--bg-dark);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    color: #ffffff;
+    z-index: 2;
+  }
+  
+  /* Step Content */
+  .beu-step-content {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-left: 3px solid var(--brand-blue);
+    padding: 32px;
+  }
+  
+  .beu-step-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    line-height: 1.1;
+    margin-bottom: 16px;
+    color: var(--text-primary);
+  }
+  
+  .beu-step-desc {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+  }
+  
+  .beu-step-desc strong {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+  
+  .beu-step-value {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--brand-blue);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+  
+  /* Key Principle */
+  .beu-key-principle {
+    background: rgba(0,80,165,0.08);
+    border: 1px solid rgba(0,80,165,0.2);
+    border-left: 4px solid var(--brand-blue);
+    padding: 48px;
+    margin: 80px auto 0;
+    max-width: 900px;
+    text-align: center;
+  }
+  
+  .beu-principle-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--brand-blue);
+    margin-bottom: 20px;
+  }
+  
+  .beu-principle-text {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+    line-height: 1.5;
+    font-style: italic;
+    color: var(--text-primary);
+  }
+  
+  .beu-principle-text strong {
+    color: var(--brand-blue);
+    font-style: normal;
+  }
+  
+  /* Responsive */
+  @media (max-width:768px) {
+    .beu-section-05 {
+      padding: 80px 20px;
+    }
+    
+    .beu-section-header {
+      margin-bottom: 48px;
+    }
+    
+    .beu-journey-flow::before {
+      left: 20px;
+    }
+    
+    .beu-step {
+      padding-left: 80px;
+      margin-bottom: 48px;
+    }
+    
+    .beu-step-number {
+      width: 60px;
+      height: 60px;
+      font-size: 1.5rem;
+    }
+    
+    .beu-step-content {
+      padding: 24px;
+    }
+    
+    .beu-key-principle {
+      padding: 32px 24px;
+      margin-top: 48px;
+    }
+  }
+
+/* === section-06-modules.html === */
+
+  /* ─── SECTION 06: WHAT YOU LEARN ─── */
+  .beu-section-06 {
+    background: var(--bg-darker);
+    padding: 120px 24px;
+    position: relative;
+  }
+  
+  .beu-section-06-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  /* Section Header */
+  .beu-section-header {
+    text-align: center;
+    margin-bottom: 80px;
+  }
+  
+  .beu-section-eyebrow {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent-red);
+    margin-bottom: 16px;
+  }
+  
+  .beu-section-headline {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3rem, 8vw, 5rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin-bottom: 24px;
+  }
+  
+  .beu-section-subhead {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.1rem, 2vw, 1.5rem);
+    line-height: 1.5;
+    color: var(--text-secondary);
+    font-style: italic;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  /* Intro Statement */
+  .beu-intro-statement {
+    background: rgba(211,47,47,0.08);
+    border: 1px solid rgba(211,47,47,0.2);
+    border-left: 4px solid var(--accent-red);
+    padding: 40px;
+    margin: 0 auto 80px;
+    max-width: 900px;
+    text-align: center;
+  }
+  
+  .beu-intro-text {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+    line-height: 1.5;
+    font-style: italic;
+    color: var(--text-primary);
+  }
+  
+  .beu-intro-text strong {
+    color: var(--accent-red);
+    font-style: normal;
+  }
+  
+  /* Modules Grid */
+  .beu-modules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 32px;
+    margin-bottom: 64px;
+  }
+  
+  .beu-module-card {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 32px;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+  
+  .beu-module-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--brand-blue);
+    transition: all 0.3s ease;
+  }
+  
+  .beu-module-card:hover {
+    background: rgba(255,255,255,0.04);
+    transform: translateX(4px);
+  }
+  
+  .beu-module-card:hover::before {
+    background: var(--accent-red);
+  }
+  
+  .beu-module-number {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.9rem;
+    color: var(--brand-blue);
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+  
+  .beu-module-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.75rem;
+    line-height: 1.2;
+    margin-bottom: 16px;
+    color: var(--text-primary);
+  }
+  
+  .beu-module-desc {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--text-secondary);
+  }
+  
+  /* Credibility Statement */
+  .beu-credibility {
+    background: rgba(0,80,165,0.08);
+    border: 1px solid rgba(0,80,165,0.2);
+    border-left: 4px solid var(--brand-blue);
+    padding: 48px;
+    margin: 80px auto 0;
+    max-width: 900px;
+    text-align: center;
+  }
+  
+  .beu-credibility-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--brand-blue);
+    margin-bottom: 20px;
+  }
+  
+  .beu-credibility-text {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+    line-height: 1.5;
+    font-style: italic;
+    color: var(--text-primary);
+  }
+  
+  .beu-credibility-text strong {
+    color: var(--brand-blue);
+    font-style: normal;
+  }
+  
+  /* Responsive */
+  @media (max-width:768px) {
+    .beu-section-06 {
+      padding: 80px 20px;
+    }
+    
+    .beu-section-header {
+      margin-bottom: 48px;
+    }
+    
+    .beu-intro-statement {
+      padding: 32px 24px;
+      margin-bottom: 48px;
+    }
+    
+    .beu-modules-grid {
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+    
+    .beu-module-card {
+      padding: 24px;
+    }
+    
+    .beu-credibility {
+      padding: 32px 24px;
+      margin-top: 48px;
+    }
+  }
+
+/* === section-07-qualification.html === */
+
+  /* ─── SECTION 07: WHO THIS IS FOR ─── */
+  .beu-section-07 {
+    background: var(--bg-dark);
+    padding: 120px 24px;
+    position: relative;
+  }
+  
+  .beu-section-07-container {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  
+  /* Section Header */
+  .beu-section-header {
+    text-align: center;
+    margin-bottom: 80px;
+  }
+  
+  .beu-section-eyebrow {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--brand-blue);
+    margin-bottom: 16px;
+  }
+  
+  .beu-section-headline {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3rem, 8vw, 5rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin-bottom: 24px;
+  }
+  
+  .beu-section-subhead {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.1rem, 2vw, 1.5rem);
+    line-height: 1.5;
+    color: var(--text-secondary);
+    font-style: italic;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  /* Two Column Layout */
+  .beu-qualification-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 48px;
+    margin-bottom: 64px;
+  }
+  
+  /* Good Fit Card */
+  .beu-fit-card {
+    background: rgba(0,80,165,0.08);
+    border: 1px solid rgba(0,80,165,0.2);
+    border-left: 4px solid var(--brand-blue);
+    padding: 48px 40px;
+  }
+  
+  .beu-fit-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.5rem;
+    line-height: 1;
+    margin-bottom: 24px;
+    color: var(--brand-blue);
+  }
+  
+  .beu-fit-list {
+    list-style: none;
+  }
+  
+  .beu-fit-item {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: var(--text-secondary);
+    padding: 16px 0;
+    padding-left: 32px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    position: relative;
+  }
+  
+  .beu-fit-item:last-child {
+    border-bottom: none;
+  }
+  
+  .beu-fit-item::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    top: 16px;
+    color: var(--brand-blue);
+    font-weight: bold;
+    font-size: 1.2rem;
+  }
+  
+  /* Not a Fit Card */
+  .beu-not-fit-card {
+    background: rgba(211,47,47,0.08);
+    border: 1px solid rgba(211,47,47,0.2);
+    border-left: 4px solid var(--accent-red);
+    padding: 48px 40px;
+  }
+  
+  .beu-not-fit-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.5rem;
+    line-height: 1;
+    margin-bottom: 24px;
+    color: var(--accent-red);
+  }
+  
+  .beu-not-fit-item {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: var(--text-secondary);
+    padding: 16px 0;
+    padding-left: 32px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    position: relative;
+  }
+  
+  .beu-not-fit-item:last-child {
+    border-bottom: none;
+  }
+  
+  .beu-not-fit-item::before {
+    content: '✗';
+    position: absolute;
+    left: 0;
+    top: 16px;
+    color: var(--accent-red);
+    font-weight: bold;
+    font-size: 1.2rem;
+  }
+  
+  /* Honesty Statement */
+  .beu-honesty-statement {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-left: 3px solid var(--brand-blue);
+    padding: 48px;
+    margin: 64px auto 0;
+    max-width: 900px;
+    text-align: center;
+  }
+  
+  .beu-honesty-text {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+    line-height: 1.5;
+    font-style: italic;
+    color: var(--text-primary);
+  }
+  
+  .beu-honesty-text strong {
+    color: var(--brand-blue);
+    font-style: normal;
+  }
+  
+  /* Responsive */
+  @media (max-width:768px) {
+    .beu-section-07 {
+      padding: 80px 20px;
+    }
+    
+    .beu-section-header {
+      margin-bottom: 48px;
+    }
+    
+    .beu-qualification-grid {
+      grid-template-columns: 1fr;
+      gap: 32px;
+    }
+    
+    .beu-fit-card,
+    .beu-not-fit-card {
+      padding: 32px 24px;
+    }
+    
+    .beu-honesty-statement {
+      padding: 32px 24px;
+      margin-top: 48px;
+    }
+  }
+
+/* === section-08-final-cta.html === */
+
+  /* ─── SECTION 08: FINAL CTA ─── */
+  .beu-section-08 {
+    background: var(--bg-darker);
+    padding: 120px 24px;
+    position: relative;
+    text-align: center;
+  }
+  
+  /* Background Texture */
+  .beu-section-08::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: 
+      radial-gradient(circle at 30% 40%, rgba(0,80,165,0.1) 0%, transparent 50%),
+      radial-gradient(circle at 70% 60%, rgba(211,47,47,0.08) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  
+  .beu-section-08-container {
+    max-width: 900px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+  
+  /* Main Message */
+  .beu-cta-eyebrow {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--brand-blue);
+    margin-bottom: 24px;
+  }
+  
+  .beu-cta-headline {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3rem, 8vw, 5.5rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin-bottom: 32px;
+  }
+  
+  .beu-cta-subhead {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.25rem, 2.5vw, 2rem);
+    line-height: 1.4;
+    color: var(--text-secondary);
+    font-style: italic;
+    margin-bottom: 64px;
+  }
+  
+  /* CTA Buttons */
+  .beu-cta-button-group {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+    margin-bottom: 64px;
+  }
+  
+  .beu-cta-primary {
+    display: inline-block;
+    padding: 24px 64px;
+    background: var(--brand-blue);
+    color: #ffffff;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: 2px solid var(--brand-blue);
+    border-radius: 2px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .beu-cta-primary:hover {
+    background: transparent;
+    color: var(--brand-blue);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,80,165,0.3);
+  }
+  
+  .beu-cta-ghost {
+    display: inline-block;
+    padding: 16px 48px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 2px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .beu-cta-ghost:hover {
+    border-color: var(--accent-red);
+    color: var(--accent-red);
+  }
+  
+  /* Final Statement */
+  .beu-final-statement {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-top: 3px solid var(--brand-blue);
+    padding: 48px 40px;
+    margin-top: 80px;
+  }
+  
+  .beu-final-quote {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+    line-height: 1.5;
+    font-style: italic;
+    color: var(--text-primary);
+    margin-bottom: 24px;
+  }
+  
+  .beu-final-quote strong {
+    color: var(--brand-blue);
+    font-style: normal;
+  }
+  
+  .beu-final-author {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--brand-blue);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  /* Responsive */
+  @media (max-width:768px) {
+    .beu-section-08 {
+      padding: 80px 20px;
+    }
+    
+    .beu-cta-button-group {
+      width: 100%;
+      max-width: 320px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .beu-cta-primary,
+    .beu-cta-ghost {
+      width: 100%;
+      text-align: center;
+    }
+    
+    .beu-final-statement {
+      padding: 32px 24px;
+      margin-top: 48px;
+    }
+  }
+
+/* === section-09-footer.html === */
+
+  /* ─── SECTION 09: FOOTER ─── */
+  .beu-footer {
+    background: var(--bg-dark);
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding: 80px 24px 40px;
+  }
+  
+  .beu-footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  /* Footer Grid */
+  .beu-footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 64px;
+    margin-bottom: 64px;
+  }
+  
+  /* Brand Column */
+  .beu-footer-brand {
+    max-width: 350px;
+  }
+  
+  .beu-footer-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 1px;
+    color: var(--text-primary);
+    margin-bottom: 16px;
+  }
+  
+  .beu-footer-tagline {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    font-style: italic;
+    margin-bottom: 24px;
+  }
+  
+  .beu-footer-description {
+    font-size: 0.85rem;
+    line-height: 1.7;
+    color: var(--text-secondary);
+  }
+  
+  /* Footer Links */
+  .beu-footer-column {
+  }
+  
+  .beu-footer-column-title {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--brand-blue);
+    margin-bottom: 20px;
+  }
+  
+  .beu-footer-links {
+    list-style: none;
+  }
+  
+  .beu-footer-link {
+    margin-bottom: 12px;
+  }
+  
+  .beu-footer-link a {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  
+  .beu-footer-link a:hover {
+    color: var(--text-primary);
+  }
+  
+  /* Footer Bottom */
+  .beu-footer-bottom {
+    padding-top: 32px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  
+  .beu-footer-copyright {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+  
+  .beu-footer-legal {
+    display: flex;
+    gap: 24px;
+  }
+  
+  .beu-footer-legal a {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  
+  .beu-footer-legal a:hover {
+    color: var(--text-primary);
+  }
+  
+  /* Responsive */
+  @media (max-width:992px) {
+    .beu-footer-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+    }
+    
+    .beu-footer-brand {
+      grid-column: 1 / -1;
+    }
+  }
+  
+  @media (max-width:768px) {
+    .beu-footer {
+      padding: 60px 20px 32px;
+    }
+    
+    .beu-footer-grid {
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+    
+    .beu-footer-bottom {
+      flex-direction: column;
+      text-align: center;
+      gap: 16px;
+    }
+    
+    .beu-footer-legal {
+      flex-direction: column;
+      gap: 12px;
+    }
+  }
+
+
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- NAVIGATION -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<div class="beu-nav">
+  <!-- Empty nav - user will add custom menu items in GoDaddy -->
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- HERO SECTION -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section class="beu-hero" id="beu-hero">
+  <div class="beu-hero-content">
+    
+    <div class="beu-eyebrow">The Realistic Answer to AI Displacement</div>
+    
+    <h1 class="beu-headline">
+      No One Is
+      <span class="beu-headline-accent">Coming For You</span>
+    </h1>
+    
+    <p class="beu-subhead">
+      The world changed. Your playbook didn't.<br>
+      Here's what to do about it.
+    </p>
+    
+    <div class="beu-data-point">
+      <div class="beu-data-label">This Isn't Someday</div>
+      <div class="beu-data-stat">108,435 Layoffs</div>
+      <div class="beu-data-text">
+        January 2026 alone. The highest January total since the financial crisis. 
+        <strong>AI was cited in 7,624 of those cuts.</strong> 
+        And 92% of Fortune 500 companies have adopted AI — but only 5-6% have scaled it. 
+        <strong>You're seeing the tip of the iceberg.</strong>
+      </div>
+    </div>
+    
+    <div class="beu-cta-group">
+      <a href="dashboard.html" class="beu-cta-primary">Start Free Assessment</a>
+      <a href="#data" class="beu-cta-secondary">See The Data</a>
+    </div>
+    
+  </div>
+  
+  <div class="beu-scroll-indicator">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M12 5v14M19 12l-7 7-7-7"/>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SECTION 02: THE DATA -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section class="beu-section-02" id="data">
+  <div class="beu-section-02-container">
+    
+    <!-- Section Header -->
+    <div class="beu-section-header">
+      <div class="beu-section-eyebrow">This Isn't Theory</div>
+      <h2 class="beu-section-headline">Let's Look At The Data</h2>
+      <p class="beu-section-subhead">
+        You probably already know something is happening. The question is whether you've looked at the numbers.
+      </p>
+    </div>
+    
+    <!-- Stats Grid -->
+    <div class="beu-stats-grid">
+      
+      <!-- Stat 1 -->
+      <div class="beu-stat-card">
+        <div class="beu-stat-label">The CEO Building The Technology</div>
+        <div class="beu-stat-number beu-stat-number-red">50%</div>
+        <div class="beu-stat-text">
+          Anthropic CEO Dario Amodei — the man running one of the most powerful AI companies on earth — has publicly warned that AI could eliminate <strong>50% of all entry-level white-collar jobs</strong> within five years. This isn't a pundit speculating. This is the guy building the AI telling you what it's about to do.
+        </div>
+      </div>
+      
+      <!-- Stat 2 -->
+      <div class="beu-stat-card">
+        <div class="beu-stat-label">January 2026</div>
+        <div class="beu-stat-number">108,435</div>
+        <div class="beu-stat-text">
+          Announced job cuts in January 2026 alone. The highest January total since the financial crisis. <strong>AI was cited in 7,624 of those cuts.</strong> But the real number is estimated at four to six times that, because companies have every incentive to call it "restructuring" instead of "replaced by AI."
+        </div>
+      </div>
+      
+      <!-- Stat 3 -->
+      <div class="beu-stat-card">
+        <div class="beu-stat-label">The Workers Closest to the Technology</div>
+        <div class="beu-stat-number beu-stat-number-red">Hit First</div>
+        <div class="beu-stat-text">
+          A Federal Reserve study found that occupations with the highest AI exposure experienced the steepest unemployment increases between 2022 and 2025. <strong>Computer and math occupations</strong> — the people who thought AI would help them the most — were among the hardest hit.
+        </div>
+      </div>
+      
+      <!-- Stat 4 -->
+      <div class="beu-stat-card">
+        <div class="beu-stat-label">The Majority Already Feel It</div>
+        <div class="beu-stat-number">60%</div>
+        <div class="beu-stat-text">
+          60% of U.S. workers say AI will eliminate more jobs than it creates this year. 51% say they are personally worried about losing their job to AI in 2026. Employee concerns about AI-driven job loss have jumped from <strong>28% in 2024 to 40% in 2026</strong> globally.
+        </div>
+      </div>
+      
+      <!-- Stat 5 -->
+      <div class="beu-stat-card">
+        <div class="beu-stat-label">Fear of Becoming Obsolete</div>
+        <div class="beu-stat-number">52%</div>
+        <div class="beu-stat-text">
+          52% of workers now worry about AI's impact on their future in the workplace. Researchers are calling it <strong>FOBO, or Fear of Becoming Obsolete.</strong> The question keeping people up at night isn't "will I have a job next year?" It's "will I matter in five years?"
+        </div>
+      </div>
+      
+      <!-- Stat 6 -->
+      <div class="beu-stat-card">
+        <div class="beu-stat-label">Job Hugging</div>
+        <div class="beu-stat-number beu-stat-number-red">64%</div>
+        <div class="beu-stat-text">
+          64% of workers are now "job hugging" — clinging to roles they're unhappy in because they don't trust they can compete for something better. <strong>The fear is paralyzing people.</strong>
+        </div>
+      </div>
+      
+    </div>
+    
+    <!-- Featured Quote -->
+    <div class="beu-featured-quote">
+      <div class="beu-quote-text">
+        "If your job happens on a screen, if the core of what you do is reading, writing, analyzing, deciding, communicating through a keyboard, then AI is coming for significant parts of it. The timeline isn't 'someday.' It's already started."
+      </div>
+      <div class="beu-quote-attribution">— Matt Shumer, AI Entrepreneur</div>
+      <div class="beu-quote-context">Posted February 2026 · 60+ million views</div>
+    </div>
+    
+    <!-- Reality Check -->
+    <div class="beu-reality-check">
+      <h3 class="beu-reality-headline">We're Only Seeing The Tip of the Iceberg</h3>
+      <p class="beu-reality-text">
+        92% of Fortune 500 companies have adopted generative AI, but only 5 to 6% have scaled it beyond pilot programs. What you're seeing right now is what happens when almost nobody has fully deployed AI yet. <strong>The real wave hasn't hit.</strong>
+      </p>
+    </div>
+    
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SECTION 03: THE GAP -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section class="beu-section-03" id="options">
+  <div class="beu-section-03-container">
+    
+    <!-- Section Header -->
+    <div class="beu-section-header">
+      <div class="beu-section-eyebrow">The Problem With Current Advice</div>
+      <h2 class="beu-section-headline">So What Are Your Options?</h2>
+      <p class="beu-section-subhead">
+        Let's agree on something: the problem is real. The passive approach — keep your head down, do good work, hope someone notices — is no longer a strategy. It's a risk. So what can you actually do about it?
+      </p>
+    </div>
+    
+    <!-- Options Grid -->
+    <div class="beu-options-grid">
+      
+      <!-- Option 1 -->
+      <div class="beu-option-card">
+        <div class="beu-option-number">Option 1</div>
+        <h3 class="beu-option-title">Learn to Prompt AI</h3>
+        <p class="beu-option-desc">
+          The prevailing wisdom says if you can master prompting — if you can talk to a chatbot better than everyone else — you'll be indispensable. Build your career on knowing the right prompt engineering techniques.
+        </p>
+        <div class="beu-option-verdict">Verdict: Race to the Bottom</div>
+      </div>
+      
+      <!-- Option 2 -->
+      <div class="beu-option-card">
+        <div class="beu-option-number">Option 2</div>
+        <h3 class="beu-option-title">Go to Med School, Law School, or Trade School</h3>
+        <p class="beu-option-desc">
+          The advice is analytically sound: get into licensed professions (doctors, lawyers, engineers) or skilled trades (electricians, plumbers). These fields have regulatory moats and physical presence requirements that AI can't touch.
+        </p>
+        <div class="beu-option-verdict">Verdict: Analytically Sound, Practically Useless</div>
+      </div>
+      
+    </div>
+    
+    <!-- Why These Fail -->
+    <div class="beu-option-card" style="border-left: 3px solid var(--accent-red); margin-bottom: 64px;">
+      <div class="beu-option-title" style="color: var(--accent-red); margin-bottom: 24px;">Why Both of These Fail</div>
+      <p class="beu-option-desc" style="margin-bottom: 16px;">
+        <strong style="color: var(--text-primary);">"Learn to prompt AI"</strong> is a race to the bottom. Prompting ability becomes less valuable with every model improvement because the models get better at understanding imprecise instructions. Building a career on prompting skill is building on sand.
+      </p>
+      <p class="beu-option-desc">
+        <strong style="color: var(--text-primary);">"Go into trades, medicine, or law"</strong> is analytically correct but practically impossible for most people who need help right now. A 42-year-old marketing manager cannot go to medical school. A laid-off project coordinator cannot spend three years getting a law degree. The advice that sounds smart at a dinner party helps nobody at their kitchen table at 2 AM wondering how they will pay their mortgage.
+      </p>
+    </div>
+    
+    <!-- The Real Question -->
+    <div class="beu-the-question">
+      <div class="beu-question-label">The Real Question</div>
+      <p class="beu-question-text">
+        "What skills can I stack onto who I already am that make me harder to replace?"
+      </p>
+      <div class="beu-question-answer">Sales Skills</div>
+      <p class="beu-question-clarification">
+        Not because everyone should become a salesperson. But because the underlying skills of professional selling — <strong>building trust, diagnosing problems, navigating complex decisions, reading people, holding accountability</strong> — are the exact capabilities that sit squarely in the "hardest to replace" category.
+      </p>
+    </div>
+    
+    <!-- Transition -->
+    <div class="beu-transition">
+      <p class="beu-transition-text">
+        And unlike becoming a doctor, lawyer, or licensed engineer, learning to sell does not require years of schooling, a professional license, or starting your career over.
+      </p>
+      <div class="beu-transition-emphasis">
+        It is the most accessible, high-value skill that creates <span>AI-resistant career durability.</span>
+      </div>
+    </div>
+    
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SECTION 04: SALES SKILLS REFRAMED -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section class="beu-section-04" id="solution">
+  <div class="beu-section-04-container">
+    
+    <!-- Section Header -->
+    <div class="beu-section-header">
+      <div class="beu-section-eyebrow">Not The Version You're Picturing</div>
+      <h2 class="beu-section-headline">
+        We're Not Teaching You To Sell Products.<br>
+        We're Teaching You To Sell <span>You.</span>
+      </h2>
+      <p class="beu-section-subhead">
+        When you learn how to sell yourself, you can sell anything.
+      </p>
+    </div>
+    
+    <!-- Intro -->
+    <div class="beu-intro-text">
+      <p>
+        The research is clear about which types of work are most resistant to AI displacement. They fall into four categories: <strong>licensed professions</strong> (doctors, lawyers, nurses), <strong>skilled trades</strong> (electricians, plumbers, welders), <strong>high-regulation roles</strong> (cybersecurity, compliance, auditing), and <strong>human relationship and trust-based roles.</strong>
+      </p>
+      <p style="margin-top: 24px;">
+        That fourth category — the one built on <strong>empathy, communication, relationship-building, persuasion, trust, and moral judgment</strong> — is where sales skills live. And unlike the other three, it doesn't require years of school, a professional license, or starting from scratch.
+      </p>
+    </div>
+    
+    <!-- The Two Lanes -->
+    <div class="beu-lanes-container">
+      
+      <div class="beu-lanes-intro">
+        <h3 class="beu-lanes-title">The Two Lanes</h3>
+        <p class="beu-lanes-subtitle">Same skills. Two different applications. You choose.</p>
+      </div>
+      
+      <div class="beu-lanes-grid">
+        
+        <!-- Lane 1 -->
+        <div class="beu-lane-card">
+          <div class="beu-lane-number">Lane One</div>
+          <h3 class="beu-lane-title">Become Indispensable Where You Are</h3>
+          <p class="beu-lane-desc">
+            For people who don't want to go into sales, the same skills — <strong>understanding how decisions are made, building trust, articulating your value, making the cost and consequence of losing you unmistakably clear</strong> — transform how they operate in any role.
+          </p>
+          <p class="beu-lane-desc">
+            They become the person their boss, their peers, and their organization cannot afford to lose. Not because of their job title, but because of the way they create and communicate value.
+          </p>
+          
+          <div class="beu-lane-examples-title">Examples in Practice</div>
+          
+          <div class="beu-lane-example">
+            <div class="beu-lane-example-title">The Reorg</div>
+            <div class="beu-lane-example-text">
+              Two people, same role, same performance. One quietly did great work. The other made sure decision-makers understood exactly what they contribute and what would break without them. Who survives the cut?
+            </div>
+          </div>
+          
+          <div class="beu-lane-example">
+            <div class="beu-lane-example-title">The Performance Review</div>
+            <div class="beu-lane-example-text">
+              You could list accomplishments and hope your manager connects the dots. Or you could frame every accomplishment in terms of the problem it solved, the cost it avoided, and the outcome it created for the business.
+            </div>
+          </div>
+          
+          <div class="beu-lane-example">
+            <div class="beu-lane-example-title">The Internal Pivot</div>
+            <div class="beu-lane-example-text">
+              Your role is getting replaced by AI. But you spent six months building real relationships with decision-makers in other departments. When displacement comes, multiple managers say: "We need to find a spot for them."
+            </div>
+          </div>
+          
+        </div>
+        
+        <!-- Lane 2 -->
+        <div class="beu-lane-card">
+          <div class="beu-lane-number">Lane Two</div>
+          <h3 class="beu-lane-title">Pivot Into Sales</h3>
+          <p class="beu-lane-desc">
+            For people ready to make a career change, Be Unavoidable provides the <strong>personality mapping, skills training, and practice environment</strong> to transition into a sales career — matched to the specific selling environment where their personality will naturally thrive.
+          </p>
+          <p class="beu-lane-desc">
+            A high-D, high-C introvert doesn't need to become a backslapping relationship seller. They need to sell solutions to physicians and engineers who just want the facts and data. <strong>Be Unavoidable shows them exactly where they fit.</strong>
+          </p>
+          
+          <div class="beu-lane-examples-title">The Compensation Reality</div>
+          
+          <div class="beu-lane-example">
+            <div class="beu-lane-example-title">Account Executives (Mid-Market)</div>
+            <div class="beu-lane-example-text">
+              Median on-target earnings: $190,000. Top performers: over $469,000.
+            </div>
+          </div>
+          
+          <div class="beu-lane-example">
+            <div class="beu-lane-example-title">Enterprise Account Executives</div>
+            <div class="beu-lane-example-text">
+              Median OTE: $270,000. Top performers: over $634,000.
+            </div>
+          </div>
+          
+          <div class="beu-lane-example">
+            <div class="beu-lane-example-title">Medical Device Sales</div>
+            <div class="beu-lane-example-text">
+              Average total compensation: $182,000. Top earners: over $333,000.
+            </div>
+          </div>
+          
+          <div class="beu-lane-example">
+            <div class="beu-lane-example-title">Sales Development Reps (Entry-Level)</div>
+            <div class="beu-lane-example-text">
+              On-target earnings: approximately $85,000. That's the starting point.
+            </div>
+          </div>
+          
+        </div>
+        
+      </div>
+      
+    </div>
+    
+    <!-- Key Insight -->
+    <div class="beu-key-insight">
+      <div class="beu-insight-label">Both Lanes Lead to the Same Destination</div>
+      <p class="beu-insight-text">
+        Moving from the <strong>replaceable side of the ledger</strong> to the relationship-and-trust side — which is one of the most durable moats against AI displacement that exists.
+      </p>
+    </div>
+    
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SECTION 05: HOW IT WORKS -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section class="beu-section-05" id="how-it-works">
+  <div class="beu-section-05-container">
+    
+    <!-- Section Header -->
+    <div class="beu-section-header">
+      <div class="beu-section-eyebrow">The Be Unavoidable System</div>
+      <h2 class="beu-section-headline">How It Works</h2>
+      <p class="beu-section-subhead">
+        No fluff. Each step delivers standalone value. This is the exact sequence designed to take you from paralyzed to prepared.
+      </p>
+    </div>
+    
+    <!-- Journey Flow -->
+    <div class="beu-journey-flow">
+      
+      <!-- Step 1 -->
+      <div class="beu-step">
+        <div class="beu-step-number">1</div>
+        <div class="beu-step-content">
+          <h3 class="beu-step-title">Career Clarity & Confidence Engine</h3>
+          <p class="beu-step-desc">
+            An <strong>AI-powered CBT tool</strong> trained in Cognitive Behavioral Therapy techniques, calibrated specifically for mild career-related anxiety. If you've been laid off, or if you lie awake at night worrying about being replaced by AI, you're not ready to learn new skills. You need to be met where you are emotionally before you can move forward practically.
+          </p>
+          <p class="beu-step-desc">
+            This is the entry point of the entire platform — and <strong>the piece that no competitor offers.</strong> We meet you in the fear, not the strategy.
+          </p>
+          <div class="beu-step-value">Standalone Value: Emotional stabilization before skill-building</div>
+        </div>
+      </div>
+      
+      <!-- Step 2 -->
+      <div class="beu-step">
+        <div class="beu-step-number">2</div>
+        <div class="beu-step-content">
+          <h3 class="beu-step-title">Personality Assessment & Profiling</h3>
+          <p class="beu-step-desc">
+            A comprehensive <strong>DISC-based personality assessment</strong> delivered through an AI-guided conversational experience. It produces a detailed profile of your behavioral tendencies, communication style, strengths, and areas for growth.
+          </p>
+          <p class="beu-step-desc">
+            This transforms Be Unavoidable from a generic program into a personalized system. You gain clear, actionable self-knowledge and language for your strengths — which is especially powerful for someone whose professional confidence has been shaken.
+          </p>
+          <div class="beu-step-value">Standalone Value: Clear self-knowledge before paying a dollar</div>
+        </div>
+      </div>
+      
+      <!-- Step 3 -->
+      <div class="beu-step">
+        <div class="beu-step-number">3</div>
+        <div class="beu-step-content">
+          <h3 class="beu-step-title">Choose Your Lane</h3>
+          <p class="beu-step-desc">
+            Based on your personality profile, Be Unavoidable maps you to either <strong>Lane 1 (become indispensable where you are)</strong> or <strong>Lane 2 (pivot into a sales career)</strong> — or shows you how to use both.
+          </p>
+          <p class="beu-step-desc">
+            <strong>For Lane 1:</strong> You get a comprehensive analysis of your value in non-sales roles, where you're vulnerable, and how to apply selling principles to become harder to replace.
+          </p>
+          <p class="beu-step-desc">
+            <strong>For Lane 2:</strong> You get specific sales environments, industries, buyer types, and selling styles where you would naturally excel. A high-D, high-C introvert is matched to medical device sales. A high-I extrovert is matched to relationship-intensive B2B sales.
+          </p>
+          <div class="beu-step-value">Standalone Value: Personalized career direction based on who you actually are</div>
+        </div>
+      </div>
+      
+      <!-- Step 4 -->
+      <div class="beu-step">
+        <div class="beu-step-number">4</div>
+        <div class="beu-step-content">
+          <h3 class="beu-step-title">Sales Training Modules</h3>
+          <p class="beu-step-desc">
+            Eight structured modules <strong>curated by sales veterans who've carried a bag, managed teams, and built sales organizations.</strong> Not academics. Not coaches. People who've done it.
+          </p>
+          <p class="beu-step-desc">
+            You'll learn how people actually make decisions. Why pain moves people to action when benefits alone don't. How to ask questions that uncover consequences. How to quantify what a problem is actually costing someone. And how to facilitate a decision process that puts your value front and center — whether you're selling a product, a project, or yourself.
+          </p>
+          <div class="beu-step-value">Standalone Value: Real-world sales methodology, not theory</div>
+        </div>
+      </div>
+      
+      <!-- Step 5 -->
+      <div class="beu-step">
+        <div class="beu-step-number">5</div>
+        <div class="beu-step-content">
+          <h3 class="beu-step-title">AI Practice Engines</h3>
+          <p class="beu-step-desc">
+            Two AI-powered roleplay environments where you practice until you're confident:
+          </p>
+          <p class="beu-step-desc">
+            <strong>Sales Roleplay Engine:</strong> Practice discovery calls, needs analysis, objection handling, and closing with realistic buyer personas calibrated to your personality and target selling environment.
+          </p>
+          <p class="beu-step-desc">
+            <strong>Self-Advocacy Roleplay Engine:</strong> Practice interviewing, negotiating compensation, presenting to leadership, advocating for resources, handling performance reviews, and articulating your value in internal meetings. Almost nobody is formally trained in how to advocate for themselves professionally — yet everyone needs this skill.
+          </p>
+          <div class="beu-step-value">Standalone Value: Safe, repeatable practice before real-world stakes</div>
+        </div>
+      </div>
+      
+    </div>
+    
+    <!-- Key Principle -->
+    <div class="beu-key-principle">
+      <div class="beu-principle-label">The Core Principle</div>
+      <p class="beu-principle-text">
+        Every step in the journey delivers <strong>standalone value</strong> whether you continue or not. This builds the trust that keeps people moving forward through the full program.
+      </p>
+    </div>
+    
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SECTION 06: WHAT YOU LEARN -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section class="beu-section-06" id="modules">
+  <div class="beu-section-06-container">
+    
+    <!-- Section Header -->
+    <div class="beu-section-header">
+      <div class="beu-section-eyebrow">Eight Curated Modules</div>
+      <h2 class="beu-section-headline">What You Actually Learn</h2>
+      <p class="beu-section-subhead">
+        This isn't theory. This is survival. Here's exactly what you'll master.
+      </p>
+    </div>
+    
+    <!-- Intro Statement -->
+    <div class="beu-intro-statement">
+      <p class="beu-intro-text">
+        This is not a program that teaches you to sell random products or services. It is a program that teaches you to sell <strong>the most valuable thing you own: you.</strong>
+      </p>
+    </div>
+    
+    <!-- Modules Grid -->
+    <div class="beu-modules-grid">
+      
+      <!-- Module 1 -->
+      <div class="beu-module-card">
+        <div class="beu-module-number">Module 1</div>
+        <h3 class="beu-module-title">No One Is Coming For You</h3>
+        <p class="beu-module-desc">
+          The world changed. Your playbook didn't. We start with the data — not motivation, not platitudes. You'll understand exactly what's happening, why the passive approach is now a risk, and what your actual options are.
+        </p>
+      </div>
+      
+      <!-- Module 2 -->
+      <div class="beu-module-card">
+        <div class="beu-module-number">Module 2</div>
+        <h3 class="beu-module-title">How People Actually Make Decisions</h3>
+        <p class="beu-module-desc">
+          People don't buy with logic. They buy with emotion and justify with logic after. You'll learn the psychology of decision-making — how people think, feel, and behave when choosing who to hire, who to keep, and who to let go.
+        </p>
+      </div>
+      
+      <!-- Module 3 -->
+      <div class="beu-module-card">
+        <div class="beu-module-number">Module 3</div>
+        <h3 class="beu-module-title">Pain vs. Pleasure</h3>
+        <p class="beu-module-desc">
+          Benefits don't move people. Consequences do. You'll learn why pain is a more powerful motivator than pleasure — and how to make the cost and consequence of not having you unmistakably clear.
+        </p>
+      </div>
+      
+      <!-- Module 4 -->
+      <div class="beu-module-card">
+        <div class="beu-module-number">Module 4</div>
+        <h3 class="beu-module-title">What Happens If They Don't Choose You</h3>
+        <p class="beu-module-desc">
+          The cost of absence. You'll learn how to quantify what a problem is actually costing someone — in dollars, in time, in opportunity, in frustration. This is where vague value becomes undeniable business impact.
+        </p>
+      </div>
+      
+      <!-- Module 5 -->
+      <div class="beu-module-card">
+        <div class="beu-module-number">Module 5</div>
+        <h3 class="beu-module-title">Find the Person Who Can Say Yes</h3>
+        <p class="beu-module-desc">
+          Not everyone has the power to choose you. You'll learn how to identify who actually controls your future — and how to get in front of them before decisions are made.
+        </p>
+      </div>
+      
+      <!-- Module 6 -->
+      <div class="beu-module-card">
+        <div class="beu-module-number">Module 6</div>
+        <h3 class="beu-module-title">Become an Expert Diagnostician</h3>
+        <p class="beu-module-desc">
+          The best salespeople aren't pitching. They're diagnosing. You'll learn how to ask questions that uncover what people actually need versus what they say they need — and position yourself as the solution.
+        </p>
+      </div>
+      
+      <!-- Module 7 -->
+      <div class="beu-module-card">
+        <div class="beu-module-number">Module 7</div>
+        <h3 class="beu-module-title">Know When You're in the Right Place</h3>
+        <p class="beu-module-desc">
+          Not every opportunity is worth your time. You'll learn how to qualify opportunities against a clear set of criteria — so you stop wasting energy on roles, projects, or people that were never going to choose you anyway.
+        </p>
+      </div>
+      
+      <!-- Module 8 -->
+      <div class="beu-module-card">
+        <div class="beu-module-number">Module 8</div>
+        <h3 class="beu-module-title">Gain Commitment and Close</h3>
+        <p class="beu-module-desc">
+          You've built trust. You've uncovered the problem. You've quantified the cost. Now you need to close. You'll learn how to facilitate a decision process that puts your value front and center — whether you're negotiating a salary, asking for a promotion, or landing a deal.
+        </p>
+      </div>
+      
+    </div>
+    
+    <!-- Credibility Statement -->
+    <div class="beu-credibility">
+      <div class="beu-credibility-label">Who Built This</div>
+      <p class="beu-credibility-text">
+        Curated by <strong>sales veterans who've carried a bag, managed teams, and built sales organizations.</strong> Not academics. Not coaches. People who've done it.
+      </p>
+    </div>
+    
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SECTION 07: WHO THIS IS FOR -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section class="beu-section-07" id="who-this-is-for">
+  <div class="beu-section-07-container">
+    
+    <!-- Section Header -->
+    <div class="beu-section-header">
+      <div class="beu-section-eyebrow">Honest Qualification</div>
+      <h2 class="beu-section-headline">This Isn't For Everyone</h2>
+      <p class="beu-section-subhead">
+        We'd be the first to tell you if this isn't the right fit. That counterintuitive honesty is classic good selling.
+      </p>
+    </div>
+    
+    <!-- Qualification Grid -->
+    <div class="beu-qualification-grid">
+      
+      <!-- Good Fit -->
+      <div class="beu-fit-card">
+        <h3 class="beu-fit-title">You're a Good Fit If:</h3>
+        <ul class="beu-fit-list">
+          <li class="beu-fit-item">You've been displaced by AI or fear imminent job loss</li>
+          <li class="beu-fit-item">You can't afford 5 years of school or don't want to start your career over</li>
+          <li class="beu-fit-item">You're willing to learn skills that feel uncomfortable at first</li>
+          <li class="beu-fit-item">You recognize the passive approach ("do good work and hope someone notices") is now a risk</li>
+          <li class="beu-fit-item">You want a clear, actionable path forward — not motivational content</li>
+        </ul>
+      </div>
+      
+      <!-- Not a Fit -->
+      <div class="beu-not-fit-card">
+        <h3 class="beu-not-fit-title">You're Not a Good Fit If:</h3>
+        <ul class="beu-fit-list">
+          <li class="beu-not-fit-item">You're looking for motivational content or inspirational speeches</li>
+          <li class="beu-not-fit-item">You think your job is safe because you "do good work"</li>
+          <li class="beu-not-fit-item">You want to learn to prompt AI better</li>
+          <li class="beu-not-fit-item">You're not willing to practice selling yourself</li>
+          <li class="beu-not-fit-item">You believe sales skills are manipulative or beneath you</li>
+        </ul>
+      </div>
+      
+    </div>
+    
+    <!-- Honesty Statement -->
+    <div class="beu-honesty-statement">
+      <p class="beu-honesty-text">
+        That counterintuitive honesty — <strong>qualifying the buyer</strong> — is classic good selling. It increases trust with the people it's for, because they feel guided rather than pitched.
+      </p>
+    </div>
+    
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SECTION 08: FINAL CTA -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section class="beu-section-08" id="get-started">
+  <div class="beu-section-08-container">
+    
+    <div class="beu-cta-eyebrow">The Choice Is Yours</div>
+    
+    <h2 class="beu-cta-headline">
+      You Don't Have To Be<br>
+      Faster Than The Bear
+    </h2>
+    
+    <p class="beu-cta-subhead">
+      You just have to be faster than the person next to you<br>
+      who's still running the old playbook.
+    </p>
+    
+    <div class="beu-cta-button-group">
+      <a href="#" class="beu-cta-primary">Get Started</a>
+      <a href="#" class="beu-cta-ghost">I'll Take My Chances</a>
+    </div>
+    
+    <div class="beu-final-statement">
+      <p class="beu-final-quote">
+        No one is coming for you. But that's okay. Because by the time you finish this program, <strong>you won't need anyone to come for you.</strong>
+      </p>
+      <div class="beu-final-author">You'll Be Unavoidable.</div>
+    </div>
+    
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!-- SECTION 09: FOOTER -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<footer class="beu-footer">
+  <div class="beu-footer-container">
+    
+    <!-- Footer Grid -->
+    <div class="beu-footer-grid">
+      
+      <!-- Brand Column -->
+      <div class="beu-footer-brand">
+        <div class="beu-footer-logo">BE UNAVOIDABLE</div>
+        <div class="beu-footer-tagline">The Realistic Answer to AI Displacement</div>
+        <p class="beu-footer-description">
+          We're not teaching you to sell products. We're teaching you to sell the most valuable thing you own: you.
+        </p>
+      </div>
+      
+      <!-- Platform Column -->
+      <div class="beu-footer-column">
+        <div class="beu-footer-column-title">Platform</div>
+        <ul class="beu-footer-links">
+          <li class="beu-footer-link"><a href="#how-it-works">How It Works</a></li>
+          <li class="beu-footer-link"><a href="#modules">Training Modules</a></li>
+          <li class="beu-footer-link"><a href="#solution">Lane 1 vs Lane 2</a></li>
+          <li class="beu-footer-link"><a href="dashboard.html">Get Started</a></li>
+        </ul>
+      </div>
+      
+      <!-- Company Column -->
+      <div class="beu-footer-column">
+        <div class="beu-footer-column-title">Company</div>
+        <ul class="beu-footer-links">
+          <li class="beu-footer-link"><a href="#">About</a></li>
+          <li class="beu-footer-link"><a href="#">Contact</a></li>
+          <li class="beu-footer-link"><a href="#">Support</a></li>
+        </ul>
+      </div>
+      
+      <!-- Legal Column -->
+      <div class="beu-footer-column">
+        <div class="beu-footer-column-title">Legal</div>
+        <ul class="beu-footer-links">
+          <li class="beu-footer-link"><a href="#">Privacy Policy</a></li>
+          <li class="beu-footer-link"><a href="#">Terms of Service</a></li>
+          <li class="beu-footer-link"><a href="#">Disclaimer</a></li>
+        </ul>
+      </div>
+      
+    </div>
+    
+    <!-- Footer Bottom -->
+    <div class="beu-footer-bottom">
+      <div class="beu-footer-copyright">
+        © 2026 Be Unavoidable. All rights reserved.
+      </div>
+      <div class="beu-footer-legal">
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+        <a href="#">Disclaimer</a>
+      </div>
+    </div>
+    
+  </div>
+</footer>
+
+
+</body>
+</html>

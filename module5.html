@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- AUTH GUARD -->
+  <script>
+    (async function() {
+      try {
+        const res = await fetch('/api/verify');
+        if (!res.ok) throw new Error('not authenticated');
+        const data = await res.json();
+        if (!data.authenticated) throw new Error('not authenticated');
+        window.BU_USER = { name: data.name, email: data.email };
+        document.dispatchEvent(new Event('bu:user-ready'));
+      } catch(e) {
+        window.location.href = '/login.html';
+      }
+    })();
+  </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 5: Find the Person Who Can Say Yes</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Mono:wght@400;700&family=Work+Sans:wght@300;400;500;600;700&display=swap');
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0a0e1a; --surface: #141824; --card: #1c2130; --card-hover: #242938; --border: #2d3448;
+  --text: #e4e6eb; --text-dim: #9195a3;
+  --accent-red: #ff4757; --accent-red-dim: rgba(255, 71, 87, 0.15);
+  --accent-green: #2ecc71; --accent-green-dim: rgba(46, 204, 113, 0.15);
+  --accent-blue: #3498db; --accent-yellow: #f39c12; --accent-purple: #9b59b6;
+  --accent-orange: #e67e22; --accent-cyan: #00bcd4;
+}
+body { font-family: 'Work Sans', sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; overflow-x: hidden; }
+
+/* ═══ HERO ═══ */
+.hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 60px 24px; position: relative; background: radial-gradient(ellipse 800px 500px at 50% 40%, rgba(52, 152, 219, 0.08), transparent 60%), radial-gradient(ellipse 600px 400px at 30% 60%, rgba(155, 89, 182, 0.06), transparent 60%); }
+.module-badge { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--accent-blue); border: 2px solid var(--accent-blue); padding: 8px 20px; border-radius: 30px; margin-bottom: 28px; display: inline-block; opacity: 0; animation: fadeUp 0.8s ease forwards 0.2s; }
+.hero h1 { font-family: 'Instrument Serif', serif; font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 400; line-height: 1.1; max-width: 900px; margin-bottom: 24px; opacity: 0; animation: fadeUp 0.8s ease forwards 0.4s; }
+.hero h1 .highlight { color: var(--accent-blue); font-style: italic; }
+.hero-subtitle { font-size: 1.15rem; color: var(--text-dim); max-width: 680px; margin-bottom: 48px; opacity: 0; animation: fadeUp 0.8s ease forwards 0.6s; }
+.start-btn { font-family: 'Space Mono', monospace; font-size: 15px; font-weight: 700; background: var(--accent-blue); color: white; border: none; padding: 18px 48px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; opacity: 0; animation: fadeUp 0.8s ease forwards 0.8s; box-shadow: 0 8px 24px rgba(52, 152, 219, 0.3); }
+.start-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(52, 152, 219, 0.4); }
+
+/* ═══ PROGRESS ═══ */
+.progress-wrapper { position: fixed; top: 0; left: 0; right: 0; height: 4px; background: var(--surface); z-index: 1000; opacity: 0; transition: opacity 0.3s; }
+.progress-wrapper.visible { opacity: 1; }
+.progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent-blue), var(--accent-green)); width: 0%; transition: width 0.5s ease; }
+
+/* ═══ CONTENT ═══ */
+.content { max-width: 900px; margin: 0 auto; padding: 80px 24px 120px; opacity: 0; transition: opacity 0.5s; }
+.content.visible { opacity: 1; }
+
+/* ═══ SECTIONS ═══ */
+.section { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 48px; margin-bottom: 32px; opacity: 0; transform: translateY(40px); transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+.section.visible { opacity: 1; transform: translateY(0); }
+.section-number { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; }
+.section h2 { font-family: 'Instrument Serif', serif; font-size: 2.2rem; font-weight: 400; margin-bottom: 24px; line-height: 1.2; }
+.section p { color: var(--text-dim); margin-bottom: 20px; font-size: 1.05rem; }
+.section p:last-child { margin-bottom: 0; }
+.section strong { color: var(--text); font-weight: 600; }
+
+/* ═══ DEEP DIVE ═══ */
+.deep-dive { background: linear-gradient(135deg, rgba(155, 89, 182, 0.1) 0%, rgba(142, 68, 173, 0.05) 100%); border: 1px solid rgba(155, 89, 182, 0.3); border-radius: 12px; padding: 24px; margin: 24px 0; }
+.deep-dive-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; cursor: pointer; user-select: none; }
+.deep-dive-icon { font-size: 20px; }
+.deep-dive-title { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; color: var(--accent-purple); text-transform: uppercase; letter-spacing: 1.2px; flex: 1; }
+.deep-dive-toggle { font-size: 20px; color: var(--accent-purple); transition: transform 0.3s; }
+.deep-dive-toggle.open { transform: rotate(180deg); }
+.deep-dive-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, opacity 0.4s ease; opacity: 0; }
+.deep-dive-content.open { max-height: 4000px; opacity: 1; }
+.deep-dive-content p { color: var(--text-dim); font-size: 0.95rem; margin-bottom: 12px; line-height: 1.6; }
+
+/* ═══ INFO BOXES ═══ */
+.info-box { background: var(--surface); border-left: 4px solid; padding: 20px; margin: 24px 0; border-radius: 0 8px 8px 0; }
+.info-box.warning { border-left-color: var(--accent-red); background: linear-gradient(135deg, rgba(255, 71, 87, 0.08) 0%, var(--surface) 100%); }
+.info-box.success { border-left-color: var(--accent-green); background: linear-gradient(135deg, rgba(46, 204, 113, 0.08) 0%, var(--surface) 100%); }
+.info-box.insight { border-left-color: var(--accent-orange); background: linear-gradient(135deg, rgba(230, 126, 34, 0.08) 0%, var(--surface) 100%); }
+.info-box.blue { border-left-color: var(--accent-blue); background: linear-gradient(135deg, rgba(52, 152, 219, 0.08) 0%, var(--surface) 100%); }
+.info-box h3 { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+.info-box.warning h3 { color: var(--accent-red); }
+.info-box.success h3 { color: var(--accent-green); }
+.info-box.insight h3 { color: var(--accent-orange); }
+.info-box.blue h3 { color: var(--accent-blue); }
+
+/* ═══ CRITERIA CARDS ═══ */
+.criteria-cards { display: flex; flex-direction: column; gap: 20px; margin: 32px 0; }
+.criteria-card { background: var(--surface); border: 2px solid var(--border); border-radius: 12px; padding: 28px; transition: all 0.3s ease; position: relative; overflow: hidden; cursor: pointer; }
+.criteria-card::before { content: ''; position: absolute; top: 0; left: 0; width: 5px; height: 100%; border-radius: 12px 0 0 12px; }
+.criteria-card.pain::before { background: var(--accent-red); }
+.criteria-card.consequence::before { background: var(--accent-orange); }
+.criteria-card.authority::before { background: var(--accent-blue); }
+.criteria-card:hover { border-color: var(--accent-blue); transform: translateX(8px); }
+.criteria-label { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; }
+.criteria-card.pain .criteria-label { color: var(--accent-red); }
+.criteria-card.consequence .criteria-label { color: var(--accent-orange); }
+.criteria-card.authority .criteria-label { color: var(--accent-blue); }
+.criteria-card h3 { font-family: 'Instrument Serif', serif; font-size: 1.3rem; margin-bottom: 8px; }
+.criteria-card p { color: var(--text-dim); font-size: 0.95rem; line-height: 1.6; margin-bottom: 0; }
+.criteria-detail { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, opacity 0.4s ease; opacity: 0; }
+.criteria-detail p { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); color: var(--text-dim); font-size: 0.9rem; }
+
+/* ═══ STAKEHOLDER MAP ═══ */
+.stakeholder-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 32px 0; }
+@media (max-width: 768px) { .stakeholder-grid { grid-template-columns: 1fr; } }
+.stakeholder-card { background: var(--surface); border: 2px solid var(--border); border-radius: 12px; padding: 28px; transition: all 0.3s ease; position: relative; overflow: hidden; }
+.stakeholder-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; }
+.stakeholder-card.dm::before { background: var(--accent-blue); }
+.stakeholder-card.inf::before { background: var(--accent-yellow); }
+.stakeholder-card.gk::before { background: var(--accent-purple); }
+.stakeholder-card.vh::before { background: var(--accent-red); }
+.stakeholder-card:hover { transform: translateY(-4px); }
+.stakeholder-icon { font-size: 36px; margin-bottom: 16px; }
+.stakeholder-card h3 { font-family: 'Instrument Serif', serif; font-size: 1.4rem; margin-bottom: 8px; }
+.stakeholder-card.dm h3 { color: var(--accent-blue); }
+.stakeholder-card.inf h3 { color: var(--accent-yellow); }
+.stakeholder-card.gk h3 { color: var(--accent-purple); }
+.stakeholder-card.vh h3 { color: var(--accent-red); }
+.stakeholder-card p { color: var(--text-dim); font-size: 0.95rem; line-height: 1.6; }
+
+/* ═══ REVEAL ═══ */
+.reveal-trigger { display: inline-flex; align-items: center; gap: 8px; font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; color: var(--accent-blue); background: none; border: 2px solid var(--accent-blue); padding: 12px 24px; border-radius: 8px; cursor: pointer; margin-top: 24px; transition: all 0.3s ease; }
+.reveal-trigger:hover { background: var(--accent-blue); color: white; transform: translateX(4px); }
+.reveal-content { max-height: 0; overflow: hidden; transition: max-height 0.5s ease, opacity 0.5s ease; opacity: 0; }
+.reveal-content.open { max-height: 5000px; opacity: 1; margin-top: 28px; }
+
+/* ═══ QUESTION CARDS ═══ */
+.question-cards { display: flex; flex-direction: column; gap: 16px; margin: 28px 0; }
+.question-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; transition: all 0.3s ease; }
+.question-card:hover { border-color: var(--accent-cyan); transform: translateX(6px); }
+.question-text { font-size: 1.05rem; font-weight: 600; color: var(--text); margin-bottom: 8px; font-style: italic; }
+.question-why { font-size: 0.92rem; color: var(--text-dim); line-height: 1.6; }
+
+/* ═══ BLOCKQUOTE ═══ */
+.blockquote { background: var(--surface); border-left: 4px solid var(--accent-blue); padding: 24px; margin: 24px 0; border-radius: 0 8px 8px 0; font-style: italic; }
+.blockquote p { color: var(--text); font-size: 1.1rem; font-weight: 500; margin-bottom: 0; }
+
+/* ═══ COMPARISON CARDS ═══ */
+.comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 32px 0; }
+@media (max-width: 768px) { .comparison { grid-template-columns: 1fr; } }
+.comp-card { background: var(--surface); border: 2px solid var(--border); border-radius: 12px; padding: 32px; transition: all 0.3s ease; position: relative; overflow: hidden; }
+.comp-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; }
+.comp-card.wrong::before { background: var(--accent-red); }
+.comp-card.right::before { background: var(--accent-green); }
+.comp-card:hover { transform: translateY(-4px); }
+.comp-icon { font-size: 36px; margin-bottom: 16px; }
+.comp-card h3 { font-family: 'Instrument Serif', serif; font-size: 1.4rem; margin-bottom: 12px; }
+.comp-card.wrong h3 { color: var(--accent-red); }
+.comp-card.right h3 { color: var(--accent-green); }
+.comp-card p { color: var(--text-dim); font-size: 0.95rem; line-height: 1.6; }
+
+/* ═══ PRACTICE ═══ */
+.practice { background: linear-gradient(135deg, #1a2332 0%, #1f2937 100%); border: 2px solid var(--accent-yellow); border-radius: 16px; padding: 36px; margin: 32px 0; }
+.practice-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.practice-icon { font-size: 28px; }
+.practice-header h3 { font-family: 'Instrument Serif', serif; font-size: 1.6rem; }
+.practice-label { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; color: var(--accent-yellow); text-transform: uppercase; letter-spacing: 1.5px; background: rgba(243, 156, 18, 0.15); padding: 4px 12px; border-radius: 20px; margin-left: auto; }
+.practice-prompt { background: var(--card); border-left: 4px solid var(--accent-yellow); padding: 20px; margin-bottom: 24px; border-radius: 0 8px 8px 0; }
+.practice-prompt p { font-style: italic; color: var(--text); font-size: 1.05rem; margin-bottom: 0; }
+.practice-textarea { width: 100%; min-height: 140px; background: var(--surface); border: 2px solid var(--border); border-radius: 8px; padding: 16px; color: var(--text); font-family: 'Work Sans', sans-serif; font-size: 1rem; resize: vertical; margin-bottom: 16px; transition: border-color 0.3s; }
+.practice-textarea:focus { outline: none; border-color: var(--accent-yellow); }
+.practice-btn { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; background: var(--accent-yellow); color: var(--bg); border: none; padding: 14px 32px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; }
+.practice-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(243, 156, 18, 0.3); }
+.practice-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.practice-btn.loading { background: var(--text-dim); cursor: wait; }
+.practice-feedback { background: var(--surface); border: 2px solid var(--accent-green); border-radius: 8px; padding: 24px; margin-top: 24px; display: none; }
+.practice-feedback.visible { display: block; }
+.practice-feedback h4 { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; color: var(--accent-green); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+
+/* ═══ QUIZ ═══ */
+.quiz { background: linear-gradient(135deg, #1c2130 0%, #242938 100%); border: 1px solid var(--border); border-radius: 16px; padding: 40px; margin: 32px 0; }
+.quiz-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+.quiz-icon { font-size: 28px; }
+.quiz-header h3 { font-family: 'Instrument Serif', serif; font-size: 1.5rem; }
+.quiz-question { font-size: 1.1rem; margin-bottom: 24px; line-height: 1.6; }
+.quiz-label { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 16px; display: block; }
+.choice-group { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+.choice-btn { background: var(--card); border: 2px solid var(--border); color: var(--text); padding: 20px 24px; border-radius: 10px; cursor: pointer; text-align: left; font-size: 1rem; transition: all 0.3s ease; }
+.choice-btn:hover { border-color: var(--accent-blue); background: var(--card-hover); transform: translateX(8px); }
+.choice-btn.correct { border-color: var(--accent-green); background: var(--accent-green-dim); }
+.choice-btn.incorrect { border-color: var(--accent-red); background: var(--accent-red-dim); }
+.feedback { background: var(--surface); border-left: 4px solid var(--accent-green); padding: 20px; margin-top: 24px; border-radius: 8px; display: none; }
+.feedback.visible { display: block; }
+.feedback.incorrect { border-left-color: var(--accent-red); }
+.feedback h4 { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+.feedback.correct h4 { color: var(--accent-green); }
+.feedback.incorrect h4 { color: var(--accent-red); }
+
+/* ═══ TAKEAWAYS ═══ */
+.takeaway-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; margin: 32px 0; }
+.takeaway-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 28px; transition: all 0.3s ease; position: relative; }
+.takeaway-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--accent-blue); border-radius: 12px 0 0 12px; opacity: 0; transition: opacity 0.3s; }
+.takeaway-card:hover::before { opacity: 1; }
+.takeaway-card:hover { border-color: var(--accent-blue); transform: translateY(-4px); }
+.takeaway-number { font-family: 'Space Mono', monospace; font-size: 32px; font-weight: 700; color: var(--accent-blue); opacity: 0.3; margin-bottom: 12px; }
+.takeaway-card p { font-size: 0.95rem; line-height: 1.6; }
+
+/* ═══ DOWNLOAD ═══ */
+.download-section { background: linear-gradient(135deg, var(--surface) 0%, var(--card) 100%); border: 2px dashed var(--border); border-radius: 16px; padding: 32px; margin: 32px 0; text-align: center; }
+.download-section h3 { font-family: 'Instrument Serif', serif; font-size: 1.5rem; margin-bottom: 12px; }
+.download-btn { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; background: var(--accent-green); color: white; border: none; padding: 16px 40px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3); }
+.download-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(46, 204, 113, 0.4); }
+
+/* ═══ COMPLETION ═══ */
+.completion { text-align: center; background: linear-gradient(135deg, var(--card) 0%, var(--surface) 100%); border: 2px solid var(--accent-green); border-radius: 20px; padding: 60px 40px; margin: 48px 0; }
+.completion-icon { font-size: 64px; margin-bottom: 24px; animation: bounce 1s ease; }
+@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+.completion h2 { font-family: 'Instrument Serif', serif; font-size: 2.5rem; margin-bottom: 16px; }
+.completion p { font-size: 1.1rem; color: var(--text-dim); max-width: 600px; margin: 0 auto 32px; }
+.completion-stats { display: flex; justify-content: center; gap: 48px; margin-bottom: 32px; }
+.stat { text-align: center; }
+.stat-number { font-family: 'Space Mono', monospace; font-size: 2.5rem; font-weight: 700; color: var(--accent-green); display: block; }
+.stat-label { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); }
+.next-btn { font-family: 'Space Mono', monospace; font-size: 15px; font-weight: 700; background: var(--accent-green); color: white; border: none; padding: 18px 48px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 8px 24px rgba(46, 204, 113, 0.3); }
+.next-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(46, 204, 113, 0.4); }
+
+/* ═══ NAV ═══ */
+.nav-buttons { display: flex; justify-content: space-between; align-items: center; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border); }
+.nav-btn { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; background: var(--accent-red); color: white; border: none; padding: 14px 28px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px; }
+.nav-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(255, 71, 87, 0.3); }
+.nav-btn.back { background: var(--surface); border: 2px solid var(--border); color: var(--text); }
+.nav-btn.back:hover { background: var(--card); border-color: var(--accent-red); }
+
+/* ═══ ANIMATIONS & UTILS ═══ */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+.hidden { display: none !important; }
+@media (max-width: 768px) { .section { padding: 32px 24px; } .hero { min-height: 90vh; } .hero h1 { font-size: 2.5rem; } .completion-stats { flex-direction: column; gap: 24px; } }
+</style>
+
+  <style>
+  .bu-dash-btn {
+    position: fixed; top: 14px; right: 20px; z-index: 9999;
+    font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700;
+    background: rgba(20,24,36,0.92); color: #9195a3;
+    border: 1px solid #2d3448; border-radius: 6px;
+    padding: 7px 14px; cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: color 0.2s, border-color 0.2s;
+    text-decoration: none; display: inline-block;
+  }
+  .bu-dash-btn:hover { color: #e4e6eb; border-color: #9195a3; }
+  </style>
+</head>
+<body>
+  <a href="/dashboard.html" class="bu-dash-btn">&#8592; Dashboard</a>
+
+
+<!-- Progress Bar -->
+<div class="progress-wrapper" id="progressWrapper">
+  <div class="progress-bar" id="progressBar"></div>
+</div>
+
+<!-- Hero Section -->
+<div class="hero" id="hero">
+  <div class="module-badge">Module 5 &bull; Be Unavoidable</div>
+  <h1>
+    Find the Person<br>
+    <span class="highlight">Who Can Say Yes</span>
+  </h1>
+  <p class="hero-subtitle">
+    Every principle you&rsquo;ve learned is powerful. But its power is multiplied or wasted depending on who you direct it toward.
+  </p>
+  <button class="start-btn" onclick="startModule()">Start Learning &rarr;</button>
+</div>
+
+<!-- Main Content -->
+<div class="content" id="content">
+
+  <!-- SECTION 1: The Opening Story -->
+  <div class="section" data-section="1">
+    <div class="section-number">Section 1 of 12</div>
+    <h2>Talking to the Wrong Person</h2>
+    <p>Let&rsquo;s start with a story you&rsquo;ve probably lived some version of, even if you&rsquo;ve never been in professional sales.</p>
+    <p>You apply for a job. You have a great phone screen with the recruiter. They love your background. They pass you along. You interview with someone on the team. Another great conversation. They seem genuinely excited. They say they&rsquo;ll &ldquo;push this forward.&rdquo;</p>
+    <p>You wait. A week goes by. You follow up. They&rsquo;re still enthusiastic but need to &ldquo;check with a few people.&rdquo; Another week. Radio silence. Eventually, you get the email: <em>&ldquo;We&rsquo;ve decided to go in a different direction.&rdquo;</em></p>
+
+    <div class="info-box warning">
+      <h3>What Happened?</h3>
+      <p>You were talking to the wrong person. Not a bad person. Not someone who lied to you. Just someone who <strong>didn&rsquo;t have the power or the pain to make the decision.</strong> They liked you. They meant it. But liking you and being able to hire you are two very different things.</p>
+    </div>
+
+    <p>This pattern plays out everywhere. You pitch an idea to your manager, who agrees it&rsquo;s brilliant, but nothing happens because your manager doesn&rsquo;t control the budget. You build a relationship with a contact who has no hiring authority. You make your case for a promotion to someone who nods enthusiastically but isn&rsquo;t in the room when the decisions get made.</p>
+    <p>Every one of these situations has the same root cause: <strong>you invested your time and energy with someone who couldn&rsquo;t actually say yes.</strong> And if someone can&rsquo;t say yes, it doesn&rsquo;t matter how much they want to.</p>
+    <div class="nav-buttons">
+      <button class="nav-btn back" disabled>&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(2)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 2: Where We Are -->
+  <div class="section" data-section="2">
+    <div class="section-number">Section 2 of 12</div>
+    <h2>Where We Are</h2>
+    <p>This module is where you start applying the previous four in a very specific, practical way.</p>
+
+    <p><strong>Module 1:</strong> Nobody is coming to save your career. The skills that make you hardest to replace are rooted in human relationships, trust, and persuasion.</p>
+    <p><strong>Module 2:</strong> The real work is changing how someone <em>thinks</em>, not just how they feel. Good vibes are a trap.</p>
+    <p><strong>Module 3:</strong> Pain and consequences move people to action when benefits alone don&rsquo;t.</p>
+    <p><strong>Module 4:</strong> The true measure of your value is the cost and consequence of not having you.</p>
+
+    <div class="info-box blue">
+      <h3>Module 5: The Critical Question</h3>
+      <p>Now here&rsquo;s the question none of that answers: <strong>who is &ldquo;them&rdquo;?</strong> You can articulate your value in consequence terms with precision. But if you&rsquo;re doing all of that with someone who can&rsquo;t actually make the decision, you&rsquo;ve just delivered the world&rsquo;s best pitch to the wrong audience.</p>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(1)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(3)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 3: The Three Criteria -->
+  <div class="section" data-section="3">
+    <div class="section-number">Section 3 of 12</div>
+    <h2>The Person Who Owns the Pain</h2>
+    <p>In every decision that affects your career &mdash; a hiring decision, a promotion, a budget approval, a reorg survival call &mdash; there is one person who meets all three of these criteria. We&rsquo;re going to call them the <strong>decision-maker.</strong></p>
+    <p><em>Click each card to expand.</em></p>
+
+    <div class="criteria-cards">
+      <div class="criteria-card pain" onclick="toggleCriteria('c1')">
+        <div class="criteria-label">Criterion 1</div>
+        <h3>They Feel the Pain Directly</h3>
+        <p>The problem you solve isn&rsquo;t theoretical to them. It affects their results, their team, or their ability to hit their goals.</p>
+        <div class="criteria-detail" id="c1-detail">
+          <p>A recruiter doesn&rsquo;t feel the pain of an unfilled role. They&rsquo;re managing a process. The hiring manager whose team is understaffed, bleeding productivity, and missing deadlines? <strong>They</strong> feel the pain. That&rsquo;s the person who will fight to get you hired.</p>
+        </div>
+      </div>
+      <div class="criteria-card consequence" onclick="toggleCriteria('c2')">
+        <div class="criteria-label">Criterion 2</div>
+        <h3>They Own the Consequences</h3>
+        <p>If things don&rsquo;t improve, it&rsquo;s their name on the report, their budget that takes the hit, their standing that erodes.</p>
+        <div class="criteria-detail" id="c2-detail">
+          <p>They&rsquo;re not observing the problem from a comfortable distance. When the problem persists, they&rsquo;re the one who has to explain why to <em>their</em> boss. <strong>Accountability means they get the bill &mdash; not someone else.</strong></p>
+        </div>
+      </div>
+      <div class="criteria-card authority" onclick="toggleCriteria('c3')">
+        <div class="criteria-label">Criterion 3</div>
+        <h3>They Can Drive the Decision</h3>
+        <p>When they say &ldquo;we need to solve this,&rdquo; people listen and things move.</p>
+        <div class="criteria-detail" id="c3-detail">
+          <p>They may not sign every contract, but they have the political capital, budget authority, or organizational gravity to make a decision happen. <strong>They&rsquo;re not gathering information for someone else. They&rsquo;re making the decision happen.</strong></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(2)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(4)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 4: Why This Matters -->
+  <div class="section" data-section="4">
+    <div class="section-number">Section 4 of 12</div>
+    <h2>Why This Changes Everything</h2>
+    <p>Here&rsquo;s a simple truth: <strong>people who don&rsquo;t feel pain personally don&rsquo;t act urgently.</strong></p>
+    <p>Think about this through the lens of Module 3. Pain and consequences drive action. Benefits and good vibes don&rsquo;t. Now apply that to the people you&rsquo;re interacting with.</p>
+
+    <div class="comparison">
+      <div class="comp-card wrong">
+        <div class="comp-icon">&#128203;</div>
+        <h3>Process Manager</h3>
+        <p>The recruiter, the HR coordinator, the scheduler. They screen, sort, and manage the pipeline. They don&rsquo;t feel the pain of the unfilled role. They don&rsquo;t stay up at night worrying about missed deliverables.</p>
+      </div>
+      <div class="comp-card right">
+        <div class="comp-icon">&#128293;</div>
+        <h3>Decision-Maker</h3>
+        <p>The hiring manager whose team is understaffed. The VP watching a key initiative stall. The department head explaining to executives why deliverables are slipping. <strong>This is the person who will fight for you.</strong></p>
+      </div>
+    </div>
+
+    <div class="blockquote">
+      <p>Your timeline with a decision-maker who feels the pain is measured in days or weeks. Your timeline with someone who&rsquo;s just managing a process is measured in months &mdash; or it simply never resolves.</p>
+    </div>
+
+    <p>This is why some job searches drag on for six months while others close in two weeks. It&rsquo;s not always about the market or the competition. <strong>It&rsquo;s about whether you found the person who owns the problem.</strong></p>
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(3)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(5)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 5: How to Identify the Decision-Maker -->
+  <div class="section" data-section="5">
+    <div class="section-number">Section 5 of 12</div>
+    <h2>Questions That Reveal the Decision-Maker</h2>
+    <p>Start with one question that cuts through everything else:</p>
+
+    <div class="blockquote">
+      <p>Whose results are directly impacted if this problem doesn&rsquo;t get solved?</p>
+    </div>
+
+    <p>That&rsquo;s your compass. Follow the pain, not the org chart. Follow the consequences, not the titles. When it&rsquo;s not obvious who the decision-maker is, these questions will help:</p>
+
+    <div class="question-cards">
+      <div class="question-card">
+        <div class="question-text">&ldquo;Who on your team is most affected by this problem?&rdquo;</div>
+        <div class="question-why">Reveals where the pain concentrates. If they say &ldquo;our VP of Operations really feels this,&rdquo; you&rsquo;ve identified your target.</div>
+      </div>
+      <div class="question-card">
+        <div class="question-text">&ldquo;Who would need to sign off on a decision like this?&rdquo;</div>
+        <div class="question-why">Direct and respectful. If they say &ldquo;I&rsquo;d need to run it by my director,&rdquo; you know you&rsquo;re one level removed from the decision.</div>
+      </div>
+      <div class="question-card">
+        <div class="question-text">&ldquo;When this problem gets worse, who has to explain it upward?&rdquo;</div>
+        <div class="question-why">The person who has to explain a deteriorating situation to their boss is the person who owns the consequences. That&rsquo;s your decision-maker.</div>
+      </div>
+      <div class="question-card">
+        <div class="question-text">&ldquo;How do decisions like this typically get made here?&rdquo;</div>
+        <div class="question-why">A non-threatening invitation for the other person to map the decision process for you. Enormous intelligence with zero friction.</div>
+      </div>
+      <div class="question-card">
+        <div class="question-text">&ldquo;If you were going to champion this internally, who else would need to be involved?&rdquo;</div>
+        <div class="question-why">Flatters the person as a champion while simultaneously revealing the other stakeholders. If they list three names, you&rsquo;ve just mapped the landscape.</div>
+      </div>
+    </div>
+
+    <div class="info-box success">
+      <h3>Remember: Facilitator, Not Manipulator</h3>
+      <p>None of these questions are aggressive. They&rsquo;re all framed as practical, collaborative, &ldquo;help me understand how things work&rdquo; questions. You&rsquo;re not going around anyone. You&rsquo;re making sure your value reaches the person who needs to see it.</p>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(4)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(6)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 6: Four Scenarios -->
+  <div class="section" data-section="6">
+    <div class="section-number">Section 6 of 12</div>
+    <h2>What This Looks Like in Practice</h2>
+    <p>Let&rsquo;s walk through the four scenarios you&rsquo;ve been working with throughout this program.</p>
+
+    <button class="reveal-trigger" onclick="revealContent('scenario1')">
+      Scenario 1: The Job Search <span>&rarr;</span>
+    </button>
+    <div class="reveal-content" id="scenario1">
+      <p>Most job seekers follow the prescribed path: apply online, talk to a recruiter, go through the process. That path puts you in front of <em>process managers</em>, not decision-makers.</p>
+      <p>The person who decides whether you get hired is the one who wakes up every morning feeling the pain of the gap you&rsquo;d fill. If you can reach them, even informally, and demonstrate that you understand their problem in consequence terms, you&rsquo;ve done something 95% of candidates never do.</p>
+      <div class="info-box insight">
+        <h3>The Key Question</h3>
+        <p>In your interview, ask: <em>&ldquo;What prompted you to open this role now? What&rsquo;s happening in the business that made this hire a priority?&rdquo;</em> If they answer with specifics and urgency, you&rsquo;re talking to the right person. If they answer with generalities, you may need to find someone closer to the pain.</p>
+      </div>
+    </div>
+
+    <button class="reveal-trigger" onclick="revealContent('scenario2')" style="margin-top:16px;">
+      Scenario 2: The Reorg <span>&rarr;</span>
+    </button>
+    <div class="reveal-content" id="scenario2">
+      <p>When restructuring is announced, most people focus on their direct manager. But in many reorgs, your manager isn&rsquo;t making the final call. That decision often happens one or two levels up, in rooms your manager may not even be in.</p>
+      <p>This is why Module 4&rsquo;s advice about building relationships across the organization matters so much. If you&rsquo;ve identified the leaders who control headcount decisions and made your value visible to them in consequence terms, you&rsquo;ve already done the work. <strong>By the time the decision is being made, it&rsquo;s too late to start building those relationships.</strong></p>
+    </div>
+
+    <button class="reveal-trigger" onclick="revealContent('scenario3')" style="margin-top:16px;">
+      Scenario 3: The Internal Pitch <span>&rarr;</span>
+    </button>
+    <div class="reveal-content" id="scenario3">
+      <p>If you present to someone who can&rsquo;t approve the budget, you&rsquo;re asking them to sell it on your behalf. Your beautifully articulated consequence framework gets reduced to a one-line summary in someone else&rsquo;s email: <em>&ldquo;Hey, one of our people has an idea. Can we find time to discuss?&rdquo;</em></p>
+      <p>Instead, find the person who owns the budget and the outcome your proposal addresses. Frame it in terms of their priorities: <em>&ldquo;I&rsquo;ve been working on something that directly addresses the Q3 delivery risk. Would it be appropriate for me to walk leadership through it?&rdquo;</em></p>
+    </div>
+
+    <button class="reveal-trigger" onclick="revealContent('scenario4')" style="margin-top:16px;">
+      Scenario 4: The Internal Pivot <span>&rarr;</span>
+    </button>
+    <div class="reveal-content" id="scenario4">
+      <p>Your role is being eliminated. But you&rsquo;ve been building relationships across departments. Here&rsquo;s the piece this module adds: <strong>not all of those relationships are equal.</strong></p>
+      <p>The colleague who thinks you&rsquo;re great but has no hiring authority can&rsquo;t help you, no matter how much they want to. The department head who controls headcount and feels the pain of an unfilled need can help you immediately.</p>
+      <div class="info-box insight">
+        <h3>The Filter</h3>
+        <p>When building cross-departmental relationships, ask: Does this person feel pain my skills could address? Do they own consequences I could help resolve? Do they have the authority to bring someone onto their team? <strong>If yes to all three, that&rsquo;s a relationship worth investing in deeply.</strong></p>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(5)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(7)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 7: The Stakeholder Landscape -->
+  <div class="section" data-section="7">
+    <div class="section-number">Section 7 of 12</div>
+    <h2>The Stakeholder Landscape</h2>
+    <p>You&rsquo;ll rarely deal with just one person. Understanding the different roles people play in a decision gives you clarity about where to invest your time.</p>
+
+    <div class="stakeholder-grid">
+      <div class="stakeholder-card dm">
+        <div class="stakeholder-icon">&#127919;</div>
+        <h3>Decision-Maker</h3>
+        <p>Feels the pain, owns the consequences, drives the decision. <strong>This is your primary audience.</strong> Everything from Modules 1&ndash;4 should be directed primarily at this person.</p>
+      </div>
+      <div class="stakeholder-card inf">
+        <div class="stakeholder-icon">&#128172;</div>
+        <h3>Influencer</h3>
+        <p>Has input and is consulted, but doesn&rsquo;t own the outcome. A team member who interviews you, a peer whose opinion carries weight. <strong>They matter, but don&rsquo;t confuse influence with authority.</strong></p>
+      </div>
+      <div class="stakeholder-card gk">
+        <div class="stakeholder-icon">&#128682;</div>
+        <h3>Gatekeeper</h3>
+        <p>Controls access to the decision-maker. In job searches, often the recruiter or HR coordinator. <strong>Respect them. Be professional. But understand their role: they manage the process, not the pain.</strong></p>
+      </div>
+      <div class="stakeholder-card vh">
+        <div class="stakeholder-icon">&#9940;</div>
+        <h3>Veto Holder</h3>
+        <p>May not be driving the decision, but can kill it. A CFO who approves headcount, a compliance officer who signs off. <strong>Identify them early and make sure their concerns are addressed.</strong></p>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(6)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(8)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 8: What To Do When You're Talking to the Wrong Person -->
+  <div class="section" data-section="8">
+    <div class="section-number">Section 8 of 12</div>
+    <h2>When You&rsquo;re Talking to the Wrong Person</h2>
+    <p>It&rsquo;s going to happen. It&rsquo;s often unavoidable. The question isn&rsquo;t whether it happens. The question is what you do about it.</p>
+
+    <div class="deep-dive">
+      <div class="deep-dive-header" onclick="toggleDeepDive('options')">
+        <span class="deep-dive-icon">&#128260;</span>
+        <span class="deep-dive-title">Three Options</span>
+        <span class="deep-dive-toggle" id="options-toggle">&#9660;</span>
+      </div>
+      <div class="deep-dive-content" id="options-content">
+        <p><strong>Option 1: Ask to include the decision-maker.</strong> <em>&ldquo;It sounds like the person really feeling this problem is your VP of Engineering. Would it make sense to include them in our next conversation?&rdquo;</em> Direct, professional, and most people appreciate it because it takes pressure off them.</p>
+        <p><strong>Option 2: Use them as your guide.</strong> If they can&rsquo;t connect you directly, they can still provide intelligence. <em>&ldquo;Who on the team feels this challenge most acutely? What does the decision-making process typically look like?&rdquo;</em> Treat them as a coach who can help you navigate to the right person.</p>
+        <p><strong>Option 3: Invest your time elsewhere.</strong> Hard, but sometimes necessary. If there&rsquo;s no clear path to the decision-maker and you&rsquo;re investing hours into a situation with no one who can say yes, your time may be better spent on an opportunity where you can reach the person who matters.</p>
+      </div>
+    </div>
+
+    <div class="blockquote">
+      <p>Your time has value. Not every conversation moves you forward. The ones with decision-makers do.</p>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(7)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(9)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 9: Common Mistakes -->
+  <div class="section" data-section="9">
+    <div class="section-number">Section 9 of 12</div>
+    <h2>Common Mistakes That Waste Your Time</h2>
+
+    <div class="deep-dive">
+      <div class="deep-dive-header" onclick="toggleDeepDive('mistakes')">
+        <span class="deep-dive-icon">&#9888;&#65039;</span>
+        <span class="deep-dive-title">Four Mistakes to Avoid</span>
+        <span class="deep-dive-toggle" id="mistakes-toggle">&#9660;</span>
+      </div>
+      <div class="deep-dive-content" id="mistakes-content">
+        <p><strong>Mistake 1: Confusing enthusiasm with authority.</strong> Someone being excited about you is not the same as someone being able to hire you. Enthusiasm is wonderful. But if the enthusiastic person isn&rsquo;t the decision-maker, their excitement is a data point, not a commitment.</p>
+        <p><strong>Mistake 2: Assuming titles tell you who matters.</strong> A &ldquo;Director of Talent Acquisition&rdquo; might sound like the person who decides whether you get hired, but their job is to manage the process, not to feel the pain. Follow the pain, not the title.</p>
+        <p><strong>Mistake 3: Hoping someone will champion your cause for you.</strong> Even well-intentioned advocates lose urgency when they&rsquo;re not personally accountable. Your value proposition, delivered secondhand, loses most of its power. Wherever possible, find a way to get in front of the decision-maker yourself.</p>
+        <p><strong>Mistake 4: Giving away your best thinking before you know who you&rsquo;re talking to.</strong> Don&rsquo;t spend hours preparing a custom presentation before you&rsquo;ve confirmed that the audience includes the person who can act on it. Your preparation has value. Don&rsquo;t invest it until you know it&rsquo;s reaching the right person.</p>
+      </div>
+    </div>
+
+    <p style="margin-top:24px;">Set these rules for yourself:</p>
+
+    <div class="takeaway-grid" style="margin-top:20px;">
+      <div class="takeaway-card">
+        <div class="takeaway-number">01</div>
+        <p><strong>Identify the decision-maker before investing significant time.</strong> If you can&rsquo;t name the person who makes this decision, you&rsquo;re not ready to invest.</p>
+      </div>
+      <div class="takeaway-card">
+        <div class="takeaway-number">02</div>
+        <p><strong>Qualify early.</strong> Ask clarifying questions within the first or second conversation. Better to redirect early than to perform for the wrong audience.</p>
+      </div>
+      <div class="takeaway-card">
+        <div class="takeaway-number">03</div>
+        <p><strong>Be willing to walk away.</strong> The fastest way to lose is to chase everything. The fastest way to win is to focus where you have a clear path to yes.</p>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(8)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(10)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 10: Practice Exercise -->
+  <div class="section" data-section="10">
+    <div class="section-number">Section 10 of 12 &bull; Practice Exercise</div>
+
+    <div class="practice">
+      <div class="practice-header">
+        <span class="practice-icon">&#9998;&#65039;</span>
+        <h3>Your Turn: Map the Decision-Maker</h3>
+        <span class="practice-label">Hands-On</span>
+      </div>
+      <div class="practice-prompt">
+        <p>Think about the most important professional situation you&rsquo;re navigating right now &mdash; a job search, a promotion conversation, an internal pitch, or positioning yourself for a potential reorg. Identify the key players and map them to the stakeholder roles.</p>
+      </div>
+      <textarea class="practice-textarea" id="practiceInput1" placeholder="1. What is the situation? (job search, promotion, internal pitch, reorg, etc.)
+
+2. Who is the DECISION-MAKER? (feels the pain, owns the consequences, can say yes)
+
+3. Who are the influencers, gatekeepers, or veto holders?
+
+4. Have you been investing time with the right person? If not, what's your plan to reach the decision-maker?"></textarea>
+      <button class="practice-btn" id="practice1Btn" onclick="getAIFeedback('practice1')">Get AI Feedback</button>
+      <div class="practice-feedback" id="practice1-feedback">
+        <h4>AI Feedback</h4>
+        <p>Your personalized feedback will appear here...</p>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(9)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(11)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 11: Knowledge Check -->
+  <div class="section" data-section="11">
+    <div class="section-number">Section 11 of 12 &bull; Knowledge Check</div>
+
+    <div class="quiz">
+      <div class="quiz-header">
+        <span class="quiz-icon">&#128161;</span>
+        <h3>Test Your Understanding</h3>
+      </div>
+
+      <span class="quiz-label">Question 1 of 3</span>
+      <div class="quiz-question">
+        You have a great phone screen with a recruiter who loves your background. They say they&rsquo;ll &ldquo;push you forward to the next round.&rdquo; Based on what you learned in this module, what should you be thinking?
+      </div>
+      <div class="choice-group" id="quiz1-choices">
+        <button class="choice-btn" onclick="checkQuiz(1, this, false, 'A')">
+          Great &mdash; the recruiter is excited, which means I&rsquo;m likely to get the job.
+        </button>
+        <button class="choice-btn" onclick="checkQuiz(1, this, false, 'B')">
+          I should send a thank-you note and wait patiently for the next step.
+        </button>
+        <button class="choice-btn" onclick="checkQuiz(1, this, true, 'C')">
+          The recruiter is a gatekeeper, not the decision-maker. I need to find and connect with the person who feels the pain of the unfilled role.
+        </button>
+      </div>
+      <div class="feedback" id="quiz1Feedback">
+        <h4>Feedback</h4>
+        <p id="quiz1Text"></p>
+      </div>
+
+      <span class="quiz-label" style="margin-top:32px;">Question 2 of 3</span>
+      <div class="quiz-question">
+        You pitch a project to your manager, who agrees it&rsquo;s a fantastic idea. Weeks go by and nothing happens. Based on this module, the most likely reason is:
+      </div>
+      <div class="choice-group" id="quiz2-choices">
+        <button class="choice-btn" onclick="checkQuiz(2, this, false, 'A')">
+          Your manager forgot. You need to follow up more aggressively.
+        </button>
+        <button class="choice-btn" onclick="checkQuiz(2, this, true, 'B')">
+          Your manager isn&rsquo;t the decision-maker. They don&rsquo;t control the budget or own the consequences, so they can&rsquo;t drive the decision forward.
+        </button>
+        <button class="choice-btn" onclick="checkQuiz(2, this, false, 'C')">
+          The idea isn&rsquo;t as good as your manager said. They were just being polite.
+        </button>
+      </div>
+      <div class="feedback" id="quiz2Feedback">
+        <h4>Feedback</h4>
+        <p id="quiz2Text"></p>
+      </div>
+
+      <span class="quiz-label" style="margin-top:32px;">Question 3 of 3</span>
+      <div class="quiz-question">
+        Your company announces a reorg. Which strategy best reflects the principles from this module?
+      </div>
+      <div class="choice-group" id="quiz3-choices">
+        <button class="choice-btn" onclick="checkQuiz(3, this, false, 'A')">
+          Go to your direct manager and make the strongest possible case for keeping your role.
+        </button>
+        <button class="choice-btn" onclick="checkQuiz(3, this, false, 'B')">
+          Start applying to outside jobs immediately as a backup plan.
+        </button>
+        <button class="choice-btn" onclick="checkQuiz(3, this, true, 'C')">
+          Identify who actually makes headcount decisions (often above your manager) and make sure those leaders already understand the cost and consequence of losing you.
+        </button>
+      </div>
+      <div class="feedback" id="quiz3Feedback">
+        <h4>Feedback</h4>
+        <p id="quiz3Text"></p>
+      </div>
+    </div>
+
+    <!-- Second Practice Exercise -->
+    <div class="practice" style="margin-top: 32px;">
+      <div class="practice-header">
+        <span class="practice-icon">&#129300;</span>
+        <h3>Decision-Maker Questions</h3>
+        <span class="practice-label">Application</span>
+      </div>
+      <p style="margin-bottom: 16px; color: var(--text-dim);">Imagine you&rsquo;re in a job interview and you suspect the person across from you isn&rsquo;t the final decision-maker. Write 2&ndash;3 questions you would ask to (a) confirm whether they&rsquo;re the decision-maker, and (b) navigate toward the right person if they&rsquo;re not &mdash; without being rude or going over their head.</p>
+      <textarea class="practice-textarea" id="practiceInput2" placeholder="Write your questions here. Remember: these should be practical, collaborative, and non-threatening. Think 'help me understand' rather than 'who's really in charge here?'"></textarea>
+      <button class="practice-btn" id="practice2Btn" onclick="getAIFeedback('practice2')">Get AI Feedback</button>
+      <div class="practice-feedback" id="practice2-feedback">
+        <h4>AI Feedback</h4>
+        <p>Your personalized feedback will appear here...</p>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(10)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(12)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 12: Connecting It All + Completion -->
+  <div class="section" data-section="12">
+    <div class="section-number">Section 12 of 12</div>
+    <h2>Connecting It All</h2>
+    <p style="margin-bottom: 32px;">Here&rsquo;s how Module 5 connects to the framework you&rsquo;ve been building:</p>
+
+    <div class="takeaway-grid">
+      <div class="takeaway-card">
+        <div class="takeaway-number">M2</div>
+        <p>Module 2 taught you to <strong>change how someone thinks.</strong> Module 5 tells you <strong>whose thinking matters most.</strong></p>
+      </div>
+      <div class="takeaway-card">
+        <div class="takeaway-number">M3</div>
+        <p>Module 3 taught you that <strong>pain drives action.</strong> Module 5 tells you to <strong>find the person who actually feels the pain.</strong></p>
+      </div>
+      <div class="takeaway-card">
+        <div class="takeaway-number">M4</div>
+        <p>Module 4 taught you to articulate the <strong>cost of not having you.</strong> Module 5 tells you to <strong>deliver that to the person who bears that cost.</strong></p>
+      </div>
+    </div>
+
+    <div class="blockquote" style="margin-top: 32px;">
+      <p>Before you apply any technique from this program, ask yourself two questions: Am I talking to the person who feels the pain? Am I talking to someone who can actually do something about it? If yes to both, everything works. If no to either, find the right person first.</p>
+    </div>
+
+    <div class="download-section" style="margin-top: 32px;">
+      <div style="font-size: 48px; margin-bottom: 16px;">&#128229;</div>
+      <h3>Take This With You</h3>
+      <p>Download: <strong>&ldquo;Find the Decision-Maker Framework&rdquo;</strong></p>
+      <p style="font-size: 0.9rem; margin-top: -12px; color: var(--text-dim);">Three criteria + five discovery questions + stakeholder map</p>
+      <button class="download-btn" onclick="window.print()">
+        <span>Download PDF</span>
+        <span>&rarr;</span>
+      </button>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(11)">&larr; Back</button>
+      <button class="nav-btn" onclick="showCompletion()">Finish Module &rarr;</button>
+    </div>
+  </div>
+
+  <!-- Completion -->
+  <div class="completion hidden" id="completion">
+    <div class="completion-icon">&#127881;</div>
+    <h2>Module Complete!</h2>
+    <p>You now have all five foundational pieces assembled: the landscape, the decision engine, the power of pain, the true measure of your value, and who to direct it all toward. Next: the art of asking questions that uncover pain and facilitate decisions.</p>
+    <div class="completion-stats">
+      <div class="stat">
+        <span class="stat-number" id="timeSpent">0</span>
+        <span class="stat-label">Minutes</span>
+      </div>
+      <div class="stat">
+        <span class="stat-number">12/12</span>
+        <span class="stat-label">Sections</span>
+      </div>
+      <div class="stat">
+        <span class="stat-number" id="quizScore">&mdash;</span>
+        <span class="stat-label">Quiz Score</span>
+      </div>
+    </div>
+    <button class="next-btn" onclick="nextModule()">Continue to Next Module &rarr;</button>
+  </div>
+
+</div>
+
+<script>
+// ═══ STATE ═══
+let currentSection = 0;
+let startTime = null;
+const quizState = { 1: null, 2: null, 3: null };
+
+// ═══ MODULE START ═══
+function startModule() {
+  document.getElementById('hero').style.display = 'none';
+  document.getElementById('content').classList.add('visible');
+  document.getElementById('progressWrapper').classList.add('visible');
+  startTime = Date.now();
+  observeSections();
+}
+
+// ═══ SECTION OBSERVER ═══
+function observeSections() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        const sectionNum = parseInt(entry.target.dataset.section);
+        if (sectionNum > currentSection) {
+          currentSection = sectionNum;
+          updateProgress();
+        }
+      }
+    });
+  }, { threshold: 0.3 });
+  document.querySelectorAll('.section').forEach(section => observer.observe(section));
+}
+
+// ═══ PROGRESS ═══
+function updateProgress() {
+  const progress = (currentSection / 12) * 100;
+  document.getElementById('progressBar').style.width = progress + '%';
+}
+
+// ═══ NAVIGATION ═══
+function goToSection(sectionNum) {
+  const section = document.querySelector(`[data-section="${sectionNum}"]`);
+  if (section) {
+    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (sectionNum > currentSection) {
+      currentSection = sectionNum;
+      updateProgress();
+    }
+  }
+}
+
+// ═══ REVEAL ═══
+function revealContent(id) {
+  document.getElementById(id).classList.add('open');
+  event.target.style.display = 'none';
+}
+
+// ═══ DEEP DIVE ═══
+function toggleDeepDive(id) {
+  const content = document.getElementById(id + '-content');
+  const toggle = document.getElementById(id + '-toggle');
+  if (content.classList.contains('open')) {
+    content.classList.remove('open');
+    toggle.classList.remove('open');
+  } else {
+    content.classList.add('open');
+    toggle.classList.add('open');
+  }
+}
+
+// ═══ CRITERIA CARDS ═══
+function toggleCriteria(id) {
+  const detail = document.getElementById(id + '-detail');
+  if (detail.style.maxHeight === '200px') {
+    detail.style.maxHeight = '0px';
+    detail.style.opacity = '0';
+  } else {
+    detail.style.maxHeight = '200px';
+    detail.style.opacity = '1';
+  }
+}
+
+// ═══ QUIZ ═══
+function checkQuiz(qNum, button, isCorrect, choice) {
+  if (quizState[qNum] !== null) return;
+  quizState[qNum] = isCorrect;
+
+  const allButtons = document.querySelectorAll(`#quiz${qNum}-choices .choice-btn`);
+  allButtons.forEach(btn => btn.style.pointerEvents = 'none');
+
+  const feedback = document.getElementById(`quiz${qNum}Feedback`);
+  const feedbackText = document.getElementById(`quiz${qNum}Text`);
+
+  const answers = {
+    1: {
+      correct: '<strong>Correct.</strong> The recruiter is a gatekeeper — they manage the process but don\'t feel the pain of the unfilled role. Your goal is to identify and connect with the hiring manager or the leader who wakes up every morning feeling the gap your role would fill. The recruiter\'s enthusiasm is encouraging, but it doesn\'t equal a decision.',
+      A: '<strong>Not quite.</strong> Recruiter excitement is a positive signal, but remember: enthusiasm is not authority. The recruiter doesn\'t feel the pain of the unfilled role and doesn\'t make the hiring decision. You need to find the person who does.',
+      B: '<strong>Not quite.</strong> A thank-you note is fine etiquette, but it\'s passive. The module teaches you to actively identify the decision-maker — the person who feels the pain and can say yes — rather than waiting for the process to run its course.'
+    },
+    2: {
+      correct: '<strong>Correct.</strong> This is the classic pattern from the opening of the module. Your manager liked your idea — that\'s the Good Vibes Trap from Module 2. But liking something and having the power to fund it are two different things. The decision stalled because you pitched to someone who couldn\'t say yes.',
+      A: '<strong>Not quite.</strong> More follow-ups won\'t fix a targeting problem. If your manager doesn\'t control the budget or own the consequences, no amount of reminders will change that. You need to find the person who can actually drive the decision.',
+      C: '<strong>Not quite.</strong> The idea may be genuinely good. The problem isn\'t the quality of the pitch — it\'s who you pitched it to. Even the best proposal goes nowhere when it\'s delivered to someone who can\'t act on it.'
+    },
+    3: {
+      correct: '<strong>Correct.</strong> In many reorgs, the headcount decisions happen above your direct manager. The person who decides which roles survive is the decision-maker — and they need to understand the cost and consequence of losing you <em>before</em> the decision is made. Ideally, you\'ve been building this visibility for months.',
+      A: '<strong>Not quite.</strong> Your direct manager may not be the one making the final headcount decision. Focusing only on them means you might be making the world\'s best case to someone who isn\'t in the room when the cuts are decided.',
+      B: '<strong>Not quite.</strong> Having backup options is always smart, but this module is about directing your energy strategically. The question is: who makes the headcount decision, and do they understand what it costs to lose you?'
+    }
+  };
+
+  if (isCorrect) {
+    button.classList.add('correct');
+    feedback.classList.add('visible', 'correct');
+    feedbackText.innerHTML = answers[qNum].correct;
+  } else {
+    button.classList.add('incorrect');
+    feedback.classList.add('visible', 'incorrect');
+    feedbackText.innerHTML = answers[qNum][choice];
+  }
+  updateQuizScore();
+}
+
+function updateQuizScore() {
+  const answered = Object.values(quizState).filter(v => v !== null).length;
+  if (answered === 3) {
+    const correct = Object.values(quizState).filter(v => v === true).length;
+    document.getElementById('quizScore').textContent = Math.round((correct / 3) * 100) + '%';
+  }
+}
+
+// ═══ AI FEEDBACK ═══
+async function getAIFeedback(practiceId) {
+  const inputId = practiceId === 'practice1' ? 'practiceInput1' : 'practiceInput2';
+  const btnId = practiceId === 'practice1' ? 'practice1Btn' : 'practice2Btn';
+  const feedbackId = practiceId + '-feedback';
+
+  const input = document.getElementById(inputId);
+  const button = document.getElementById(btnId);
+  const feedback = document.getElementById(feedbackId);
+  const userAnswer = input.value.trim();
+
+  if (!userAnswer) {
+    alert('Please write your answer first before getting feedback!');
+    return;
+  }
+
+  button.disabled = true;
+  button.classList.add('loading');
+  button.textContent = 'Getting AI Feedback...';
+
+  try {
+    let prompt;
+
+    if (practiceId === 'practice1') {
+      prompt = `You are a career coach and sales training expert for the "Be Unavoidable" program, which teaches non-sales professionals to articulate their value using sales skills to navigate AI displacement.
+
+The student just completed a "Map the Decision-Maker" exercise. They were asked to:
+1. Describe their current professional situation
+2. Identify the DECISION-MAKER (the person who feels the pain, owns the consequences, and can say yes)
+3. Identify influencers, gatekeepers, or veto holders
+4. Assess whether they've been investing time with the right person
+
+Their answers: "${userAnswer}"
+
+Provide brief, personalized feedback (4-5 sentences max):
+1. Assess whether they correctly identified the decision-maker vs. a gatekeeper or influencer. Did they name someone who meets all three criteria (feels the pain, owns consequences, has authority)?
+2. If their stakeholder mapping is clear, acknowledge it. If it's vague, push them to be more specific about who plays which role.
+3. Evaluate their plan: Are they directing their energy toward the right person? Or are they still focused on process managers?
+4. Give one specific action they could take THIS WEEK to get closer to their decision-maker.
+
+Be encouraging, direct, and practical. This person may be anxious about AI displacement and career transition.`;
+    } else {
+      prompt = `You are a career coach and sales training expert for the "Be Unavoidable" program.
+
+The student was asked to write 2-3 questions they would use in a job interview to (a) confirm whether the person they're talking to is the actual decision-maker, and (b) navigate toward the right person if they're not — without being rude or going over their head.
+
+Their questions: "${userAnswer}"
+
+Provide brief feedback (4-5 sentences max):
+1. Are the questions collaborative and non-threatening, or do they risk putting the interviewer on the defensive?
+2. Do the questions actually reveal who the decision-maker is (who feels the pain, owns consequences, has authority)?
+3. Are the questions practical — would they work naturally in a real interview conversation?
+4. Rate the overall approach: Would these questions help them navigate to the right person?
+5. Suggest one improvement or additional question that would strengthen their approach.
+
+Be encouraging but honest. Remember these are non-sales professionals learning to navigate professional situations strategically.`;
+    }
+
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 500,
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+
+    if (!response.ok) throw new Error('API request failed');
+    const data = await response.json();
+    const feedbackText = data.content[0].text;
+
+    feedback.querySelector('h4').textContent = 'AI Feedback';
+    feedback.querySelector('p').innerHTML = feedbackText;
+    feedback.classList.add('visible');
+    feedback.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    button.textContent = 'Get New Feedback';
+
+  } catch (error) {
+    console.error('Error getting AI feedback:', error);
+    alert('Unable to get AI feedback right now. Please try again.');
+    button.textContent = 'Get AI Feedback';
+  } finally {
+    button.disabled = false;
+    button.classList.remove('loading');
+  }
+}
+
+// ═══ DOWNLOAD ═══
+function downloadPDF() {
+  window.print();
+}
+
+// ═══ COMPLETION ═══
+function showCompletion() {
+  document.getElementById('completion').classList.remove('hidden');
+  const elapsed = Math.round((Date.now() - startTime) / 60000);
+  document.getElementById('timeSpent').textContent = elapsed;
+  updateQuizScore();
+  document.getElementById('completion').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ═══ NEXT MODULE ═══
+function nextModule() {
+  window.location.href = '/module6.html';
+}
+</script>
+
+
+<script>
+  async function logOut() {
+    await fetch('/api/logout');
+    window.location.href = '/login.html';
+  }
+</script>
+</body>
+</html>

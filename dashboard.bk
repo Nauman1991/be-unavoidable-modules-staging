@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- AUTH GUARD -->
+  <script>
+    (async function() {
+      try {
+        const res = await fetch('/api/verify');
+        if (!res.ok) throw new Error('not authenticated');
+        const data = await res.json();
+        if (!data.authenticated) throw new Error('not authenticated');
+        window.BU_USER = { name: data.name, email: data.email };
+      } catch(e) {
+        window.location.href = '/login.html';
+      }
+    })();
+  </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Be Unavoidable — Your Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #f5f0ea; --surface: #ece6de; --card: #ffffff; --border: rgba(26,26,26,0.08);
+  --text: #1a1a1a; --text-dim: #6b6560; --text-light: #958e85;
+  --bg-raised: #ece6de; --bg-card: #ffffff; --bg-card-hover: #f9f5f0;
+  --border-hover: rgba(26,26,26,0.15);
+  --text-secondary: #6b6560;
+  --brand-blue: #1e4f8a; --brand-blue-light: #2d6ab5;
+  --accent-red: #a93e33; --accent-amber: #b5714a; --accent-green: #5a9a5a;
+  --accent-purple: #7a5e8a; --accent-cyan: #2d7a8a;
+  --accent-rose: #a93e33; --accent-emerald: #5a9a5a;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+/* ─── NAV ─── */
+.nav {
+  position: fixed; top: 0; left: 0; width: 100%; z-index: 100;
+  padding: 14px 48px;
+  display: flex; justify-content: space-between; align-items: center;
+  background: rgba(245,240,234,0.95);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+}
+
+.nav-brand {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.4rem;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.nav-brand span { color: var(--brand-blue); }
+
+.nav-user {
+  display: flex; align-items: center; gap: 12px;
+}
+
+.nav-user-name {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.nav-avatar {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--brand-blue), var(--accent-purple));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem; font-weight: 700;
+  cursor: pointer;
+  transition: box-shadow 0.3s;
+}
+
+.nav-avatar:hover {
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--brand-blue);
+}
+
+/* ─── MAIN ─── */
+.main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 96px 48px 64px;
+}
+
+/* ─── WELCOME ─── */
+.welcome {
+  margin-bottom: 40px;
+}
+
+.welcome h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2rem, 4.5vw, 2.8rem);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  margin-bottom: 14px;
+  opacity: 0;
+  animation: fadeUp 0.5s ease forwards 0.1s;
+}
+
+.welcome-note {
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  line-height: 1.65;
+  max-width: 720px;
+  opacity: 0;
+  animation: fadeUp 0.5s ease forwards 0.2s;
+}
+
+.welcome-note strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ─── SECTION HEADERS ─── */
+.section-header {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 16px;
+}
+
+.section-header h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.2rem;
+  letter-spacing: 0.05em;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.section-divider {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ─── QUICKSTART ROW ─── */
+.quickstart {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 44px;
+  opacity: 0;
+  animation: fadeUp 0.5s ease forwards 0.3s;
+}
+
+.qs-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 22px 26px;
+  cursor: pointer;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  position: relative;
+  overflow: hidden;
+}
+
+.qs-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 2px;
+  opacity: 0;
+  transition: opacity 0.35s;
+}
+
+.qs-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 32px rgba(0,0,0,0.35);
+}
+
+.qs-card:hover::after { opacity: 1; }
+
+.qs-card[data-accent="blue"]::after { background: linear-gradient(90deg, var(--brand-blue), var(--accent-cyan)); }
+.qs-card[data-accent="purple"]::after { background: linear-gradient(90deg, var(--accent-purple), var(--brand-blue)); }
+
+.qs-icon {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.qs-card[data-accent="blue"] .qs-icon { background: rgba(0,80,165,0.15); }
+.qs-card[data-accent="purple"] .qs-icon { background: rgba(139,92,246,0.15); }
+
+.qs-info { flex: 1; min-width: 0; }
+
+.qs-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.15rem;
+  letter-spacing: 0.03em;
+  line-height: 1.15;
+  margin-bottom: 3px;
+}
+
+.qs-desc {
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.qs-tag {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.qs-tag.anytime { background: rgba(34,197,94,0.12); color: var(--accent-green); }
+
+.qs-arrow {
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  transition: all 0.3s;
+  flex-shrink: 0;
+}
+
+.qs-card:hover .qs-arrow {
+  color: var(--text);
+  transform: translateX(4px);
+}
+
+/* ─── MODULES COMPACT ─── */
+.modules-section {
+  margin-bottom: 44px;
+  opacity: 0;
+  animation: fadeUp 0.5s ease forwards 0.4s;
+}
+
+.modules-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.mod-row {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mod-row:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-hover);
+  transform: translateX(3px);
+}
+
+.mod-num {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.15rem;
+  color: var(--text-dim);
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+  transition: color 0.3s;
+}
+
+.mod-row:hover .mod-num { color: var(--brand-blue); }
+
+.mod-sep {
+  width: 1px;
+  height: 24px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+.mod-info { flex: 1; min-width: 0; }
+
+.mod-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mod-sub {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mod-arrow {
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  transition: all 0.3s;
+  flex-shrink: 0;
+}
+
+.mod-row:hover .mod-arrow {
+  color: var(--text);
+  transform: translateX(3px);
+}
+
+/* ─── MAP YOUR FIT ─── */
+.fit-section {
+  margin-bottom: 44px;
+  opacity: 0;
+  animation: fadeUp 0.5s ease forwards 0.5s;
+}
+
+.fit-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.fit-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 22px 26px;
+  cursor: pointer;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  position: relative;
+  overflow: hidden;
+}
+
+.fit-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 2px;
+  opacity: 0;
+  transition: opacity 0.35s;
+}
+
+.fit-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 32px rgba(0,0,0,0.35);
+}
+
+.fit-card:hover::after { opacity: 1; }
+
+.fit-card[data-accent="green"]::after { background: linear-gradient(90deg, var(--accent-green), var(--accent-emerald)); }
+.fit-card[data-accent="cyan"]::after { background: linear-gradient(90deg, var(--accent-cyan), var(--brand-blue-light)); }
+
+.fit-icon {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.fit-card[data-accent="green"] .fit-icon { background: rgba(34,197,94,0.15); }
+.fit-card[data-accent="cyan"] .fit-icon { background: rgba(6,182,212,0.15); }
+
+.fit-info { flex: 1; min-width: 0; }
+
+.fit-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.15rem;
+  letter-spacing: 0.03em;
+  line-height: 1.15;
+  margin-bottom: 3px;
+}
+
+.fit-desc {
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.fit-lock {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.fit-arrow {
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  transition: all 0.3s;
+  flex-shrink: 0;
+}
+
+.fit-card:hover .fit-arrow {
+  color: var(--text);
+  transform: translateX(4px);
+}
+
+/* ─── PRACTICE ENGINES ─── */
+.practice-section {
+  margin-bottom: 44px;
+  opacity: 0;
+  animation: fadeUp 0.5s ease forwards 0.6s;
+}
+
+.practice-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.pr-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 22px 26px;
+  cursor: pointer;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  position: relative;
+  overflow: hidden;
+}
+
+.pr-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 2px;
+  opacity: 0;
+  transition: opacity 0.35s;
+}
+
+.pr-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 32px rgba(0,0,0,0.35);
+}
+
+.pr-card:hover::after { opacity: 1; }
+
+.pr-card[data-accent="rose"]::after { background: linear-gradient(90deg, var(--accent-rose), var(--accent-purple)); }
+.pr-card[data-accent="amber"]::after { background: linear-gradient(90deg, var(--accent-amber), var(--accent-rose)); }
+
+.pr-icon {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.pr-card[data-accent="rose"] .pr-icon { background: rgba(244,63,94,0.15); }
+.pr-card[data-accent="amber"] .pr-icon { background: rgba(245,158,11,0.15); }
+
+.pr-info { flex: 1; min-width: 0; }
+
+.pr-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.15rem;
+  letter-spacing: 0.03em;
+  line-height: 1.15;
+  margin-bottom: 3px;
+}
+
+.pr-desc {
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.pr-tag {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.55rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  background: rgba(34,197,94,0.12);
+  color: var(--accent-green);
+}
+
+.pr-arrow {
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  transition: all 0.3s;
+  flex-shrink: 0;
+}
+
+.pr-card:hover .pr-arrow {
+  color: var(--text);
+  transform: translateX(4px);
+}
+
+/* ─── LINK RESET ─── */
+a.mod-row, a.qs-card, a.fit-card, a.pr-card {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+}
+
+/* ─── ANIMATIONS ─── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 768px) {
+  .nav { padding: 12px 20px; }
+  .main { padding: 84px 20px 48px; }
+  .quickstart,
+  .modules-grid,
+  .fit-grid,
+  .practice-grid { grid-template-columns: 1fr; }
+  .welcome h1 { font-size: 1.9rem; }
+  .mod-sub { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="#" class="nav-brand">BE <span>UNAVOIDABLE</span></a>
+  <div class="nav-user">
+    <span class="nav-user-name">Welcome back</span>
+    <div class="nav-avatar">M</div>
+  </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+
+  <!-- WELCOME -->
+  <div class="welcome">
+    <h1>Your Path Forward Starts Here</h1>
+    <p class="welcome-note">
+      This isn't a linear program — <strong>jump into whatever feels right.</strong> The modules build on each other, so going in order helps, but it's not required. We'd recommend hitting the <strong>Career Clarity Engine</strong> and <strong>Personality Assessment</strong> early — they personalize everything that follows. The roleplay engines and clarity tool are always available, use them as much as you want.
+    </p>
+  </div>
+
+  <!-- GET GROUNDED -->
+  <div class="section-header" style="opacity:0; animation: fadeUp 0.5s ease forwards 0.25s;">
+    <h2>Get Grounded</h2>
+    <div class="section-divider"></div>
+  </div>
+
+  <div class="quickstart">
+    <a class="qs-card" data-accent="blue" href="cce.html">
+      <div class="qs-icon">🧠</div>
+      <div class="qs-info">
+        <div class="qs-title">Career Clarity & Confidence Engine</div>
+        <div class="qs-desc">AI-powered career anxiety support and coaching using CBT techniques. Come back anytime.</div>
+      </div>
+      <span class="qs-tag anytime">Anytime</span>
+      <span class="qs-arrow">→</span>
+    </a>
+
+    <a class="qs-card" data-accent="purple" href="personality-assessment.html">
+      <div class="qs-icon">🔬</div>
+      <div class="qs-info">
+        <div class="qs-title">Personality Assessment</div>
+        <div class="qs-desc">9-dimension behavioral profile. Unlocks personalized insights across the platform.</div>
+      </div>
+      <span class="qs-tag anytime">Do Early</span>
+      <span class="qs-arrow">→</span>
+    </a>
+  </div>
+
+  <!-- SALES TRAINING MODULES -->
+  <div class="modules-section">
+    <div class="section-header">
+      <h2>Career Skills Training</h2>
+      <div class="section-divider"></div>
+    </div>
+
+    <div class="modules-grid">
+      <a class="mod-row" href="module1.html">
+        <div class="mod-num">01</div>
+        <div class="mod-sep"></div>
+        <div class="mod-info">
+          <div class="mod-title">No One Is Coming For You</div>
+          <div class="mod-sub">Why the old playbook is dead</div>
+        </div>
+        <span class="mod-arrow">→</span>
+      </a>
+
+      <a class="mod-row" href="module2.html">
+        <div class="mod-num">02</div>
+        <div class="mod-sep"></div>
+        <div class="mod-info">
+          <div class="mod-title">How People Actually Make Decisions</div>
+          <div class="mod-sub">The engine behind every yes and no</div>
+        </div>
+        <span class="mod-arrow">→</span>
+      </a>
+
+      <a class="mod-row" href="module3.html">
+        <div class="mod-num">03</div>
+        <div class="mod-sep"></div>
+        <div class="mod-info">
+          <div class="mod-title">Pain vs. Pleasure</div>
+          <div class="mod-sub">What actually motivates people to act</div>
+        </div>
+        <span class="mod-arrow">→</span>
+      </a>
+
+      <a class="mod-row" href="module4.html">
+        <div class="mod-num">04</div>
+        <div class="mod-sep"></div>
+        <div class="mod-info">
+          <div class="mod-title">What Happens If They Don't Choose You</div>
+          <div class="mod-sub">The cost of your absence</div>
+        </div>
+        <span class="mod-arrow">→</span>
+      </a>
+
+      <a class="mod-row" href="module5.html">
+        <div class="mod-num">05</div>
+        <div class="mod-sep"></div>
+        <div class="mod-info">
+          <div class="mod-title">Find the Person Who Can Say Yes</div>
+          <div class="mod-sub">Reaching the real decision-maker</div>
+        </div>
+        <span class="mod-arrow">→</span>
+      </a>
+
+      <a class="mod-row" href="module6.html">
+        <div class="mod-num">06</div>
+        <div class="mod-sep"></div>
+        <div class="mod-info">
+          <div class="mod-title">Become an Expert Diagnostician</div>
+          <div class="mod-sub">Uncover real problems through questioning</div>
+        </div>
+        <span class="mod-arrow">→</span>
+      </a>
+
+      <a class="mod-row" href="module7.html">
+        <div class="mod-num">07</div>
+        <div class="mod-sep"></div>
+        <div class="mod-info">
+          <div class="mod-title">Know When You're in the Right Place</div>
+          <div class="mod-sub">Qualify opportunities, know when to walk</div>
+        </div>
+        <span class="mod-arrow">→</span>
+      </a>
+
+      <a class="mod-row" href="module8.html">
+        <div class="mod-num">08</div>
+        <div class="mod-sep"></div>
+        <div class="mod-info">
+          <div class="mod-title">Gain Commitment and Close</div>
+          <div class="mod-sub">Ask for what you want</div>
+        </div>
+        <span class="mod-arrow">→</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- PRACTICE & ROLEPLAY -->
+  <div class="practice-section">
+    <div class="section-header">
+      <h2>Practice & Roleplay</h2>
+      <div class="section-divider"></div>
+    </div>
+
+    <div class="practice-grid">
+      <a class="pr-card" data-accent="amber" href="self-advocacy.html">
+        <div class="pr-icon">💼</div>
+        <div class="pr-info">
+          <div class="pr-title">AI Self-Advocacy Roleplay</div>
+          <div class="pr-desc">Rehearse interviews, negotiations, reviews, and internal pitches with AI.</div>
+        </div>
+        <span class="pr-tag">Anytime</span>
+        <span class="pr-arrow">→</span>
+      </a>
+
+      <a class="pr-card" data-accent="rose" href="sales-roleplay.html">
+        <div class="pr-icon">🎭</div>
+        <div class="pr-info">
+          <div class="pr-title">AI Sales Roleplay Engine</div>
+          <div class="pr-desc">Practice discovery calls, objections, and closing against a realistic AI buyer.</div>
+        </div>
+        <span class="pr-tag">Anytime</span>
+        <span class="pr-arrow">→</span>
+      </a>
+    </div>
+  </div>
+
+</main>
+
+</body>
+</html>

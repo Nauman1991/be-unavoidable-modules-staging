@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- AUTH GUARD -->
+  <script>
+    (async function() {
+      try {
+        const res = await fetch('/api/verify');
+        if (!res.ok) throw new Error('not authenticated');
+        const data = await res.json();
+        if (!data.authenticated) throw new Error('not authenticated');
+        window.BU_USER = { name: data.name, email: data.email, userId: data.userId };
+        document.dispatchEvent(new Event('bu:user-ready'));
+      } catch(e) {
+        window.location.href = '/login.html';
+      }
+    })();
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Be Unavoidable — Tell Us About You</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #f5f0ea; --surface: #ece6de; --card: #ffffff; --border: rgba(26,26,26,0.08);
+      --text: #1a1a1a; --text-dim: #6b6560; --text-light: #958e85;
+      --border-hover: rgba(26,26,26,0.2);
+      --brand-blue: #1e4f8a; --brand-blue-light: #2d6ab5;
+      --accent-green: #5a9a5a;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    /* ─── NAV ─── */
+    .nav {
+      position: fixed; top: 0; left: 0; width: 100%; z-index: 100;
+      padding: 14px 48px;
+      display: flex; justify-content: space-between; align-items: center;
+      background: rgba(245,240,234,0.95);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-brand {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem; letter-spacing: 0.04em;
+      color: var(--text); text-decoration: none;
+    }
+    .nav-brand span { color: var(--brand-blue); }
+
+    .nav-user {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .nav-user-name { font-size: 0.82rem; color: var(--text-dim); font-weight: 500; }
+    .nav-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--brand-blue), #7a5e8a);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 700; color: white;
+    }
+
+    /* ─── LAYOUT ─── */
+    .main {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 108px 48px 80px;
+    }
+
+    /* ─── HEADER ─── */
+    .header {
+      margin-bottom: 48px;
+      opacity: 0;
+      animation: fadeUp 0.5s ease forwards 0.1s;
+    }
+
+    .header-eyebrow {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--brand-blue);
+      margin-bottom: 10px;
+    }
+
+    .header h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.2rem, 5vw, 3rem);
+      line-height: 1;
+      letter-spacing: 0.02em;
+      margin-bottom: 14px;
+    }
+
+    .header p {
+      color: var(--text-dim);
+      font-size: 0.88rem;
+      line-height: 1.65;
+      max-width: 520px;
+    }
+
+    /* ─── PROGRESS ─── */
+    .progress-bar {
+      height: 2px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-bottom: 48px;
+      opacity: 0;
+      animation: fadeUp 0.5s ease forwards 0.15s;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--brand-blue), #7a5e8a);
+      border-radius: 2px;
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+
+    /* ─── FORM ─── */
+    .form { display: flex; flex-direction: column; gap: 36px; }
+
+    .field-group {
+      opacity: 0;
+      animation: fadeUp 0.5s ease forwards;
+    }
+    .field-group:nth-child(1) { animation-delay: 0.2s; }
+    .field-group:nth-child(2) { animation-delay: 0.28s; }
+    .field-group:nth-child(3) { animation-delay: 0.36s; }
+    .field-group:nth-child(4) { animation-delay: 0.44s; }
+    .field-group:nth-child(5) { animation-delay: 0.52s; }
+
+    .field-label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 10px;
+    }
+
+    .field-question {
+      font-family: 'Source Serif 4', serif;
+      font-size: 1.05rem;
+      font-weight: 400;
+      color: var(--text);
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    /* ─── OPTIONS (pill select) ─── */
+    .options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .option-btn {
+      padding: 8px 18px;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      background: white;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: all 0.2s;
+      user-select: none;
+    }
+
+    .option-btn:hover {
+      border-color: var(--border-hover);
+      color: var(--text);
+      background: var(--surface);
+    }
+
+    .option-btn.selected {
+      background: var(--text);
+      border-color: var(--text);
+      color: white;
+    }
+
+    /* ─── TEXTAREA ─── */
+    .field-textarea {
+      width: 100%;
+      padding: 14px 18px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: white;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      color: var(--text);
+      line-height: 1.6;
+      resize: vertical;
+      min-height: 100px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+
+    .field-textarea::placeholder { color: var(--text-light); }
+
+    .field-textarea:focus {
+      border-color: var(--brand-blue);
+      box-shadow: 0 0 0 3px rgba(30,79,138,0.08);
+    }
+
+    /* ─── SUBMIT ─── */
+    .submit-wrap {
+      padding-top: 8px;
+      opacity: 0;
+      animation: fadeUp 0.5s ease forwards 0.6s;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 16px 32px;
+      background: var(--text);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.1rem;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      transition: all 0.25s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .submit-btn:hover:not(:disabled) {
+      background: var(--brand-blue);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(30,79,138,0.25);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .submit-btn .arrow { transition: transform 0.25s; }
+    .submit-btn:hover:not(:disabled) .arrow { transform: translateX(4px); }
+
+    /* ─── ERROR / SUCCESS ─── */
+    .form-error {
+      background: rgba(169,62,51,0.08);
+      border: 1px solid rgba(169,62,51,0.2);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 0.82rem;
+      color: #a93e33;
+      display: none;
+    }
+    .form-error.show { display: block; }
+
+    /* ─── ANIMATIONS ─── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 600px) {
+      .nav { padding: 12px 20px; }
+      .main { padding: 84px 20px 60px; }
+      .header h1 { font-size: 2rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a href="dashboard.html" class="nav-brand">BE <span>UNAVOIDABLE</span></a>
+  <div class="nav-user">
+    <span class="nav-user-name" id="nav-welcome">Welcome back</span>
+    <div class="nav-avatar" id="nav-avatar">?</div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+  <div class="header">
+    <div class="header-eyebrow">Step 1 of 1</div>
+    <h1>Let's Get You Dialed In</h1>
+    <p>A few quick questions so the platform can personalize everything for your situation. Takes about 2 minutes.</p>
+  </div>
+
+  <div class="progress-bar">
+    <div class="progress-fill" id="progress-fill"></div>
+  </div>
+
+  <div class="form" id="intake-form">
+
+    <!-- Q1: Role -->
+    <div class="field-group">
+      <span class="field-label">Question 1</span>
+      <div class="field-question">What best describes your current role?</div>
+      <div class="options" data-field="role">
+        <button type="button" class="option-btn" data-value="individual-contributor">Individual Contributor</button>
+        <button type="button" class="option-btn" data-value="manager">Manager / Team Lead</button>
+        <button type="button" class="option-btn" data-value="senior-leader">Senior Leader / Director+</button>
+        <button type="button" class="option-btn" data-value="founder">Founder / Entrepreneur</button>
+        <button type="button" class="option-btn" data-value="job-seeker">Job Seeker</button>
+        <button type="button" class="option-btn" data-value="other">Other</button>
+      </div>
+    </div>
+
+    <!-- Q2: Status -->
+    <div class="field-group">
+      <span class="field-label">Question 2</span>
+      <div class="field-question">What's your current career situation?</div>
+      <div class="options" data-field="status">
+        <button type="button" class="option-btn" data-value="employed-happy">Employed & growing</button>
+        <button type="button" class="option-btn" data-value="employed-stuck">Employed but stuck</button>
+        <button type="button" class="option-btn" data-value="employed-leaving">Employed & planning to leave</button>
+        <button type="button" class="option-btn" data-value="in-transition">In transition</button>
+        <button type="button" class="option-btn" data-value="between-jobs">Between jobs</button>
+        <button type="button" class="option-btn" data-value="new-grad">Recently graduated</button>
+      </div>
+    </div>
+
+    <!-- Q3: Goal (free text) -->
+    <div class="field-group">
+      <span class="field-label">Question 3</span>
+      <div class="field-question">What's the one career outcome you want most right now?</div>
+      <textarea
+        class="field-textarea"
+        id="field-goal"
+        placeholder="e.g. Land a senior product role at a Series B startup, get promoted to director, break into tech sales..."
+        rows="3"
+      ></textarea>
+    </div>
+
+    <!-- Q4: Weighing -->
+    <div class="field-group">
+      <span class="field-label">Question 4</span>
+      <div class="field-question">What matters most to you in your next move?</div>
+      <div class="options" data-field="weighing">
+        <button type="button" class="option-btn" data-value="compensation">Compensation</button>
+        <button type="button" class="option-btn" data-value="growth">Growth & learning</button>
+        <button type="button" class="option-btn" data-value="impact">Mission & impact</button>
+        <button type="button" class="option-btn" data-value="autonomy">Autonomy & flexibility</button>
+        <button type="button" class="option-btn" data-value="stability">Stability & security</button>
+        <button type="button" class="option-btn" data-value="title">Title & recognition</button>
+      </div>
+    </div>
+
+    <!-- Q5: Urgency -->
+    <div class="field-group">
+      <span class="field-label">Question 5</span>
+      <div class="field-question">How urgent is this for you?</div>
+      <div class="options" data-field="urgency">
+        <button type="button" class="option-btn" data-value="critical">Critical — I need to move now</button>
+        <button type="button" class="option-btn" data-value="soon">Soon — within 3 months</button>
+        <button type="button" class="option-btn" data-value="planning">Planning ahead — 3–6 months</button>
+        <button type="button" class="option-btn" data-value="exploring">Exploring — no hard timeline</button>
+      </div>
+    </div>
+
+    <div class="form-error" id="form-error">Please answer all questions before continuing.</div>
+
+    <div class="submit-wrap">
+      <button class="submit-btn" id="submit-btn" onclick="submitIntake()">
+        Start My Journey <span class="arrow">→</span>
+      </button>
+    </div>
+
+  </div>
+</main>
+
+<script>
+  // ── Auth nav populate ──
+  document.addEventListener('bu:user-ready', function() {
+    const user = window.BU_USER;
+    if (!user) return;
+    const first = (user.name || user.email || '').trim().split(' ')[0];
+    document.getElementById('nav-welcome').textContent = 'Welcome back, ' + first;
+    document.getElementById('nav-avatar').textContent = first.charAt(0).toUpperCase();
+  });
+
+  // ── Pill selection ──
+  const selections = { role: '', status: '', goal: '', weighing: '', urgency: '' };
+
+  document.querySelectorAll('.options').forEach(function(group) {
+    const field = group.dataset.field;
+    group.querySelectorAll('.option-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        group.querySelectorAll('.option-btn').forEach(function(b) { b.classList.remove('selected'); });
+        btn.classList.add('selected');
+        selections[field] = btn.dataset.value;
+        updateProgress();
+      });
+    });
+  });
+
+  document.getElementById('field-goal').addEventListener('input', function() {
+    selections.goal = this.value.trim();
+    updateProgress();
+  });
+
+  function updateProgress() {
+    const total = 5;
+    const filled = ['role','status','goal','weighing','urgency'].filter(function(k) { return selections[k]; }).length;
+    document.getElementById('progress-fill').style.width = ((filled / total) * 100) + '%';
+  }
+
+  // ── Submit ──
+  async function submitIntake() {
+    // Sync goal from textarea
+    selections.goal = document.getElementById('field-goal').value.trim();
+
+    const missing = ['role','status','goal','weighing','urgency'].filter(function(k) { return !selections[k]; });
+    if (missing.length) {
+      const err = document.getElementById('form-error');
+      err.classList.add('show');
+      err.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      return;
+    }
+
+    document.getElementById('form-error').classList.remove('show');
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.innerHTML = 'Saving... <span class="arrow">↻</span>';
+
+    // Save to localStorage for CCE to read (user-specific only)
+    const userId = (window.BU_USER && window.BU_USER.userId) || 'anon';
+    localStorage.setItem(`bu_intake_${userId}`, JSON.stringify(selections));
+
+    // Save to DB — must succeed before redirecting
+    try {
+      const user = window.BU_USER || {};
+      const user_id = user.userId;
+
+      if (!user_id) throw new Error('User session not ready. Please refresh and try again.');
+
+      const res = await fetch('/api/intake', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id,
+          role: selections.role,
+          status: selections.status,
+          goal: selections.goal,
+          weighing: selections.weighing,
+          urgency: selections.urgency
+        })
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Save failed');
+      }
+    } catch (e) {
+      console.error('DB save failed:', e);
+      btn.disabled = false;
+      btn.innerHTML = 'Save & Continue <span class="arrow">→</span>';
+      const err = document.getElementById('form-error');
+      err.textContent = 'Error: ' + e.message;
+      err.classList.add('show');
+      return;
+    }
+
+    // Redirect only after confirmed DB save
+    window.location.href = 'dashboard.html';
+  }
+</script>
+
+</body>
+</html>

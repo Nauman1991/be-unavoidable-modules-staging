@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- AUTH GUARD -->
+  <script>
+    (async function() {
+      try {
+        const res = await fetch('/api/verify');
+        if (!res.ok) throw new Error('not authenticated');
+        const data = await res.json();
+        if (!data.authenticated) throw new Error('not authenticated');
+        window.BU_USER = { name: data.name, email: data.email };
+        document.dispatchEvent(new Event('bu:user-ready'));
+      } catch(e) {
+        window.location.href = '/login.html';
+      }
+    })();
+  </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Module 6: Become an Expert Diagnostician</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Mono:wght@400;700&family=Work+Sans:wght@300;400;500;600;700&display=swap');
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0a0e1a; --surface: #141824; --card: #1c2130; --card-hover: #242938; --border: #2d3448;
+  --text: #e4e6eb; --text-dim: #9195a3;
+  --accent-red: #ff4757; --accent-red-dim: rgba(255, 71, 87, 0.15);
+  --accent-green: #2ecc71; --accent-green-dim: rgba(46, 204, 113, 0.15);
+  --accent-blue: #3498db; --accent-yellow: #f39c12; --accent-purple: #9b59b6;
+  --accent-orange: #e67e22; --accent-cyan: #00bcd4;
+}
+body { font-family: 'Work Sans', sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; overflow-x: hidden; }
+
+/* ═══ HERO ═══ */
+.hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 60px 24px; position: relative; background: radial-gradient(ellipse 800px 500px at 50% 40%, rgba(0, 188, 212, 0.08), transparent 60%), radial-gradient(ellipse 600px 400px at 30% 60%, rgba(155, 89, 182, 0.06), transparent 60%); }
+.module-badge { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--accent-cyan); border: 2px solid var(--accent-cyan); padding: 8px 20px; border-radius: 30px; margin-bottom: 28px; display: inline-block; opacity: 0; animation: fadeUp 0.8s ease forwards 0.2s; }
+.hero h1 { font-family: 'Instrument Serif', serif; font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 400; line-height: 1.1; max-width: 900px; margin-bottom: 24px; opacity: 0; animation: fadeUp 0.8s ease forwards 0.4s; }
+.hero h1 .highlight { color: var(--accent-cyan); font-style: italic; }
+.hero-subtitle { font-size: 1.15rem; color: var(--text-dim); max-width: 680px; margin-bottom: 48px; opacity: 0; animation: fadeUp 0.8s ease forwards 0.6s; }
+.start-btn { font-family: 'Space Mono', monospace; font-size: 15px; font-weight: 700; background: var(--accent-cyan); color: white; border: none; padding: 18px 48px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; opacity: 0; animation: fadeUp 0.8s ease forwards 0.8s; box-shadow: 0 8px 24px rgba(0, 188, 212, 0.3); }
+.start-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(0, 188, 212, 0.4); }
+
+/* ═══ PROGRESS ═══ */
+.progress-wrapper { position: fixed; top: 0; left: 0; right: 0; height: 4px; background: var(--surface); z-index: 1000; opacity: 0; transition: opacity 0.3s; }
+.progress-wrapper.visible { opacity: 1; }
+.progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent-cyan), var(--accent-green)); width: 0%; transition: width 0.5s ease; }
+
+/* ═══ CONTENT ═══ */
+.content { max-width: 900px; margin: 0 auto; padding: 80px 24px 120px; opacity: 0; transition: opacity 0.5s; }
+.content.visible { opacity: 1; }
+
+/* ═══ SECTIONS ═══ */
+.section { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 48px; margin-bottom: 32px; opacity: 0; transform: translateY(40px); transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
+.section.visible { opacity: 1; transform: translateY(0); }
+.section-number { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; color: var(--accent-cyan); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; }
+.section h2 { font-family: 'Instrument Serif', serif; font-size: 2.2rem; font-weight: 400; margin-bottom: 24px; line-height: 1.2; }
+.section p { color: var(--text-dim); margin-bottom: 20px; font-size: 1.05rem; }
+.section p:last-child { margin-bottom: 0; }
+.section strong { color: var(--text); font-weight: 600; }
+
+/* ═══ DEEP DIVE ═══ */
+.deep-dive { background: linear-gradient(135deg, rgba(155, 89, 182, 0.1) 0%, rgba(142, 68, 173, 0.05) 100%); border: 1px solid rgba(155, 89, 182, 0.3); border-radius: 12px; padding: 24px; margin: 24px 0; }
+.deep-dive-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; cursor: pointer; user-select: none; }
+.deep-dive-icon { font-size: 20px; }
+.deep-dive-title { font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; color: var(--accent-purple); text-transform: uppercase; letter-spacing: 1.2px; flex: 1; }
+.deep-dive-toggle { font-size: 20px; color: var(--accent-purple); transition: transform 0.3s; }
+.deep-dive-toggle.open { transform: rotate(180deg); }
+.deep-dive-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, opacity 0.4s ease; opacity: 0; }
+.deep-dive-content.open { max-height: 5000px; opacity: 1; }
+.deep-dive-content p { color: var(--text-dim); font-size: 0.95rem; margin-bottom: 12px; line-height: 1.6; }
+
+/* ═══ INFO BOXES ═══ */
+.info-box { background: var(--surface); border-left: 4px solid; padding: 20px; margin: 24px 0; border-radius: 0 8px 8px 0; }
+.info-box.warning { border-left-color: var(--accent-red); background: linear-gradient(135deg, rgba(255, 71, 87, 0.08) 0%, var(--surface) 100%); }
+.info-box.success { border-left-color: var(--accent-green); background: linear-gradient(135deg, rgba(46, 204, 113, 0.08) 0%, var(--surface) 100%); }
+.info-box.insight { border-left-color: var(--accent-orange); background: linear-gradient(135deg, rgba(230, 126, 34, 0.08) 0%, var(--surface) 100%); }
+.info-box.blue { border-left-color: var(--accent-blue); background: linear-gradient(135deg, rgba(52, 152, 219, 0.08) 0%, var(--surface) 100%); }
+.info-box.cyan { border-left-color: var(--accent-cyan); background: linear-gradient(135deg, rgba(0, 188, 212, 0.08) 0%, var(--surface) 100%); }
+.info-box h3 { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+.info-box.warning h3 { color: var(--accent-red); }
+.info-box.success h3 { color: var(--accent-green); }
+.info-box.insight h3 { color: var(--accent-orange); }
+.info-box.blue h3 { color: var(--accent-blue); }
+.info-box.cyan h3 { color: var(--accent-cyan); }
+
+/* ═══ BLOCKQUOTE ═══ */
+.blockquote { background: var(--surface); border-left: 4px solid var(--accent-cyan); padding: 24px; margin: 24px 0; border-radius: 0 8px 8px 0; font-style: italic; }
+.blockquote p { color: var(--text); font-size: 1.1rem; font-weight: 500; margin-bottom: 0; }
+
+/* ═══ COMPARISON CARDS ═══ */
+.comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 32px 0; }
+@media (max-width: 768px) { .comparison { grid-template-columns: 1fr; } }
+.comp-card { background: var(--surface); border: 2px solid var(--border); border-radius: 12px; padding: 32px; transition: all 0.3s ease; position: relative; overflow: hidden; }
+.comp-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; }
+.comp-card.wrong::before { background: var(--accent-red); }
+.comp-card.right::before { background: var(--accent-green); }
+.comp-card:hover { transform: translateY(-4px); }
+.comp-icon { font-size: 36px; margin-bottom: 16px; }
+.comp-card h3 { font-family: 'Instrument Serif', serif; font-size: 1.4rem; margin-bottom: 12px; }
+.comp-card.wrong h3 { color: var(--accent-red); }
+.comp-card.right h3 { color: var(--accent-green); }
+.comp-card p { color: var(--text-dim); font-size: 0.95rem; line-height: 1.6; }
+
+/* ═══ QUESTION CARDS ═══ */
+.question-cards { display: flex; flex-direction: column; gap: 16px; margin: 28px 0; }
+.question-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; transition: all 0.3s ease; }
+.question-card:hover { border-color: var(--accent-cyan); transform: translateX(6px); }
+.question-text { font-size: 1.05rem; font-weight: 600; color: var(--text); margin-bottom: 8px; font-style: italic; }
+.question-why { font-size: 0.92rem; color: var(--text-dim); line-height: 1.6; }
+
+/* ═══ SYMPTOM WORD CARDS ═══ */
+.symptom-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 24px 0; }
+.symptom-tag { background: var(--surface); border: 2px solid rgba(0, 188, 212, 0.3); border-radius: 10px; padding: 16px 20px; text-align: center; font-size: 1.05rem; font-weight: 500; color: var(--accent-cyan); transition: all 0.3s ease; cursor: default; }
+.symptom-tag:hover { border-color: var(--accent-cyan); background: rgba(0, 188, 212, 0.08); transform: translateY(-3px); }
+
+/* ═══ SCENARIO REVEAL ═══ */
+.reveal-trigger { display: inline-flex; align-items: center; gap: 8px; font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; color: var(--accent-cyan); background: none; border: 2px solid var(--accent-cyan); padding: 12px 24px; border-radius: 8px; cursor: pointer; margin-top: 16px; transition: all 0.3s ease; }
+.reveal-trigger:hover { background: var(--accent-cyan); color: white; transform: translateX(4px); }
+.reveal-content { max-height: 0; overflow: hidden; transition: max-height 0.5s ease, opacity 0.5s ease; opacity: 0; }
+.reveal-content.open { max-height: 5000px; opacity: 1; margin-top: 24px; }
+
+/* ═══ FRAMEWORK STEPS ═══ */
+.framework-steps { display: flex; flex-direction: column; gap: 20px; margin: 32px 0; }
+.fw-step { background: var(--surface); border: 2px solid var(--border); border-radius: 12px; padding: 28px; transition: all 0.3s ease; position: relative; overflow: hidden; cursor: pointer; }
+.fw-step::before { content: ''; position: absolute; top: 0; left: 0; width: 5px; height: 100%; border-radius: 12px 0 0 12px; background: var(--accent-cyan); }
+.fw-step:hover { border-color: var(--accent-cyan); transform: translateX(8px); }
+.fw-step-num { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; color: var(--accent-cyan); }
+.fw-step h3 { font-family: 'Instrument Serif', serif; font-size: 1.3rem; margin-bottom: 8px; }
+.fw-step p { color: var(--text-dim); font-size: 0.95rem; line-height: 1.6; margin-bottom: 0; }
+.fw-step-detail { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, opacity 0.4s ease; opacity: 0; }
+.fw-step-detail p { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+
+/* ═══ PRACTICE ═══ */
+.practice { background: linear-gradient(135deg, #1a2332 0%, #1f2937 100%); border: 2px solid var(--accent-yellow); border-radius: 16px; padding: 36px; margin: 32px 0; }
+.practice-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.practice-icon { font-size: 28px; }
+.practice-header h3 { font-family: 'Instrument Serif', serif; font-size: 1.6rem; }
+.practice-label { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; color: var(--accent-yellow); text-transform: uppercase; letter-spacing: 1.5px; background: rgba(243, 156, 18, 0.15); padding: 4px 12px; border-radius: 20px; margin-left: auto; }
+.practice-prompt { background: var(--card); border-left: 4px solid var(--accent-yellow); padding: 20px; margin-bottom: 24px; border-radius: 0 8px 8px 0; }
+.practice-prompt p { font-style: italic; color: var(--text); font-size: 1.05rem; margin-bottom: 0; }
+.practice-textarea { width: 100%; min-height: 140px; background: var(--surface); border: 2px solid var(--border); border-radius: 8px; padding: 16px; color: var(--text); font-family: 'Work Sans', sans-serif; font-size: 1rem; resize: vertical; margin-bottom: 16px; transition: border-color 0.3s; }
+.practice-textarea:focus { outline: none; border-color: var(--accent-yellow); }
+.practice-btn { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; background: var(--accent-yellow); color: var(--bg); border: none; padding: 14px 32px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; }
+.practice-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(243, 156, 18, 0.3); }
+.practice-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.practice-btn.loading { background: var(--text-dim); cursor: wait; }
+.practice-feedback { background: var(--surface); border: 2px solid var(--accent-green); border-radius: 8px; padding: 24px; margin-top: 24px; display: none; }
+.practice-feedback.visible { display: block; }
+.practice-feedback h4 { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; color: var(--accent-green); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+
+/* ═══ QUIZ ═══ */
+.quiz { background: linear-gradient(135deg, #1c2130 0%, #242938 100%); border: 1px solid var(--border); border-radius: 16px; padding: 40px; margin: 32px 0; }
+.quiz-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+.quiz-icon { font-size: 28px; }
+.quiz-header h3 { font-family: 'Instrument Serif', serif; font-size: 1.5rem; }
+.quiz-question { font-size: 1.1rem; margin-bottom: 24px; line-height: 1.6; }
+.quiz-label { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; color: var(--accent-cyan); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 16px; display: block; }
+.choice-group { display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+.choice-btn { background: var(--card); border: 2px solid var(--border); color: var(--text); padding: 20px 24px; border-radius: 10px; cursor: pointer; text-align: left; font-size: 1rem; transition: all 0.3s ease; }
+.choice-btn:hover { border-color: var(--accent-cyan); background: var(--card-hover); transform: translateX(8px); }
+.choice-btn.correct { border-color: var(--accent-green); background: var(--accent-green-dim); }
+.choice-btn.incorrect { border-color: var(--accent-red); background: var(--accent-red-dim); }
+.feedback { background: var(--surface); border-left: 4px solid var(--accent-green); padding: 20px; margin-top: 24px; border-radius: 8px; display: none; }
+.feedback.visible { display: block; }
+.feedback.incorrect { border-left-color: var(--accent-red); }
+.feedback h4 { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+.feedback.correct h4 { color: var(--accent-green); }
+.feedback.incorrect h4 { color: var(--accent-red); }
+
+/* ═══ TAKEAWAYS ═══ */
+.takeaway-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; margin: 32px 0; }
+.takeaway-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 28px; transition: all 0.3s ease; position: relative; }
+.takeaway-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--accent-cyan); border-radius: 12px 0 0 12px; opacity: 0; transition: opacity 0.3s; }
+.takeaway-card:hover::before { opacity: 1; }
+.takeaway-card:hover { border-color: var(--accent-cyan); transform: translateY(-4px); }
+.takeaway-number { font-family: 'Space Mono', monospace; font-size: 32px; font-weight: 700; color: var(--accent-cyan); opacity: 0.3; margin-bottom: 12px; }
+.takeaway-card p { font-size: 0.95rem; line-height: 1.6; }
+
+/* ═══ COMPLETION ═══ */
+.completion { text-align: center; background: linear-gradient(135deg, var(--card) 0%, var(--surface) 100%); border: 2px solid var(--accent-green); border-radius: 20px; padding: 60px 40px; margin: 48px 0; }
+.completion-icon { font-size: 64px; margin-bottom: 24px; animation: bounce 1s ease; }
+@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+.completion h2 { font-family: 'Instrument Serif', serif; font-size: 2.5rem; margin-bottom: 16px; }
+.completion p { font-size: 1.1rem; color: var(--text-dim); max-width: 600px; margin: 0 auto 32px; }
+.completion-stats { display: flex; justify-content: center; gap: 48px; margin-bottom: 32px; }
+.stat { text-align: center; }
+.stat-number { font-family: 'Space Mono', monospace; font-size: 2.5rem; font-weight: 700; color: var(--accent-green); display: block; }
+.stat-label { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); }
+.next-btn { font-family: 'Space Mono', monospace; font-size: 15px; font-weight: 700; background: var(--accent-green); color: white; border: none; padding: 18px 48px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 8px 24px rgba(46, 204, 113, 0.3); }
+.next-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(46, 204, 113, 0.4); }
+
+/* ═══ NAV ═══ */
+.nav-buttons { display: flex; justify-content: space-between; align-items: center; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border); }
+.nav-btn { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; background: var(--accent-red); color: white; border: none; padding: 14px 28px; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px; }
+.nav-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(255, 71, 87, 0.3); }
+.nav-btn.back { background: var(--surface); border: 2px solid var(--border); color: var(--text); }
+.nav-btn.back:hover { background: var(--card); border-color: var(--accent-red); }
+
+/* ═══ ANIMATIONS & UTILS ═══ */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+.hidden { display: none !important; }
+@media (max-width: 768px) { .section { padding: 32px 24px; } .hero { min-height: 90vh; } .hero h1 { font-size: 2.5rem; } .completion-stats { flex-direction: column; gap: 24px; } }
+</style>
+
+  <style>
+  .bu-dash-btn {
+    position: fixed; top: 14px; right: 20px; z-index: 9999;
+    font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700;
+    background: rgba(20,24,36,0.92); color: #9195a3;
+    border: 1px solid #2d3448; border-radius: 6px;
+    padding: 7px 14px; cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: color 0.2s, border-color 0.2s;
+    text-decoration: none; display: inline-block;
+  }
+  .bu-dash-btn:hover { color: #e4e6eb; border-color: #9195a3; }
+  </style>
+</head>
+<body>
+  <a href="/dashboard.html" class="bu-dash-btn">&#8592; Dashboard</a>
+
+
+<!-- Progress Bar -->
+<div class="progress-wrapper" id="progressWrapper">
+  <div class="progress-bar" id="progressBar"></div>
+</div>
+
+<!-- Hero Section -->
+<div class="hero" id="hero">
+  <div class="module-badge">Module 6 &bull; Be Unavoidable</div>
+  <h1>
+    Become an Expert<br><span class="highlight">Diagnostician</span>
+  </h1>
+  <p class="hero-subtitle">The skill that matters most isn&rsquo;t talking. It&rsquo;s asking the right questions and truly listening to the answers. This is the method that ties everything together.</p>
+  <button class="start-btn" onclick="startModule()">Begin Module &rarr;</button>
+</div>
+
+<!-- Main Content -->
+<div class="content" id="mainContent">
+
+  <!-- SECTION 1: Opening -->
+  <div class="section" data-section="1">
+    <div class="section-number">Section 1 of 14</div>
+    <h2>The Skill That Changes Everything</h2>
+    <p>Every great salesperson, every great leader, and every great communicator eventually makes the same confession: the skill that matters most isn&rsquo;t talking. It&rsquo;s asking.</p>
+    <p>Not the polite &ldquo;do you have any questions for me?&rdquo; at the end of an interview. Not the surface-level &ldquo;how&rsquo;s business?&rdquo; at a networking event. We&rsquo;re talking about the <strong>deliberate, disciplined practice of asking questions that make the other person think differently about their own situation.</strong></p>
+    <p>If you&rsquo;ve been paying attention, everything you&rsquo;ve learned so far has been leading here:</p>
+
+    <div class="takeaway-grid">
+      <div class="takeaway-card"><div class="takeaway-number">M2</div><p>The real work is <strong>changing how someone thinks.</strong></p></div>
+      <div class="takeaway-card"><div class="takeaway-number">M3</div><p><strong>Pain and consequences</strong> create urgency.</p></div>
+      <div class="takeaway-card"><div class="takeaway-number">M4</div><p>Your value = the <strong>cost of not having you.</strong></p></div>
+      <div class="takeaway-card"><div class="takeaway-number">M5</div><p>Direct it at the person who <strong>feels the pain and can say yes.</strong></p></div>
+    </div>
+
+    <p>But none of those modules fully answered: <strong>how do you actually do it?</strong> How do you change someone&rsquo;s thinking in real time? How do you uncover pain the other person hasn&rsquo;t fully articulated even to themselves?</p>
+    <p>The answer is questions. The right questions, asked in the right sequence, with the discipline to <em>actually listen</em> to the answers.</p>
+    <div class="nav-buttons">
+      <div></div>
+      <button class="nav-btn" onclick="goToSection(2)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 2: The Diagnosis Mindset -->
+  <div class="section" data-section="2">
+    <div class="section-number">Section 2 of 14</div>
+    <h2>The Diagnosis Mindset</h2>
+    <p>Think about how a great doctor works. They don&rsquo;t walk into the exam room and immediately prescribe medication. They ask questions. They listen. They probe. They follow threads. Only after they&rsquo;ve built a complete picture do they offer a diagnosis.</p>
+    <p>Why? Because <strong>prescribing before diagnosing is malpractice.</strong> In medicine, it can kill someone. In your career, it kills your credibility, your opportunities, and your leverage.</p>
+    <p>Now think about what most people do in high-stakes conversations:</p>
+
+    <div class="comparison">
+      <div class="comp-card wrong">
+        <div class="comp-icon">&#128483;</div>
+        <h3>Prescribing</h3>
+        <p>Walk into the interview and start talking about yourself. Present your accomplishments. Launch into your slides. Deliver your elevator pitch to someone who never asked for it.</p>
+      </div>
+      <div class="comp-card right">
+        <div class="comp-icon">&#129658;</div>
+        <h3>Diagnosing</h3>
+        <p>Ask questions that uncover the real problem. Listen to understand their world. Only present your value after you fully understand what they need and why.</p>
+      </div>
+    </div>
+
+    <div class="blockquote">
+      <p>Stop telling people why you&rsquo;re valuable. Start asking questions that help them discover why they need you.</p>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(1)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(3)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 3: Why Questions Give You Control -->
+  <div class="section" data-section="3">
+    <div class="section-number">Section 3 of 14</div>
+    <h2>Why Questions Give You Control</h2>
+    <p>Here&rsquo;s a counterintuitive truth: <strong>the person asking the questions controls the conversation.</strong> Not the person talking the most. Not the person with the best slides. The person asking the questions.</p>
+    <p>When someone asks you a thoughtful question, what happens? You think. You reflect. You go inward. In that moment, they&rsquo;re directing your thinking. They&rsquo;re choosing where your mind goes. That&rsquo;s control &mdash; the kind that comes from guiding someone&rsquo;s attention to the things that matter most.</p>
+    <p>When <em>you&rsquo;re</em> the one talking, you&rsquo;ve handed control away. They&rsquo;re deciding whether to pay attention. They&rsquo;re filtering your words through their existing beliefs. You&rsquo;re performing. They&rsquo;re evaluating.</p>
+    <p>When you ask a question, the dynamic flips. They&rsquo;re the ones revealing what matters to them, what keeps them up at night, what they need. <strong>And you&rsquo;re the one with the intelligence.</strong></p>
+
+    <div class="info-box insight">
+      <h3>Why the Pros Listen More Than They Talk</h3>
+      <p>Professional salespeople who close multimillion-dollar deals spend <strong>70% to 80%</strong> of their discovery conversations listening, not talking. Every minute the other person spends talking is a minute they&rsquo;re handing you the keys to their decision.</p>
+    </div>
+
+    <p>Remember the Good Vibes Trap from Module 2? One of the primary reasons it exists is that the person doing all the talking was <em>you.</em> Questions fix that. <strong>Questions create the thinking shifts that presentations can&rsquo;t.</strong></p>
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(2)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(4)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 4: The Real Skill Is Listening -->
+  <div class="section" data-section="4">
+    <div class="section-number">Section 4 of 14</div>
+    <h2>The Real Skill Is Listening</h2>
+    <p>Asking great questions is only half the skill. The other half &mdash; the half that actually sets you apart &mdash; is <strong>listening.</strong> Really listening.</p>
+    <p>Not the version where you&rsquo;re nodding along while rehearsing what you&rsquo;re going to say next. Not the version where you&rsquo;re waiting for a pause so you can jump in. Real listening. The kind where you are so fully present that <strong>you hear things they didn&rsquo;t even know they were telling you.</strong></p>
+    <p>In a world where everyone is preparing their next sentence, the person who actually listens becomes extraordinary. Not because they&rsquo;re doing something complicated. Because they&rsquo;re doing something almost nobody does.</p>
+
+    <p>Here&rsquo;s what real listening sounds like:</p>
+
+    <div class="question-cards">
+      <div class="question-card">
+        <div class="question-text">They say: &ldquo;We&rsquo;ve been managing okay, but it&rsquo;s been a challenge.&rdquo;</div>
+        <div class="question-why">Most people hear &ldquo;okay&rdquo; and move on. A real listener hears the contradiction. <strong>Great follow-up:</strong> &ldquo;Help me understand that. You said you&rsquo;re managing okay, but it&rsquo;s been a challenge. Which one is closer to the truth?&rdquo;</div>
+      </div>
+      <div class="question-card">
+        <div class="question-text">They say: &ldquo;We tried something similar last year and it didn&rsquo;t work.&rdquo;</div>
+        <div class="question-why">Most people hear an objection and start defending. A real listener hears a story. <strong>Great follow-up:</strong> &ldquo;Tell me about that. What did you try, and what happened?&rdquo;</div>
+      </div>
+      <div class="question-card">
+        <div class="question-text">They say: &ldquo;Our team has been stretched thin since the restructuring.&rdquo;</div>
+        <div class="question-why">Most people hear a general statement. A real listener hears pain. <strong>Great follow-up:</strong> &ldquo;When you say stretched thin, what does that actually look like day to day?&rdquo;</div>
+      </div>
+    </div>
+
+    <div class="blockquote">
+      <p>The best follow-up question you will ever ask is the one you couldn&rsquo;t have planned &mdash; because it responds to something you just heard. And you can only hear it if you&rsquo;re actually listening.</p>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(3)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(5)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 5: Symptom Words -->
+  <div class="section" data-section="5">
+    <div class="section-number">Section 5 of 14</div>
+    <h2>Symptom Words &amp; Phrases</h2>
+    <p>Look at those three examples again. In each one, the other person used a word that most people gloss right over: <em>&ldquo;challenge,&rdquo; &ldquo;didn&rsquo;t work,&rdquo; &ldquo;stretched thin.&rdquo;</em> These aren&rsquo;t throwaway words. They&rsquo;re <strong>Symptom Words.</strong></p>
+    <p>We&rsquo;re naming this concept because you&rsquo;re going to use it for the rest of this program and the rest of your career.</p>
+
+    <div class="info-box cyan">
+      <h3>What Is a Symptom Word?</h3>
+      <p>A <strong>Symptom Word or Symptom Phrase</strong> is any word or phrase someone uses that signals there&rsquo;s a deeper story underneath &mdash; the same way a physical symptom signals a deeper condition. When a patient tells a doctor &ldquo;I&rsquo;ve been feeling tired,&rdquo; the doctor doesn&rsquo;t say &ldquo;okay, get more sleep.&rdquo; <em>&ldquo;Tired&rdquo;</em> is a symptom. It could mean stress, anemia, depression, or a dozen other things. <strong>The doctor&rsquo;s job is to hear the symptom and investigate.</strong> Your job is the same.</p>
+    </div>
+
+    <p>When someone says things have been <strong>&ldquo;stressful,&rdquo;</strong> that&rsquo;s a huge Symptom Word. Stressful how? Stressful because of workload? Leadership changes? People leaving? Each of those is a completely different problem with different costs and consequences. But you&rsquo;ll never know which one it is if you hear &ldquo;stressful&rdquo; and just nod along.</p>
+    <p>Symptom Words are everywhere once you start listening for them:</p>
+
+    <div class="symptom-grid">
+      <div class="symptom-tag">&ldquo;It&rsquo;s been frustrating&rdquo;</div>
+      <div class="symptom-tag">&ldquo;We&rsquo;re in transition&rdquo;</div>
+      <div class="symptom-tag">&ldquo;Things have been hectic&rdquo;</div>
+      <div class="symptom-tag">&ldquo;It&rsquo;s complicated&rdquo;</div>
+      <div class="symptom-tag">&ldquo;We&rsquo;ve had some turnover&rdquo;</div>
+      <div class="symptom-tag">&ldquo;We&rsquo;re behind where we need to be&rdquo;</div>
+    </div>
+
+    <p>Every single one of these is a door. Most people walk past it. An expert diagnostician stops and says:</p>
+    <div class="blockquote">
+      <p>&ldquo;When you say <em>[their word]</em>, can you tell me more about that?&rdquo;</p>
+    </div>
+
+    <div class="info-box warning">
+      <h3>Why This Matters</h3>
+      <p>Remember Module 3: vague pain creates vague interest. Specific pain creates action. <strong>Symptom Words are vague pain in disguise.</strong> &ldquo;Stretched thin&rdquo; sounds like it describes a problem, but it describes nothing. Your job is to hear the symptom and ask the question that turns a label into a diagnosis.</p>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(4)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(6)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 6: No Premature Presentations -->
+  <div class="section" data-section="6">
+    <div class="section-number">Section 6 of 14</div>
+    <h2>The Critical Rule: No Premature Presentations</h2>
+    <p><strong>Do not jump to presenting your value when you hear pain.</strong></p>
+    <p>You&rsquo;re in a job interview. The hiring manager says, &ldquo;Our team has been struggling with execution lately.&rdquo; Your brain lights up: &ldquo;I can solve that!&rdquo; And before you can stop yourself, you&rsquo;re talking. You&rsquo;re explaining your experience, your approach, your track record.</p>
+    <p>And you just blew right past two massive Symptom Words. <strong>&ldquo;Struggling&rdquo;</strong> and <strong>&ldquo;execution&rdquo;</strong> are both loaded with meaning you don&rsquo;t have yet. Struggling how? Execution of what? You don&rsquo;t know, because you started talking instead of asking.</p>
+    <p>The first pain they mention is <em>rarely</em> the whole story. There&rsquo;s almost always more underneath. More cost. More consequence. More urgency. More context that would make your response ten times more powerful. But you&rsquo;ll never get it now, because you stopped asking questions and started talking.</p>
+
+    <p>The professional approach: you recognize the Symptom Word, resist every instinct to present, and say five of the most powerful words in any conversation:</p>
+    <div class="blockquote">
+      <p>&ldquo;Tell me more about that.&rdquo;</p>
+    </div>
+    <p>Then: &ldquo;How long has this been going on?&rdquo; &ldquo;How is it affecting the team?&rdquo; &ldquo;What has it cost you so far?&rdquo; &ldquo;What happens if it doesn&rsquo;t get resolved next quarter?&rdquo;</p>
+    <p><strong>Every one of those questions deepens the pain. Every answer gives you more information.</strong> And by the time you do present your value, it&rsquo;s not a generic pitch. It&rsquo;s a precise, targeted response to a problem the other person now fully understands.</p>
+
+    <div class="info-box success">
+      <h3>The Rule</h3>
+      <p>Diagnose before you prescribe. Always. In every conversation. No exceptions.</p>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(5)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(7)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 7: The Diagnostic Framework -->
+  <div class="section" data-section="7">
+    <div class="section-number">Section 7 of 14</div>
+    <h2>The Diagnostic Framework</h2>
+    <p>Professional diagnosis follows a sequence. Each question goes deeper than the last. The discipline is in resisting the temptation to skip ahead. Click each step to explore:</p>
+
+    <div class="framework-steps">
+      <div class="fw-step" onclick="toggleStep('s1')">
+        <div class="fw-step-num">Question 1</div>
+        <h3>What problem are you trying to solve?</h3>
+        <p>Get the problem in <em>their</em> words. Not your words. Not industry jargon. Their words.</p>
+        <div class="fw-step-detail" id="s1-detail">
+          <p>The problem as stated in a job description and the problem as felt by the decision-maker are often two very different things. &ldquo;We need a project manager&rdquo; vs. &ldquo;Our last three launches shipped late and I&rsquo;m running out of credibility with the exec team.&rdquo; <strong>Follow up:</strong> &ldquo;How does this show up in your day-to-day?&rdquo; &ldquo;How long has this been an issue?&rdquo; &ldquo;What have you tried already?&rdquo;</p>
+        </div>
+      </div>
+      <div class="fw-step" onclick="toggleStep('s2')">
+        <div class="fw-step-num">Question 2</div>
+        <h3>By when do you need this solved?</h3>
+        <p>This reveals urgency. Real pain has a timeline. Real consequences have deadlines.</p>
+        <div class="fw-step-detail" id="s2-detail">
+          <p>If they say &ldquo;eventually&rdquo; or &ldquo;we&rsquo;re exploring options,&rdquo; that&rsquo;s not someone with real pain. Don&rsquo;t ask &ldquo;when are you making a decision?&rdquo; (pressure). Ask: <strong>&ldquo;When were you hoping to have this problem behind you?&rdquo;</strong> Then work backward to create a timeline with structure and accountability.</p>
+        </div>
+      </div>
+      <div class="fw-step" onclick="toggleStep('s3')">
+        <div class="fw-step-num">Question 3</div>
+        <h3>How much is this problem costing you?</h3>
+        <p>If they can&rsquo;t tell you what the problem costs, they won&rsquo;t invest in solving it.</p>
+        <div class="fw-step-detail" id="s3-detail">
+          <p>When they say the number out loud, they own it. Push beyond the first number: direct costs, opportunity costs, productivity costs, morale costs, customer impact. If they resist: <strong>&ldquo;Is this a five-figure problem, six-figure, or seven-figure?&rdquo;</strong> The more dimensions of cost they articulate, the more compelling your value will be.</p>
+        </div>
+      </div>
+      <div class="fw-step" onclick="toggleStep('s4')">
+        <div class="fw-step-num">Question 4</div>
+        <h3>What happens if nothing changes?</h3>
+        <p>This activates everything you learned in Module 3 about the power of consequences.</p>
+        <div class="fw-step-detail" id="s4-detail">
+          <p>You&rsquo;re not scaring them. You&rsquo;re helping them see around the corner. If they describe escalating consequences, you have urgency. If they shrug and say &ldquo;we&rsquo;ll manage,&rdquo; you need deeper questions to help them see costs they haven&rsquo;t connected. <strong>Sometimes &ldquo;managing&rdquo; is just &ldquo;accepting a loss they&rsquo;ve stopped noticing.&rdquo;</strong></p>
+        </div>
+      </div>
+      <div class="fw-step" onclick="toggleStep('s5')">
+        <div class="fw-step-num">Question 5</div>
+        <h3>How do decisions like this typically get made?</h3>
+        <p>Map the decision landscape so you know exactly what needs to happen for &ldquo;yes.&rdquo;</p>
+        <div class="fw-step-detail" id="s5-detail">
+          <p>Most opportunities that stall don&rsquo;t fail because of a competitor. They fail because you didn&rsquo;t understand the decision process. Ask: <strong>&ldquo;Who else is involved? What factors will you weigh most heavily? Is there anyone who could say no even if you wanted to move forward?&rdquo;</strong></p>
+        </div>
+      </div>
+      <div class="fw-step" onclick="toggleStep('s6')">
+        <div class="fw-step-num">Question 6</div>
+        <h3>What resources do you have available to solve this?</h3>
+        <p>Budget, time, and internal support. The question that prevents wasted months.</p>
+        <div class="fw-step-detail" id="s6-detail">
+          <p><strong>&ldquo;When you set expectations internally about what it would take to fix this, what did that conversation look like?&rdquo;</strong> If the resources aren&rsquo;t there, that&rsquo;s not a failure. That&rsquo;s a gift &mdash; it frees you to focus on opportunities where the path to yes is clear.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(6)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(8)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 8: The Questions Behind the Questions -->
+  <div class="section" data-section="8">
+    <div class="section-number">Section 8 of 14</div>
+    <h2>The Questions Behind the Questions</h2>
+    <p>The framework is your structure, but the real magic happens in the <strong>follow-up questions</strong> &mdash; the ones you can&rsquo;t plan because they emerge from what the other person just said.</p>
+
+    <div class="question-cards">
+      <div class="question-card">
+        <div class="question-text">&ldquo;Tell me more about that.&rdquo;</div>
+        <div class="question-why">Four words. Infinitely powerful. This invitation almost always produces the most valuable information in the entire conversation.</div>
+      </div>
+      <div class="question-card">
+        <div class="question-text">&ldquo;Help me understand what you mean by that.&rdquo;</div>
+        <div class="question-why">Your tool when they use a Symptom Word that could mean different things. &ldquo;We&rsquo;re struggling with alignment.&rdquo; &ldquo;Alignment&rdquo; is a classic Symptom Word. What does it mean to <em>them</em>?</div>
+      </div>
+      <div class="question-card">
+        <div class="question-text">&ldquo;What does that look like in practice?&rdquo;</div>
+        <div class="question-why">Takes abstract to concrete. &ldquo;Our onboarding is slow&rdquo; becomes &ldquo;new hires take 90 days to become productive and three of the last five quit before they got there.&rdquo;</div>
+      </div>
+      <div class="question-card">
+        <div class="question-text">&ldquo;How does that affect you personally?&rdquo;</div>
+        <div class="question-why">Moves from organizational to individual. Reveals whether they&rsquo;re <em>living with</em> this problem or just observing it (Module 5).</div>
+      </div>
+      <div class="question-card">
+        <div class="question-text">&ldquo;What would solving this mean for you and your team?&rdquo;</div>
+        <div class="question-why">Flips from pain to aspiration &mdash; but only after you&rsquo;ve explored the pain. Gives you the complete picture.</div>
+      </div>
+    </div>
+
+    <p>Every one of these requires you to have been <em>listening</em> to the answer that came before. <strong>The follow-up question is proof of listening. And proof of listening builds trust faster than anything else you can do.</strong></p>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(7)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(9)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 9: Applying to Your Career -->
+  <div class="section" data-section="9">
+    <div class="section-number">Section 9 of 14</div>
+    <h2>Applying This to Your Career</h2>
+    <p>The diagnostic approach works everywhere &mdash; not just formal sales conversations.</p>
+
+    <button class="reveal-trigger" onclick="revealContent('scn1')">The Job Interview <span>&rarr;</span></button>
+    <div class="reveal-content" id="scn1">
+      <p>Most candidates walk in prepared to talk about themselves. The candidate who gets hired spends the first part asking questions: <em>&ldquo;What prompted you to open this role now?&rdquo;</em> Then they listen, follow up, and diagnose the full situation. By the time they present their value, every word is targeted to the specific problem.</p>
+      <div class="info-box insight">
+        <h3>The Shift</h3>
+        <p>&ldquo;Based on everything you&rsquo;ve described, it sounds like the core issue is X, and it&rsquo;s costing you Y. Here&rsquo;s exactly how I&rsquo;ve solved that before.&rdquo; <strong>That&rsquo;s not a candidate. That&rsquo;s a trusted advisor who happens to be interviewing.</strong></p>
+      </div>
+    </div>
+
+    <button class="reveal-trigger" onclick="revealContent('scn2')">The Reorg <span>&rarr;</span></button>
+    <div class="reveal-content" id="scn2">
+      <p>Before making your case for survival, diagnose: <em>&ldquo;What criteria is leadership using to evaluate which roles are essential?&rdquo;</em> This gives you intelligence to frame your cost-of-absence argument (Module 4) in their terms &mdash; and positions you as a strategic thinker, not someone begging.</p>
+    </div>
+
+    <button class="reveal-trigger" onclick="revealContent('scn3')">The Internal Pitch <span>&rarr;</span></button>
+    <div class="reveal-content" id="scn3">
+      <p>Before presenting, ask: <em>&ldquo;What would need to be true for leadership to prioritize an investment like this right now?&rdquo;</em> Every answer shapes your pitch. When it directly addresses their stated concerns, it feels like the logical answer to a problem they&rsquo;ve been discussing for weeks.</p>
+    </div>
+
+    <button class="reveal-trigger" onclick="revealContent('scn4')">The Internal Pivot <span>&rarr;</span></button>
+    <div class="reveal-content" id="scn4">
+      <p>Instead of networking, approach cross-department conversations as diagnosis: <em>&ldquo;What&rsquo;s the biggest challenge your team is wrestling with right now?&rdquo;</em> You&rsquo;re building a map of where pain lives across the organization &mdash; so when you need to pivot, you already know who has the pain and how your skills map to their problem.</p>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(8)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(10)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 10: What Great Diagnosticians Do Differently -->
+  <div class="section" data-section="10">
+    <div class="section-number">Section 10 of 14</div>
+    <h2>What Great Diagnosticians Do Differently</h2>
+
+    <div class="deep-dive">
+      <div class="deep-dive-header" onclick="toggleDeepDive('habits')">
+        <span class="deep-dive-icon">&#128161;</span>
+        <span class="deep-dive-title">Five Habits That Set Them Apart</span>
+        <span class="deep-dive-toggle" id="habits-toggle">&#9660;</span>
+      </div>
+      <div class="deep-dive-content" id="habits-content">
+        <p><strong>They listen for what&rsquo;s not being said.</strong> The problem they minimize. The topic they change the subject from. The answer they give too quickly. &ldquo;You mentioned that briefly but moved past it. Can we come back to that?&rdquo;</p>
+        <p><strong>They resist the urge to be impressive.</strong> When you know you have the answer, staying in question mode feels like holding back. It&rsquo;s not. It&rsquo;s building up. Five great questions then a targeted response will always outperform a brilliant monologue.</p>
+        <p><strong>They treat silence as a tool.</strong> When the other person pauses after your question, don&rsquo;t fill it. That silence means they&rsquo;re thinking. And thinking, as Module 2 taught you, is where decisions get made.</p>
+        <p><strong>They ask for specifics relentlessly.</strong> &ldquo;We&rsquo;re losing productivity&rdquo; becomes &ldquo;how many hours per week?&rdquo; Specifics turn vague concerns into quantifiable problems &mdash; and quantifiable problems drive action.</p>
+        <p><strong>They never assume they know the answer.</strong> The moment you assume, you stop listening. And the moment you stop listening, you miss the detail that makes this situation different from every one you&rsquo;ve seen before.</p>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(9)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(11)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 11: Practice Exercise 1 - Symptom Words -->
+  <div class="section" data-section="11">
+    <div class="section-number">Section 11 of 14 &bull; Practice Exercise</div>
+
+    <div class="practice">
+      <div class="practice-header">
+        <span class="practice-icon">&#129658;</span>
+        <h3>Catch the Symptom Words</h3>
+        <span class="practice-label">Practice</span>
+      </div>
+      <div class="practice-prompt">
+        <p>Read this statement from a hiring manager: &ldquo;Honestly, things have been pretty chaotic since Q3. We lost a couple of key people, the team is frustrated, and we&rsquo;re just trying to keep our heads above water while leadership keeps changing priorities. We need someone who can come in and make an impact fast.&rdquo;</p>
+      </div>
+      <p style="margin-bottom:16px; color: var(--text-dim);">Identify the Symptom Words and Phrases you hear. Then write 2&ndash;3 follow-up questions you would ask to turn each symptom into a diagnosis. Remember: &ldquo;When you say [their word], tell me more about that.&rdquo;</p>
+      <textarea class="practice-textarea" id="practiceInput1" placeholder="Example: 'Chaotic' is a Symptom Word. I'd ask: 'When you say chaotic, what does that actually look like week to week? Is it workload, direction, or both?'&#10;&#10;Now identify the rest and write your follow-up questions..."></textarea>
+      <button class="practice-btn" id="practice1Btn" onclick="getAIFeedback('practice1')">Get AI Feedback</button>
+      <div class="practice-feedback" id="practice1-feedback">
+        <h4>AI Feedback</h4>
+        <p>Your personalized feedback will appear here...</p>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(10)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(12)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 12: Knowledge Check -->
+  <div class="section" data-section="12">
+    <div class="section-number">Section 12 of 14 &bull; Knowledge Check</div>
+
+    <div class="quiz">
+      <div class="quiz-header">
+        <span class="quiz-icon">&#128161;</span>
+        <h3>Test Your Understanding</h3>
+      </div>
+
+      <span class="quiz-label">Question 1 of 4</span>
+      <div class="quiz-question">
+        You&rsquo;re in an interview and the hiring manager says, &ldquo;We need someone who can hit the ground running.&rdquo; What&rsquo;s your best next move?
+      </div>
+      <div class="choice-group" id="quiz1-choices">
+        <button class="choice-btn" onclick="checkQuiz(1, this, false, 'A')">Immediately explain how your experience makes you the perfect fit to hit the ground running.</button>
+        <button class="choice-btn" onclick="checkQuiz(1, this, true, 'B')">Recognize &ldquo;hit the ground running&rdquo; as a Symptom Phrase and ask: &ldquo;What does hitting the ground running look like in the first 30 days for this role?&rdquo;</button>
+        <button class="choice-btn" onclick="checkQuiz(1, this, false, 'C')">Nod confidently and say you&rsquo;re a fast learner who adapts quickly.</button>
+      </div>
+      <div class="feedback" id="quiz1Feedback"><h4>Feedback</h4><p id="quiz1Text"></p></div>
+
+      <span class="quiz-label" style="margin-top:32px;">Question 2 of 4</span>
+      <div class="quiz-question">
+        According to this module, why do professional salespeople spend 70&ndash;80% of discovery conversations listening rather than talking?
+      </div>
+      <div class="choice-group" id="quiz2-choices">
+        <button class="choice-btn" onclick="checkQuiz(2, this, false, 'A')">Because talking too much makes you seem desperate or pushy.</button>
+        <button class="choice-btn" onclick="checkQuiz(2, this, false, 'B')">Because it&rsquo;s polite to let the other person speak first.</button>
+        <button class="choice-btn" onclick="checkQuiz(2, this, true, 'C')">Because the person asking questions controls the conversation, and every minute the other person talks is a minute they&rsquo;re giving you the keys to their decision.</button>
+      </div>
+      <div class="feedback" id="quiz2Feedback"><h4>Feedback</h4><p id="quiz2Text"></p></div>
+
+      <span class="quiz-label" style="margin-top:32px;">Question 3 of 4</span>
+      <div class="quiz-question">
+        A colleague tells you, &ldquo;Our department has been going through a lot of changes and it&rsquo;s been really stressful.&rdquo; What&rsquo;s a &ldquo;stressful&rdquo; an example of?
+      </div>
+      <div class="choice-group" id="quiz3-choices">
+        <button class="choice-btn" onclick="checkQuiz(3, this, false, 'A')">An objection you need to overcome.</button>
+        <button class="choice-btn" onclick="checkQuiz(3, this, true, 'B')">A Symptom Word &mdash; a signal that there&rsquo;s a deeper story underneath that you need to investigate with follow-up questions.</button>
+        <button class="choice-btn" onclick="checkQuiz(3, this, false, 'C')">A sign that they don&rsquo;t want to talk about it and you should change the subject.</button>
+      </div>
+      <div class="feedback" id="quiz3Feedback"><h4>Feedback</h4><p id="quiz3Text"></p></div>
+
+      <span class="quiz-label" style="margin-top:32px;">Question 4 of 4</span>
+      <div class="quiz-question">
+        You&rsquo;re asking diagnostic questions and the person says their problem costs them &ldquo;a lot of money.&rdquo; According to the framework, what should you do?
+      </div>
+      <div class="choice-group" id="quiz4-choices">
+        <button class="choice-btn" onclick="checkQuiz(4, this, false, 'A')">Accept the answer and move to the next question. They said it costs a lot, so the pain is confirmed.</button>
+        <button class="choice-btn" onclick="checkQuiz(4, this, false, 'B')">Tell them what you think the number is based on your industry experience.</button>
+        <button class="choice-btn" onclick="checkQuiz(4, this, true, 'C')">Push for specifics: &ldquo;If you had to estimate, is this a five-figure, six-figure, or seven-figure problem?&rdquo; Because vague pain creates vague interest; specific pain creates action.</button>
+      </div>
+      <div class="feedback" id="quiz4Feedback"><h4>Feedback</h4><p id="quiz4Text"></p></div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(11)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(13)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 13: Practice Exercise 2 - Diagnostic Conversation -->
+  <div class="section" data-section="13">
+    <div class="section-number">Section 13 of 14 &bull; Practice Exercise</div>
+
+    <div class="practice">
+      <div class="practice-header">
+        <span class="practice-icon">&#129300;</span>
+        <h3>Build a Diagnostic Conversation</h3>
+        <span class="practice-label">Application</span>
+      </div>
+      <div class="practice-prompt">
+        <p>Choose your most important professional situation right now (a job search, an upcoming review, an internal pitch, a relationship you&rsquo;re building). Write out 4&ndash;5 diagnostic questions you would ask the decision-maker, using the framework from this module. For each question, note what Symptom Words you&rsquo;d be listening for in their answer.</p>
+      </div>
+      <textarea class="practice-textarea" id="practiceInput2" placeholder="Example:&#10;Situation: Interviewing for a product manager role&#10;&#10;Q1: 'What prompted you to open this role now?' — Listening for: 'struggling,' 'behind,' 'gap'&#10;Q2: 'What does success look like in the first 90 days?' — Listening for: 'fix,' 'turn around,' 'urgent'&#10;&#10;Now write yours..." style="min-height:200px;"></textarea>
+      <button class="practice-btn" id="practice2Btn" onclick="getAIFeedback('practice2')">Get AI Feedback</button>
+      <div class="practice-feedback" id="practice2-feedback">
+        <h4>AI Feedback</h4>
+        <p>Your personalized feedback will appear here...</p>
+      </div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(12)">&larr; Back</button>
+      <button class="nav-btn" onclick="goToSection(14)">Next &rarr;</button>
+    </div>
+  </div>
+
+  <!-- SECTION 14: Connecting It All + Completion -->
+  <div class="section" data-section="14">
+    <div class="section-number">Section 14 of 14</div>
+    <h2>Connecting It All</h2>
+    <p style="margin-bottom: 32px;">Module 6 is the method that ties the entire framework together:</p>
+
+    <div class="takeaway-grid">
+      <div class="takeaway-card"><div class="takeaway-number">M2</div><p>Changing how someone thinks is the real work. <strong>Questions are how you do it.</strong></p></div>
+      <div class="takeaway-card"><div class="takeaway-number">M3</div><p>Pain creates urgency. <strong>Questions uncover the pain.</strong></p></div>
+      <div class="takeaway-card"><div class="takeaway-number">M4</div><p>Your value = cost of not having you. <strong>Questions help them see that cost.</strong></p></div>
+      <div class="takeaway-card"><div class="takeaway-number">M5</div><p>Find the decision-maker. <strong>Questions confirm you&rsquo;re talking to the right person.</strong></p></div>
+      <div class="takeaway-card"><div class="takeaway-number">M6</div><p>Symptom Words are vague pain in disguise. <strong>Hear them. Investigate them. Never walk past them.</strong></p></div>
+    </div>
+
+    <div class="blockquote">
+      <p>Without great questions, you can&rsquo;t uncover pain. Without uncovering pain, you can&rsquo;t quantify consequences. Without consequences, you can&rsquo;t articulate your value. Questions are the thread that runs through the entire framework.</p>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="nav-btn back" onclick="goToSection(13)">&larr; Back</button>
+      <button class="nav-btn" onclick="showCompletion()">Complete Module &rarr;</button>
+    </div>
+  </div>
+
+  <!-- COMPLETION -->
+  <div class="completion hidden" id="completion">
+    <div class="completion-icon">&#129658;</div>
+    <h2>Module 6 Complete</h2>
+    <p>You now have the method that ties everything together: expert diagnosis. The right questions, real listening, Symptom Words, and the discipline to diagnose before you prescribe.</p>
+    <div class="completion-stats">
+      <div class="stat"><span class="stat-number" id="timeSpent">0</span><span class="stat-label">Minutes</span></div>
+      <div class="stat"><span class="stat-number">14</span><span class="stat-label">Sections</span></div>
+      <div class="stat"><span class="stat-number" id="quizScore">--</span><span class="stat-label">Quiz Score</span></div>
+    </div>
+    <button class="next-btn" onclick="nextModule()">Continue to Module 7 &rarr;</button>
+  </div>
+
+</div>
+
+<script>
+let currentSection = 0;
+const totalSections = 14;
+let startTime = Date.now();
+const quizState = { 1: null, 2: null, 3: null, 4: null };
+
+function startModule() {
+  document.getElementById('hero').style.display = 'none';
+  document.getElementById('mainContent').classList.add('visible');
+  document.getElementById('progressWrapper').classList.add('visible');
+  goToSection(1);
+}
+
+function goToSection(num) {
+  currentSection = num;
+  document.querySelectorAll('.section').forEach(s => {
+    const sNum = parseInt(s.dataset.section);
+    if (sNum === num) { s.classList.add('visible'); s.classList.remove('hidden'); }
+    else { s.classList.remove('visible'); s.classList.add('hidden'); }
+  });
+  document.getElementById('progressBar').style.width = ((num / totalSections) * 100) + '%';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ═══ DEEP DIVE ═══
+function toggleDeepDive(id) {
+  const content = document.getElementById(id + '-content');
+  const toggle = document.getElementById(id + '-toggle');
+  content.classList.toggle('open');
+  toggle.classList.toggle('open');
+}
+
+// ═══ REVEAL ═══
+function revealContent(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+// ═══ FRAMEWORK STEPS ═══
+function toggleStep(id) {
+  const detail = document.getElementById(id + '-detail');
+  const isOpen = detail.style.maxHeight && detail.style.maxHeight !== '0px';
+  detail.style.maxHeight = isOpen ? '0px' : '600px';
+  detail.style.opacity = isOpen ? '0' : '1';
+}
+
+// ═══ QUIZ ═══
+function checkQuiz(qNum, btn, isCorrect, choice) {
+  if (quizState[qNum] !== null) return;
+  quizState[qNum] = isCorrect;
+
+  const choices = document.getElementById('quiz' + qNum + '-choices');
+  choices.querySelectorAll('.choice-btn').forEach(b => { b.style.pointerEvents = 'none'; });
+  btn.classList.add(isCorrect ? 'correct' : 'incorrect');
+
+  if (!isCorrect) {
+    choices.querySelectorAll('.choice-btn').forEach(b => {
+      if (b !== btn) {
+        const onclick = b.getAttribute('onclick');
+        if (onclick && onclick.includes('true')) b.classList.add('correct');
+      }
+    });
+  }
+
+  const fb = document.getElementById('quiz' + qNum + 'Feedback');
+  fb.classList.add('visible', isCorrect ? 'correct' : 'incorrect');
+  fb.querySelector('h4').textContent = isCorrect ? '✓ Correct' : '✗ Not Quite';
+
+  const explanations = {
+    1: {
+      true: '"Hit the ground running" is a classic Symptom Phrase — it sounds specific but actually tells you nothing. What does "fast impact" look like to them? Until you ask, you\'re guessing. The diagnostic approach always investigates before presenting.',
+      false: 'Jumping to your pitch before understanding what "hit the ground running" means to them is premature presentation — the exact mistake this module warns against. "Hit the ground running" is a Symptom Phrase. Investigate it first.'
+    },
+    2: {
+      true: 'Exactly. Questions give you control because they direct the other person\'s thinking. While they talk, they reveal what matters, what hurts, and what they need. That intelligence makes everything you eventually say infinitely more relevant.',
+      false: 'It\'s not about politeness or perception. The reason is strategic: the person asking questions controls the conversation because they direct the other person\'s thinking. Every minute they talk, they\'re giving you intelligence.'
+    },
+    3: {
+      true: 'Exactly. "Stressful" is a textbook Symptom Word — it sounds like it describes a problem but actually describes nothing specific. Stressful how? The diagnosis is underneath. Your job: "When you say stressful, can you tell me more about that?"',
+      false: '"Stressful" isn\'t an objection or a stop sign — it\'s a Symptom Word. There\'s a deeper story underneath. Your job is to investigate: "When you say stressful, tell me more about that. What\'s driving the stress?"'
+    },
+    4: {
+      true: 'Right. "A lot of money" is vague pain, and vague pain creates vague interest. You need specifics because when they say a number out loud, they own it. And owned, quantified pain is what drives action — not estimates in your head, but numbers in their words.',
+      false: 'Accepting vague answers or filling in your own numbers both miss the point. The power comes from them quantifying the cost in their own words. When they say the number, they own it. Push for specifics — that\'s what turns interest into action.'
+    }
+  };
+
+  fb.querySelector('p').textContent = explanations[qNum][isCorrect];
+}
+
+function updateQuizScore() {
+  const answered = Object.values(quizState).filter(v => v !== null).length;
+  if (answered >= 1) {
+    const correct = Object.values(quizState).filter(v => v === true).length;
+    const total = Object.values(quizState).filter(v => v !== null).length;
+    document.getElementById('quizScore').textContent = Math.round((correct / total) * 100) + '%';
+  }
+}
+
+// ═══ AI FEEDBACK ═══
+async function getAIFeedback(practiceId) {
+  const inputId = practiceId === 'practice1' ? 'practiceInput1' : 'practiceInput2';
+  const btnId = practiceId === 'practice1' ? 'practice1Btn' : 'practice2Btn';
+  const feedbackId = practiceId + '-feedback';
+
+  const input = document.getElementById(inputId);
+  const button = document.getElementById(btnId);
+  const feedback = document.getElementById(feedbackId);
+  const userAnswer = input.value.trim();
+
+  if (!userAnswer) { alert('Please write your answer first before getting feedback!'); return; }
+
+  button.disabled = true;
+  button.classList.add('loading');
+  button.textContent = 'Getting AI Feedback...';
+
+  try {
+    let prompt;
+
+    if (practiceId === 'practice1') {
+      prompt = `You are a career coach and sales training expert for the "Be Unavoidable" program, which teaches non-sales professionals to use sales skills (especially diagnostic questioning) to navigate AI displacement.
+
+The student just completed a "Catch the Symptom Words" exercise. They were given this statement from a hiring manager:
+
+"Honestly, things have been pretty chaotic since Q3. We lost a couple of key people, the team is frustrated, and we're just trying to keep our heads above water while leadership keeps changing priorities. We need someone who can come in and make an impact fast."
+
+The student was asked to: (1) identify the Symptom Words and Phrases, and (2) write 2-3 follow-up questions for each to turn symptoms into diagnoses.
+
+Key Symptom Words/Phrases in the statement: "chaotic," "lost a couple of key people," "frustrated," "keep our heads above water," "changing priorities," "make an impact fast." Each is vague and needs investigation.
+
+Their answer: "${userAnswer}"
+
+Provide brief, personalized feedback (5-6 sentences max):
+1. Did they identify the major Symptom Words? Call out any they missed.
+2. Are their follow-up questions good diagnostic questions that would turn vague symptoms into specific, quantifiable pain? Or are they too surface-level?
+3. Do the questions follow the "When you say [their word], tell me more about that" pattern effectively?
+4. Give one specific improvement or additional question they should consider.
+
+Be encouraging, direct, and practical. Use the term "Symptom Words" naturally.`;
+    } else {
+      prompt = `You are a career coach and sales training expert for the "Be Unavoidable" program, which teaches non-sales professionals diagnostic questioning skills.
+
+The student was asked to choose their most important professional situation and write 4-5 diagnostic questions for the decision-maker, using the Module 6 framework (What problem? By when? What's it costing? What if nothing changes? How do decisions get made? What resources?). They were also asked to note what Symptom Words they'd listen for in the answers.
+
+Their response: "${userAnswer}"
+
+Provide brief feedback (5-6 sentences max):
+1. Do the questions follow the diagnostic framework sequence (problem → urgency → cost → consequences → decision process → resources)?
+2. Are the questions open-ended enough to generate real conversation, or are they yes/no questions in disguise?
+3. Did they identify realistic Symptom Words they'd listen for? Are they thinking like a diagnostician?
+4. Would these questions work naturally in a real conversation without sounding like an interrogation?
+5. Give one specific suggestion to strengthen their diagnostic approach.
+
+Be encouraging but honest. Remember these are non-sales professionals learning to think strategically about professional conversations.`;
+    }
+
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 500,
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+
+    if (!response.ok) throw new Error('API request failed');
+    const data = await response.json();
+    const feedbackText = data.content[0].text;
+
+    feedback.querySelector('h4').textContent = 'AI Feedback';
+    feedback.querySelector('p').innerHTML = feedbackText;
+    feedback.classList.add('visible');
+    feedback.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    button.textContent = 'Get New Feedback';
+
+  } catch (error) {
+    console.error('Error getting AI feedback:', error);
+    alert('Unable to get AI feedback right now. Please try again.');
+    button.textContent = 'Get AI Feedback';
+  } finally {
+    button.disabled = false;
+    button.classList.remove('loading');
+  }
+}
+
+// ═══ COMPLETION ═══
+function showCompletion() {
+  document.getElementById('completion').classList.remove('hidden');
+  const elapsed = Math.round((Date.now() - startTime) / 60000);
+  document.getElementById('timeSpent').textContent = elapsed;
+  updateQuizScore();
+  document.getElementById('completion').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ═══ DOWNLOAD ═══
+function downloadPDF() {
+  window.print();
+}
+
+// ═══ NEXT MODULE ═══
+function nextModule() {
+  window.location.href = '/module7.html';
+}
+</script>
+
+
+<script>
+  async function logOut() {
+    await fetch('/api/logout');
+    window.location.href = '/login.html';
+  }
+</script>
+</body>
+</html>

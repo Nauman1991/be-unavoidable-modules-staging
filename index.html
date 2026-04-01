@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Be Unavoidable — Career Clarity When Yours Has Been Shaken</title>
+<meta name="description" content="AI-powered emotional support, personality assessment, and self-advocacy skills training for professionals facing career uncertainty.">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@400;500;600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f5f0ea;--bg-alt:#ece6de;--bg-card:#fff;
+  --text:#1a1a1a;--text-dim:#6b6560;--text-light:#958e85;
+  --blue:#1e4f8a;--warm:#b5714a;--red:#a93e33;--green:#5a9a5a;
+  --border:rgba(26,26,26,0.08);--shadow:0 1px 3px rgba(26,26,26,0.06);
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;-webkit-font-smoothing:antialiased;}
+.btn{display:inline-block;padding:16px 44px;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;text-decoration:none;border-radius:2px;transition:all .3s;cursor:pointer;}
+.btn-blue{background:var(--blue);color:#fff;border:2px solid var(--blue);}
+.btn-blue:hover{background:transparent;color:var(--blue);transform:translateY(-2px);box-shadow:0 6px 20px rgba(30,79,138,0.2);}
+.btn-ghost{background:transparent;color:var(--text-dim);border:1px solid var(--border);}
+.btn-ghost:hover{border-color:var(--text-dim);color:var(--text);}
+@keyframes beuFu{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes beuFloat{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(8px)}}
+
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(245,240,234,0.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;}
+.nav-logo{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:2px;color:var(--text);text-decoration:none;}
+.nav .btn{padding:10px 24px;}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:80px 24px;position:relative;background:var(--bg);}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 60%,rgba(30,79,138,0.04) 0%,transparent 55%);pointer-events:none;}
+.hero-inner{max-width:880px;position:relative;z-index:1;}
+.hero-brand{font-family:'Bebas Neue',sans-serif;font-size:clamp(0.9rem,1.8vw,1.2rem);letter-spacing:6px;text-transform:uppercase;color:var(--blue);margin-bottom:28px;opacity:0;animation:beuFu .7s ease .2s forwards;}
+.hero-headline{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.8rem,7.5vw,5.5rem);line-height:0.97;letter-spacing:-0.02em;margin-bottom:24px;color:var(--text);opacity:0;animation:beuFu .7s ease .35s forwards;}
+.hero-headline span{color:var(--blue);}
+.hero-desc{font-family:'Source Serif 4',serif;font-size:clamp(1.1rem,2.2vw,1.5rem);line-height:1.45;color:var(--text-dim);font-style:italic;max-width:700px;margin:0 auto 20px;opacity:0;animation:beuFu .7s ease .5s forwards;}
+.hero-audience{font-size:0.88rem;line-height:1.7;color:var(--text-dim);max-width:640px;margin:0 auto 28px;opacity:0;animation:beuFu .7s ease .6s forwards;}
+.hero-audience strong{color:var(--text);font-weight:600;}
+.hero-features{display:flex;justify-content:center;gap:28px;flex-wrap:wrap;margin-bottom:36px;opacity:0;animation:beuFu .7s ease .7s forwards;}
+.hero-feat{font-size:0.78rem;font-weight:600;letter-spacing:0.5px;color:var(--text-dim);display:flex;align-items:center;gap:7px;}
+.hero-feat::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--blue);flex-shrink:0;}
+.hero-ctas{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;opacity:0;animation:beuFu .7s ease .85s forwards;}
+.scroll-hint{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);opacity:0;animation:beuFu .7s ease 1.1s forwards,beuFloat 3s ease-in-out infinite;}
+.scroll-hint svg{width:22px;height:22px;stroke:var(--text-light);}
+
+/* ENGINE SECTION */
+.engine-section{padding:100px 24px;background:var(--bg-alt);position:relative;}
+.engine-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 50%,rgba(181,113,74,0.04) 0%,transparent 50%);pointer-events:none;}
+.engine-container{max-width:960px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center;}
+.engine-label{font-family:'Bebas Neue',sans-serif;font-size:0.85rem;letter-spacing:3px;color:var(--warm);margin-bottom:12px;}
+.engine-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.25rem,5vw,3.25rem);line-height:1.05;margin-bottom:20px;color:var(--text);}
+.engine-title span{color:var(--warm);}
+.engine-desc{font-size:0.95rem;line-height:1.8;color:var(--text-dim);margin-bottom:24px;}
+.engine-desc strong{color:var(--text);font-weight:600;}
+.engine-points{list-style:none;margin-bottom:28px;}
+.engine-points li{font-size:0.88rem;line-height:1.7;color:var(--text-dim);padding:8px 0 8px 22px;position:relative;border-bottom:1px solid var(--border);}
+.engine-points li:last-child{border-bottom:none;}
+.engine-points li::before{content:'→';position:absolute;left:0;color:var(--warm);}
+.engine-points li strong{color:var(--text);font-weight:600;}
+.engine-visual{background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:36px 28px;position:relative;overflow:hidden;box-shadow:0 4px 16px rgba(26,26,26,0.06);}
+.engine-visual::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--warm),var(--blue));}
+.ev-header{display:flex;align-items:center;gap:10px;margin-bottom:24px;}
+.ev-dot{width:8px;height:8px;border-radius:50%;}
+.ev-dot-1{background:var(--red);}.ev-dot-2{background:var(--warm);}.ev-dot-3{background:var(--green);}
+.ev-label{font-size:0.7rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text-light);}
+.ev-msg{padding:14px 18px;border-radius:8px;margin-bottom:12px;font-size:0.85rem;line-height:1.6;max-width:88%;}
+.ev-msg:last-child{margin-bottom:0;}
+.ev-user{background:rgba(30,79,138,0.07);border:1px solid rgba(30,79,138,0.12);color:var(--text-dim);margin-left:auto;border-radius:8px 8px 2px 8px;}
+.ev-ai{background:rgba(181,113,74,0.06);border:1px solid rgba(181,113,74,0.12);color:var(--text-dim);border-radius:8px 8px 8px 2px;}
+.ev-ai strong{color:var(--text);font-weight:500;}
+
+/* DATA SECTION */
+.data-section{padding:100px 24px;background:var(--bg);}
+.c{max-width:1040px;margin:0 auto;}
+.kicker{font-size:0.7rem;font-weight:600;letter-spacing:3px;text-transform:uppercase;margin-bottom:14px;}
+.k-red{color:var(--red);}.k-blue{color:var(--blue);}
+.h2{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.5rem,6vw,4rem);line-height:1.05;letter-spacing:-0.01em;margin-bottom:20px;color:var(--text);}
+.h2 span{color:var(--blue);}
+.split-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start;}
+.split-label{font-size:0.7rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--warm);margin-bottom:20px;padding-bottom:12px;border-bottom:2px solid var(--warm);}
+.split-label-red{color:var(--red);border-bottom-color:var(--red);}
+.voice-stack{display:flex;flex-direction:column;}
+.voice-item{padding:16px 0;border-bottom:1px solid var(--border);}
+.voice-item:last-child{border-bottom:none;}
+.voice-text{font-family:'Source Serif 4',serif;font-size:1rem;font-style:italic;line-height:1.5;color:var(--text);}
+.stat-stack{display:flex;flex-direction:column;gap:14px;}
+.stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:4px;padding:20px 22px;position:relative;overflow:hidden;box-shadow:var(--shadow);display:grid;grid-template-columns:1fr 40px;gap:12px;align-items:center;}
+.stat-accent{position:absolute;top:0;left:0;bottom:0;width:4px;}
+.stat-accent-red{background:var(--red);}.stat-accent-warm{background:var(--warm);}.stat-accent-blue{background:var(--blue);}
+.stat-inner{padding-left:8px;}
+.stat-num{font-family:'Bebas Neue',sans-serif;font-size:2.5rem;line-height:1;margin-bottom:6px;}
+.stat-num-red{color:var(--red);}.stat-num-warm{color:var(--warm);}.stat-num-blue{color:var(--blue);}
+.stat-text{font-size:0.85rem;line-height:1.55;color:var(--text-dim);}
+.stat-text strong{color:var(--text);font-weight:600;}
+.stat-icon{display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:50%;}
+
+/* PLATFORM SECTION */
+.platform-section{padding:100px 24px;background:var(--bg);}
+.system-flow{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:48px;}
+.sf-card{background:var(--bg-card);border:1px solid var(--border);border-top:3px solid var(--blue);padding:22px 18px;position:relative;box-shadow:var(--shadow);}
+.sf-card.sf-engine{border-top-color:var(--warm);}
+.sf-num{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:var(--blue);margin-bottom:6px;}
+.sf-card.sf-engine .sf-num{color:var(--warm);}
+.sf-title{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;margin-bottom:8px;line-height:1.15;color:var(--text);}
+.sf-desc{font-size:0.8rem;line-height:1.6;color:var(--text-dim);}
+.sf-desc strong{color:var(--text);font-weight:600;}
+.sf-badge{position:absolute;top:10px;right:12px;font-size:0.55rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--warm);background:rgba(181,113,74,0.1);padding:3px 8px;border-radius:2px;}
+.principle{border:1px solid var(--border);border-left:4px solid var(--blue);padding:28px 32px;max-width:760px;margin:0 auto;text-align:center;background:var(--bg-card);box-shadow:var(--shadow);}
+.principle-text{font-family:'Source Serif 4',serif;font-size:1.1rem;font-style:italic;line-height:1.5;color:var(--text);}
+.principle-text strong{color:var(--blue);font-style:normal;}
+
+/* PRICING */
+.pricing-section{padding:100px 24px;background:var(--bg-alt);}
+.price-card{max-width:520px;margin:0 auto;text-align:center;background:var(--bg-card);border:1px solid var(--border);border-top:4px solid var(--blue);padding:44px 32px;box-shadow:var(--shadow);}
+.price-amt{font-family:'Bebas Neue',sans-serif;font-size:5rem;line-height:1;margin-bottom:8px;color:var(--text);}
+.price-sub{font-family:'Source Serif 4',serif;font-size:1.1rem;font-style:italic;color:var(--text-dim);margin-bottom:24px;}
+.price-list{text-align:left;font-size:0.83rem;line-height:2;color:var(--text-dim);max-width:360px;margin:0 auto 28px;}
+.price-list span{display:block;padding-left:20px;position:relative;}
+.price-list span::before{content:'→';position:absolute;left:0;color:var(--blue);}
+
+/* CLOSE + FOOTER */
+.close-section{text-align:center;padding:100px 24px;background:var(--bg-alt);}
+.close-hl{font-family:'Bebas Neue',sans-serif;font-size:clamp(2.5rem,6vw,4.5rem);line-height:1;margin-bottom:20px;color:var(--text);}
+/* FOOTER */
+.footer{border-top:1px solid var(--border);padding:64px 24px 32px;text-align:center;background:var(--bg);}
+.footer-logo{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:2px;margin-bottom:16px;color:var(--text);}
+.footer-links{display:flex;justify-content:center;gap:24px;margin-bottom:24px;flex-wrap:wrap;}
+.footer-links a{font-size:0.85rem;color:var(--text-dim);text-decoration:none;transition:color 0.2s;font-weight:500;}
+.footer-links a:hover{color:var(--blue);}
+.footer-copy{font-size:0.75rem;color:var(--text-light);letter-spacing:0.3px;}
+.footer-pdf-link{display:inline-flex;align-items:center;gap:6px;font-size:0.75rem;color:var(--text-light);text-decoration:none;margin-top:12px;opacity:0.8;transition:opacity 0.2s;}
+.footer-pdf-link:hover{opacity:1;color:var(--blue);}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .hero{padding:60px 20px;}
+  .hero-features{flex-direction:column;align-items:center;gap:10px;}
+  .hero-ctas{flex-direction:column;max-width:300px;margin-left:auto;margin-right:auto;}
+  .btn{width:100%;text-align:center;}
+  .btn-ghost{margin-left:0;}
+  .engine-section,.data-section,.platform-section,.pricing-section,.close-section{padding:70px 20px;}
+  .engine-container,.split-grid{grid-template-columns:1fr;gap:36px;}
+  .system-flow{grid-template-columns:1fr 1fr;gap:12px;}
+}
+@media(max-width:480px){.system-flow{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a class="nav-logo" href="/">BE UNAVOIDABLE</a>
+  <div id="nav-actions" style="display:flex;align-items:center;gap:12px;">
+    <a href="login.html" class="btn btn-ghost" style="padding:10px 24px;">Log In</a>
+    <a href="intake.html" class="btn btn-blue" style="padding:10px 24px;">Get Started — $99</a>
+  </div>
+</nav>
+<script>
+  (async function() {
+    try {
+      const res = await fetch('/api/verify');
+      const data = await res.json();
+      if (data.authenticated) {
+        document.getElementById('nav-actions').innerHTML =
+          '<a href="dashboard.html" class="btn btn-blue" style="padding:10px 24px;">Go to Dashboard →</a>';
+      }
+    } catch(e) {}
+  })();
+</script>
+
+<div style="padding-top:64px;">
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-brand">Be Unavoidable</div>
+    <h1 class="hero-headline">Careerrr Clarity &<br>Confidence <span>When Yours<br>Has Been Shaken</span></h1>
+    <p class="hero-desc">AI-powered emotional support, personality assessment, and self-advocacy skills training — in one platform.</p>
+    <p class="hero-audience">For professionals facing career uncertainty — whether it's <strong>AI displacement, layoffs, industry disruption,</strong> or the quiet fear that the skills that got you here won't be enough to keep you here.</p>
+    <div class="hero-features">
+      <span class="hero-feat">AI Career Anxiety Support</span>
+      <span class="hero-feat">Personality Assessment</span>
+      <span class="hero-feat">Self-Advocacy Skills Training</span>
+      <span class="hero-feat">AI Roleplay Practice</span>
+    </div>
+    <div class="hero-ctas">
+      <a href="intake.html" class="btn btn-blue">Get Started — $99</a>
+      <a href="#how-it-works" class="btn btn-ghost">See How It Works</a>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+  </div>
+</section>
+
+<!-- ENGINE -->
+<section class="engine-section">
+  <div class="engine-container">
+    <div>
+      <div class="engine-label">THE CENTERPIECE</div>
+      <h2 class="engine-title">Career Clarity &<br>Confidence <span>Engine</span></h2>
+      <p class="engine-desc">An AI-powered private space built on <strong>Cognitive Behavioral Therapy principles</strong> — designed specifically for the professional anxiety that keeps you up at night. Not therapy. Not a chatbot. A structured conversation that helps you <strong>process what you're feeling so you can think clearly again.</strong></p>
+      <ul class="engine-points">
+        <li><strong>Available 24/7</strong> — at 2am when you need it most</li>
+        <li><strong>No judgment</strong> — say what you can't say to your spouse, friends, or colleagues</li>
+        <li><strong>Not $150/hour</strong> — because you don't need deep therapy, you need clarity and relief</li>
+        <li><strong>Proper guardrails</strong> — designed with licensed clinical expertise, with clear off-ramps when needed</li>
+      </ul>
+      <a href="intake.html" class="btn btn-blue">Get Started</a>
+    </div>
+    <div class="engine-visual">
+      <div class="ev-header">
+        <div class="ev-dot ev-dot-1"></div>
+        <div class="ev-dot ev-dot-2"></div>
+        <div class="ev-dot ev-dot-3"></div>
+        <div class="ev-label">Career Clarity & Confidence Engine</div>
+      </div>
+      <div class="ev-msg ev-user">I can't sleep. I keep running the numbers and I don't know how long I can keep this up if something happens to my job.</div>
+      <div class="ev-msg ev-ai"><strong>That's a real and heavy thing to carry — especially alone.</strong> Let's slow down for a moment. When you say "if something happens," what specifically are you most afraid of right now?</div>
+      <div class="ev-msg ev-user">That I'll get laid off and I'm too old to start over. That nobody will want me.</div>
+      <div class="ev-msg ev-ai"><strong>I hear you. That fear — that your experience won't matter anymore — is one of the most common things professionals tell me.</strong> Can we look at that thought together? Because there's usually a gap between what the fear says and what's actually true about your value.</div>
+    </div>
+  </div>
+</section>
+
+<!-- DATA + EMPATHY -->
+<section class="data-section">
+  <div class="c">
+    <div style="text-align:center;margin-bottom:44px;">
+      <div class="kicker k-red">This Isn't Theory</div>
+      <h2 class="h2">Your fear isn't irrational. <span>It's informed.</span></h2>
+    </div>
+    <div class="split-grid">
+      <div>
+        <div class="split-label split-label-red">Why It's Rational</div>
+        <div class="stat-stack">
+          <div class="stat-card">
+            <div class="stat-accent stat-accent-red"></div>
+            <div class="stat-inner">
+              <div class="stat-num stat-num-red">50%</div>
+              <div class="stat-text">Of white-collar jobs at risk within 5 years — <strong>per the CEO building the technology.</strong></div>
+            </div>
+            <div class="stat-icon" style="background:rgba(169,62,51,0.08);color:var(--red);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 17l5-5-5-5M6 17l5-5-5-5"/></svg>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-accent stat-accent-warm"></div>
+            <div class="stat-inner">
+              <div class="stat-num stat-num-warm">108K</div>
+              <div class="stat-text">Layoffs in January 2026. <strong>Worst since the financial crisis.</strong></div>
+            </div>
+            <div class="stat-icon" style="background:rgba(181,113,74,0.08);color:var(--warm);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-accent stat-accent-blue"></div>
+            <div class="stat-inner">
+              <div class="stat-num stat-num-blue">49%</div>
+              <div class="stat-text">Turn to AI chatbots first for support — <strong>ahead of friends, family, and doctors.</strong></div>
+            </div>
+            <div class="stat-icon" style="background:rgba(30,79,138,0.08);color:var(--blue);">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="split-label">What It Feels Like</div>
+        <div class="voice-stack">
+          <div class="voice-item"><p class="voice-text">"I feel like I'm becoming invisible. Not fired. Just... less necessary."</p></div>
+          <div class="voice-item"><p class="voice-text">"I'm doing the math at 2am and I can't tell the person next to me."</p></div>
+          <div class="voice-item"><p class="voice-text">"I feel ashamed of the fear itself. I've handled hard things before."</p></div>
+          <div class="voice-item"><p class="voice-text">"I did everything right. And the deal is broken."</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PLATFORM -->
+<section class="platform-section" id="how-it-works">
+  <div class="c">
+    <div style="text-align:center;margin-bottom:48px;">
+      <div class="kicker k-blue">The Complete Platform</div>
+      <h2 class="h2">It Starts With Emotional Clarity.<br><span>Then It Builds From There.</span></h2>
+      <p style="font-family:'Source Serif 4',serif;font-size:clamp(1.05rem,1.8vw,1.3rem);line-height:1.5;color:var(--text-dim);font-style:italic;max-width:660px;margin:0 auto;">Every step delivers standalone value. The engine creates the foundation. Everything else builds on it.</p>
+    </div>
+    <div class="system-flow">
+      <div class="sf-card sf-engine">
+        <div class="sf-badge">Centerpiece</div>
+        <div class="sf-num">01</div>
+        <div class="sf-title">Career Clarity & Confidence Engine</div>
+        <div class="sf-desc"><strong>AI-powered CBT support.</strong> Process the fear. Get stable. Think clearly again.</div>
+      </div>
+      <div class="sf-card">
+        <div class="sf-num">02</div>
+        <div class="sf-title">Personality Assessment & Profiling</div>
+        <div class="sf-desc"><strong>DISC-based assessment.</strong> Who you are underneath the title. Your strengths, your fit.</div>
+      </div>
+      <div class="sf-card">
+        <div class="sf-num">03</div>
+        <div class="sf-title">Opportunity Mapping + Training</div>
+        <div class="sf-desc"><strong>8 modules by sales veterans.</strong> The skills that make you harder to replace.</div>
+      </div>
+      <div class="sf-card">
+        <div class="sf-num">04</div>
+        <div class="sf-title">AI Practice Engines</div>
+        <div class="sf-desc"><strong>Sales + Self-Advocacy roleplay.</strong> Practice interviews, negotiations, and selling yourself.</div>
+      </div>
+    </div>
+    <div class="principle">
+      <p class="principle-text">The engine creates the emotional foundation. The assessment provides clarity. The training builds capability. The practice builds confidence. <strong>That sequence is the product.</strong></p>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing-section">
+  <div class="c">
+    <div class="price-card">
+      <div class="kicker k-blue" style="margin-bottom:16px;">Full Platform Access</div>
+      <div class="price-amt">$99</div>
+      <p class="price-sub">One payment. Everything included. No subscription.</p>
+      <div class="price-list">
+        <span>Career Clarity & Confidence Engine (CBT)</span>
+        <span>DISC Personality Assessment & Profiling</span>
+        <span>Personality-to-Opportunity Mapping</span>
+        <span>8 Training Modules by Industry Veterans</span>
+        <span>AI Sales Roleplay Engine</span>
+        <span>AI Self-Advocacy Roleplay Engine</span>
+      </div>
+      <a href="intake.html" class="btn btn-blue">Get Started — $99</a>
+    </div>
+  </div>
+</section>
+
+<!-- CLOSE -->
+<section class="close-section">
+  <h2 class="close-hl">No One Is Coming<br>For You.</h2>
+  <p class="close-sub">Built by someone who has sat exactly where you are — with a strong resume, real accomplishments, and a fear they couldn't say out loud to anyone who mattered.</p>
+  <div style="margin-top:36px;"><a href="intake.html" class="btn btn-blue">Get Started — $99</a></div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-logo">BE UNAVOIDABLE</div>
+  <div class="footer-links">
+    <a href="/privacy.html">Privacy Policy</a>
+    <a href="/terms.html">Terms & Conditions</a>
+    <a href="/documents/BeUnavoidable_Terms_and_Conditions 3-25-26 (1).pdf" class="footer-pdf-link" target="_blank">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+      Terms PDF
+    </a>
+    <a href="/documents/BeUnavoidable_Privacy_Policy 3-25-26 (1).pdf" class="footer-pdf-link" target="_blank">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+      Privacy PDF
+    </a>
+  </div>
+  <div class="footer-copy">© 2026 Be Unavoidable, LLC · All rights reserved.</div>
+</footer>
+
+</div>
+</body>
+</html>
