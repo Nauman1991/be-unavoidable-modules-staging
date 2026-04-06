@@ -124,13 +124,11 @@
       const payBtn = document.getElementById('payBtn');
       const tcCheck = document.getElementById('tcCheck');
 
-      tcCheck.onchange = () => {
-        payBtn.disabled = !tcCheck.checked;
-        payBtn.style.opacity = tcCheck.checked ? '1' : '0.5';
-      };
+      // Make Pay button active by default
+      payBtn.disabled = false;
+      payBtn.style.opacity = '1';
 
       payBtn.onclick = async () => {
-        if (!tcCheck.checked) return;
         payBtn.disabled = true;
         payBtn.textContent = 'Redirecting to Stripe...';
         try {

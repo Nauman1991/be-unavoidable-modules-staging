@@ -336,7 +336,7 @@
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Login failed');
-        window.location.href = '/dashboard.html';
+        window.location.href = '/terms-accept.html';
       } catch (err) {
         showError(err.message);
         btn.disabled = false;
@@ -364,7 +364,7 @@
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Registration failed');
-        window.location.href = '/intake.html';
+        window.location.href = '/terms-accept.html';
       } catch (err) {
         showError(err.message);
         btn.disabled = false;

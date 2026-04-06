@@ -66,7 +66,7 @@ module.exports = async function handler(req, res) {
     `;
 
     res.setHeader('Set-Cookie', `bu_session=${sessionId}; HttpOnly; Secure; SameSite=Lax; Path=/; Expires=${expires.toUTCString()}`);
-    return res.redirect(302, '/dashboard.html');
+    return res.redirect(302, '/terms-accept.html');
   } catch (err) {
     console.error('Google OAuth error:', err);
     return res.redirect(302, '/login.html?error=server');
